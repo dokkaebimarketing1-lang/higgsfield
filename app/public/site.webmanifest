@@ -1,0 +1,17 @@
+{
+  "name": "이화 피아노 과외",
+  "short_name": "이화피아노과외",
+  "icons": [
+    { "src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "/assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#0e130f",
+  "background_color": "#0e130f",
+  "display": "standalone"
+}
