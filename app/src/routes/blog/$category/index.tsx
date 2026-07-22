@@ -13,6 +13,7 @@ import {
   SERVICE_PAGE_BY_PATH,
   type LessonLandingDefinition,
 } from "../../../lib/seo-pages";
+import { buildCollectionPageSchema, safeJsonLd } from "../../../lib/structured-data";
 
 export const Route = createFileRoute("/blog/$category/")({
   loader: async ({ params }) => {
@@ -24,7 +25,9 @@ export const Route = createFileRoute("/blog/$category/")({
     return { category, posts };
   },
   head: ({ loaderData }) => {
-    const category = (loaderData as { category: CategoryRow | null } | undefined)?.category;
+    const data = loaderData as { category: CategoryRow | null; posts: PostRow[] } | undefined;
+    const category = data?.category;
+    const posts = data?.posts ?? [];
     const name = category?.name ?? "피아노 이야기";
     const seo = category ? CATEGORY_SEO[category.slug] : undefined;
     const heading = seo?.primaryKeyword ?? name;
@@ -39,7 +42,13 @@ export const Route = createFileRoute("/blog/$category/")({
       meta: [
         { title },
         { name: "description", content: description },
-        { name: "robots", content: "index, follow, max-image-preview:large" },
+        {
+          name: "robots",
+          content:
+            posts.length > 0
+              ? "index, follow, max-image-preview:large"
+              : "noindex, follow, max-image-preview:large",
+        },
         { property: "og:type", content: "website" },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
@@ -55,19 +64,20 @@ export const Route = createFileRoute("/blog/$category/")({
       scripts: [
         {
           type: "application/ld+json",
-          children: JSON.stringify({
+          children: safeJsonLd({
             "@context": "https://schema.org",
             "@graph": [
-              {
-                "@type": "CollectionPage",
+              buildCollectionPageSchema({
                 name: heading,
                 description,
                 url,
                 image,
-                primaryImageOfPage: image,
-                isPartOf: { "@id": `${SITE_URL}/#website` },
-                inLanguage: "ko",
-              },
+                items: posts.map((post) => ({
+                  name: post.title,
+                  path: `/blog/${category?.slug ?? ""}/${post.slug}`,
+                  image: post.cover_image,
+                })),
+              }),
               {
                 "@type": "BreadcrumbList",
                 itemListElement: [

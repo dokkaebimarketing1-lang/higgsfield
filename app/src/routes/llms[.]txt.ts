@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { bindings } from "../lib/bindings.server";
-import { SITE, SITE_URL } from "../lib/content";
+import {
+  PUBLIC_POST_STATE_SQL,
+  PUBLIC_POST_WITH_CATEGORY_SQL,
+} from "../lib/blog-publication-policy";
+import { CATEGORY_SEO, SITE, SITE_URL } from "../lib/content";
 import { SERVICE_PAGES } from "../lib/seo-pages";
 
 function markdownText(value: string): string {
@@ -21,13 +25,43 @@ export const Route = createFileRoute("/llms.txt")({
           .map((page) => `- [${page.primaryKeyword}](${SITE_URL}${page.path}): ${page.description}`)
           .join("\n");
         const { DB } = bindings();
+        if (!DB) {
+          return new Response("Content inventory is temporarily unavailable.", {
+            status: 503,
+            headers: {
+              "Content-Type": "text/plain; charset=utf-8",
+              "Cache-Control": "no-store",
+              "Retry-After": "60",
+            },
+          });
+        }
+
         let articleSection = "";
-        if (DB) {
+        let categorySection = "";
+        try {
+          const { results: categories } = await DB.prepare(
+            `SELECT c.slug, c.name
+             FROM categories c
+             WHERE EXISTS (
+               SELECT 1 FROM posts p
+               WHERE p.category_id = c.id AND ${PUBLIC_POST_STATE_SQL}
+             )
+             ORDER BY c.sort_order ASC`,
+          ).all<{ slug: string; name: string }>();
+          categorySection = (categories ?? [])
+            .map((category) => {
+              const seo = CATEGORY_SEO[category.slug];
+              const label = seo?.primaryKeyword ?? category.name;
+              const description = seo?.metaDescription ?? `${category.name} 피아노 칼럼 모음`;
+              return `- [${markdownText(label)}](${SITE_URL}/blog/${category.slug}): ${markdownText(description)}`;
+            })
+            .join("\n");
+
           const { results } = await DB.prepare(
             `SELECT p.title, p.slug, p.excerpt, p.updated_at, c.slug AS category_slug
              FROM posts p
              JOIN categories c ON c.id = p.category_id
-             WHERE p.status = 'published'
+             WHERE ${PUBLIC_POST_WITH_CATEGORY_SQL}
              ORDER BY p.updated_at DESC, p.id DESC
              LIMIT 50`,
           ).all<{
@@ -44,6 +78,16 @@ export const Route = createFileRoute("/llms.txt")({
             )
             .join("\n");
           if (articles) articleSection = `\n## 발행된 피아노 칼럼\n\n${articles}\n`;
+        } catch (error) {
+          console.error("[llms] Failed to load published posts", error);
+          return new Response("Content inventory is temporarily unavailable.", {
+            status: 503,
+            headers: {
+              "Content-Type": "text/plain; charset=utf-8",
+              "Cache-Control": "no-store",
+              "Retry-After": "60",
+            },
+          });
         }
         const body = `# ${SITE.brand}
 
@@ -68,12 +112,7 @@ ${servicePages}
 
 ## 칼럼 카테고리
 
-- [과외 가이드](${SITE_URL}/blog/lesson-guide): 피아노 과외 비용, 선생님 고르는 법, 학원과 과외 비교
-- [연습 방법](${SITE_URL}/blog/practice): 효율적 연습법, 하농, 악보 읽기, 메트로놈, 연습 습관
-- [입시 · 콩쿠르](${SITE_URL}/blog/exam): 음대 입시 로드맵, 콩쿠르 준비, 입시곡 선택, 무대 떨림
-- [곡 추천](${SITE_URL}/blog/repertoire): 초보 추천곡, 쉬운 곡, 중급 곡, 뉴에이지, 콩쿠르 곡
-- [학부모 안내](${SITE_URL}/blog/parents): 시작 나이, 연습 대응법, 피아노 구입, 부모 역할
-- [지역 레슨](${SITE_URL}/blog/local): 서울 지역별 피아노 과외 안내
+${categorySection}
 ${articleSection}
 
 ## 연락 · 지역

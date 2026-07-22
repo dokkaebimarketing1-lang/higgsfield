@@ -1,12 +1,15 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 import { SubPageShell } from "../../../components/site/chrome";
+import { resolvePostRedirect } from "../../../lib/api/post-redirects.functions";
 import { getPostBySlug, listRelatedPosts, type PostRow } from "../../../lib/api/posts.functions";
+import { getMarkdownPlainText } from "../../../lib/blog-quality";
 import { SITE, SITE_URL } from "../../../lib/content";
 import { extractFaq } from "../../../lib/faq";
 import { renderMarkdown } from "../../../lib/markdown";
 import { extractExternalLinks, toCanonicalUrl, toIsoDate } from "../../../lib/seo";
 import { getServicePageForPost } from "../../../lib/seo-pages";
+import { safeJsonLd } from "../../../lib/structured-data";
 
 const FALLBACK_OG =
   "https://d2ol7oe51mr4n9.cloudfront.net/user_34g8tGWyYG4JUcCJYEK7ikRiSGl/3ac1a2a4-c77e-49fc-ac0b-b721b1430517.png";
@@ -16,7 +19,13 @@ export const Route = createFileRoute("/blog/$category/$slug")({
     const { post } = await getPostBySlug({
       data: { category: params.category, slug: params.slug },
     });
-    if (!post) throw notFound();
+    if (!post) {
+      const { path } = await resolvePostRedirect({
+        data: { category: params.category, slug: params.slug },
+      });
+      if (path) throw redirect({ href: path, statusCode: 301 });
+      throw notFound();
+    }
     const related = post?.category_id
       ? (
           await listRelatedPosts({
@@ -42,8 +51,10 @@ export const Route = createFileRoute("/blog/$category/$slug")({
     const description = post.meta_description || post.excerpt || SITE.description;
     const url = `${SITE_URL}/blog/${post.category_slug}/${post.slug}`;
     const image = post.cover_image ? toCanonicalUrl(post.cover_image) : FALLBACK_OG;
+    const imageAlt = post.cover_alt || post.title;
     const faqItems = extractFaq(post.body);
     const citations = extractExternalLinks(post.body);
+    const wordCount = getMarkdownPlainText(post.body).split(/\s+/).filter(Boolean).length;
     const datePublished = toIsoDate(post.published_at);
     const rawModified = toIsoDate(post.updated_at);
     const dateModified =
@@ -61,11 +72,12 @@ export const Route = createFileRoute("/blog/$category/$slug")({
         { property: "og:description", content: description },
         { property: "og:url", content: url },
         { property: "og:image", content: image },
-        { property: "og:image:alt", content: post.title },
+        { property: "og:image:alt", content: imageAlt },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: description },
         { name: "twitter:image", content: image },
+        { name: "twitter:image:alt", content: imageAlt },
         ...(datePublished ? [{ property: "article:published_time", content: datePublished }] : []),
         ...(dateModified ? [{ property: "article:modified_time", content: dateModified }] : []),
       ],
@@ -73,7 +85,7 @@ export const Route = createFileRoute("/blog/$category/$slug")({
       scripts: [
         {
           type: "application/ld+json",
-          children: JSON.stringify({
+          children: safeJsonLd({
             "@context": "https://schema.org",
             "@graph": [
               {
@@ -84,7 +96,8 @@ export const Route = createFileRoute("/blog/$category/$slug")({
                 ...(post.excerpt ? { abstract: post.excerpt } : {}),
                 url,
                 mainEntityOfPage: url,
-                image,
+                image: { "@type": "ImageObject", url: image, caption: imageAlt },
+                wordCount,
                 inLanguage: "ko",
                 ...(datePublished ? { datePublished } : {}),
                 ...(dateModified ? { dateModified } : {}),
@@ -215,7 +228,7 @@ function PostPage() {
         {post.cover_image && (
           <img
             src={post.cover_image}
-            alt={post.title}
+            alt={post.cover_alt || post.title}
             width={1600}
             height={900}
             className="mt-10 aspect-[16/9] w-full object-cover"

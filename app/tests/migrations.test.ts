@@ -8,6 +8,7 @@ import { getPrimaryKeyword } from "../src/lib/seo";
 import { normalizeKeyword } from "../src/lib/keyword-taxonomy";
 import { CATEGORY_SEO } from "../src/lib/content";
 import { PUBLIC_PAGES } from "../src/lib/seo-pages";
+import { getBlogPublicationIssues } from "../src/lib/blog-quality";
 
 const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "migrations");
 const migrationNames = readdirSync(migrationsDir)
@@ -178,6 +179,58 @@ describe("Webflow SEO hardening migration", () => {
       expect(bySlug.get(slug)?.body).toMatch(/\/blog\/(practice|exam)/);
       expect(bySlug.get(slug)?.body).toMatch(/\/lessons\/(private|admission)/);
     }
+    db.close();
+  });
+});
+
+describe("blog publication quality migration", () => {
+  test("backfills explicit image alt text and leaves all 32 published posts releasable", () => {
+    const db = databaseAfterAllMigrations();
+    const columns = db.query<{ name: string }, []>("PRAGMA table_info(posts)").all();
+    expect(columns.map((column) => column.name)).toContain("cover_alt");
+
+    const posts = db
+      .query<
+        {
+          slug: string;
+          title: string;
+          excerpt: string;
+          body: string;
+          category_id: number | null;
+          tags: string;
+          cover_image: string;
+          cover_alt: string;
+          meta_title: string;
+          meta_description: string;
+          status: "published";
+        },
+        []
+      >("SELECT * FROM posts WHERE status = 'published' ORDER BY slug")
+      .all();
+
+    expect(posts).toHaveLength(32);
+    for (const post of posts) {
+      expect(
+        getBlogPublicationIssues({
+          title: post.title,
+          excerpt: post.excerpt,
+          body: post.body,
+          categoryId: post.category_id,
+          tags: post.tags,
+          coverImage: post.cover_image,
+          coverAlt: post.cover_alt,
+          metaTitle: post.meta_title,
+          metaDescription: post.meta_description,
+          status: post.status,
+        }),
+        post.slug,
+      ).toEqual([]);
+    }
+
+    const selfStudy = posts.find((post) => post.slug === "piano-self-study");
+    expect(selfStudy?.cover_image).toBe("/assets/cat-practice.jpg");
+    expect(selfStudy?.cover_alt).toBe(selfStudy?.title);
+    expect(posts.filter((post) => !post.meta_title.trim())).toHaveLength(24);
     db.close();
   });
 });

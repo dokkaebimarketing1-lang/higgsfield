@@ -38,6 +38,7 @@ function SitemapPage() {
   const lessonPages = Object.values(SERVICE_PAGES);
   const lessonPaths = new Set<string>(lessonPages.map((page) => page.path));
   const mainPages = PUBLIC_PAGES.filter((page) => !lessonPaths.has(page.path));
+  const publicCategories = categories.filter((category) => Number(category.post_count ?? 0) > 0);
 
   return (
     <SubPageShell>
@@ -68,7 +69,7 @@ function SitemapPage() {
         </ul>
 
         <h2 className="mt-14 font-serif-kr text-2xl font-bold">피아노 이야기</h2>
-        {categories.map((c) => {
+        {publicCategories.map((c) => {
           const catPosts = posts.filter((p) => p.category_slug === c.slug);
           return (
             <div key={c.id} className="mt-8">

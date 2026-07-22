@@ -427,6 +427,7 @@ type EditorForm = {
   searchIntent: SearchIntent;
   keywordCluster: KeywordCluster;
   coverImage: string;
+  coverAlt: string;
   metaTitle: string;
   metaDescription: string;
   status: "draft" | "published";
@@ -443,6 +444,7 @@ const EMPTY_FORM: EditorForm = {
   searchIntent: "informational",
   keywordCluster: "general",
   coverImage: "",
+  coverAlt: "",
   metaTitle: "",
   metaDescription: "",
   status: "draft",
@@ -484,6 +486,7 @@ function EditorTab({
               searchIntent: p.search_intent,
               keywordCluster: p.keyword_cluster,
               coverImage: p.cover_image,
+              coverAlt: p.cover_alt,
               metaTitle: p.meta_title,
               metaDescription: p.meta_description,
               status: p.status === "published" ? "published" : "draft",
@@ -554,6 +557,7 @@ function EditorTab({
         searchIntent: form.searchIntent,
         keywordCluster: form.keywordCluster,
         coverImage: form.coverImage,
+        coverAlt: form.coverAlt,
         metaTitle: form.metaTitle,
         metaDescription: form.metaDescription,
         status,
@@ -697,9 +701,25 @@ function EditorTab({
               />
             </label>
             {form.coverImage && (
-              <img src={form.coverImage} alt="커버 미리보기" className="h-16 w-24 object-cover" />
+              <img
+                src={form.coverImage}
+                alt={form.coverAlt || "커버 이미지 미리보기"}
+                className="h-16 w-24 object-cover"
+              />
             )}
           </div>
+          <label className="mt-3 block">
+            <span className={labelCls}>커버 이미지 대체 텍스트 (발행 필수)</span>
+            <input
+              value={form.coverAlt}
+              onChange={(e) => set("coverAlt", e.target.value)}
+              placeholder="예: 피아노 건반 위에서 하농을 연습하는 손"
+              className={inputCls}
+            />
+            <span className="mt-2 block text-xs leading-relaxed text-faint">
+              파일명이 아니라 이미지에서 실제로 보이는 내용을 간결하게 작성하세요.
+            </span>
+          </label>
         </div>
         <label className="block">
           <span className={labelCls}>SEO 제목 (비우면 글 제목 사용)</span>

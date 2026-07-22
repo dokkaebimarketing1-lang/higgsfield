@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { bindings } from "../lib/bindings.server";
+import {
+  PUBLIC_POST_STATE_SQL,
+  PUBLIC_POST_WITH_CATEGORY_SQL,
+} from "../lib/blog-publication-policy";
 import { CATEGORY_SEO } from "../lib/content";
 import { buildSitemapXml, toCanonicalUrl, type SitemapUrlEntry } from "../lib/seo";
 import { PUBLIC_PAGES } from "../lib/seo-pages";
@@ -22,23 +26,37 @@ function latestDate(
     .at(-1);
 }
 
+function sitemapUnavailableResponse(): Response {
+  return new Response("Sitemap is temporarily unavailable.", {
+    status: 503,
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Retry-After": "60",
+    },
+  });
+}
+
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
+        const { DB } = bindings();
+        if (!DB) return sitemapUnavailableResponse();
+
         const entries: SitemapUrlEntry[] = PUBLIC_PAGES.map((page) => ({
           path: page.path,
           lastmod: page.lastModified,
           images: [page.image],
         }));
-        const { DB } = bindings();
 
-        if (DB) {
+        try {
           const { results: categories } = await DB.prepare(
             `SELECT c.slug, MAX(p.updated_at) AS updated_at
              FROM categories c
-             LEFT JOIN posts p ON p.category_id = c.id AND p.status = 'published'
+             LEFT JOIN posts p ON p.category_id = c.id AND ${PUBLIC_POST_STATE_SQL}
              GROUP BY c.id, c.slug, c.sort_order
+             HAVING COUNT(p.id) > 0
              ORDER BY c.sort_order ASC`,
           ).all<{ slug: string; updated_at: string | null }>();
           for (const c of categories ?? []) {
@@ -54,7 +72,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           const { results: posts } = await DB.prepare(
             `SELECT p.slug, c.slug AS category_slug, p.updated_at, p.cover_image
              FROM posts p LEFT JOIN categories c ON c.id = p.category_id
-             WHERE p.status = 'published' AND c.slug IS NOT NULL
+             WHERE ${PUBLIC_POST_WITH_CATEGORY_SQL}
              ORDER BY p.published_at DESC`,
           ).all<{
             slug: string;
@@ -78,6 +96,9 @@ export const Route = createFileRoute("/sitemap.xml")({
             if (entry.path === "/blog") entry.lastmod = blogLastmod;
             if (entry.path === "/sitemap") entry.lastmod = sitemapLastmod;
           }
+        } catch (error) {
+          console.error("[sitemap] Failed to load published content", error);
+          return sitemapUnavailableResponse();
         }
 
         const xml = buildSitemapXml(entries);

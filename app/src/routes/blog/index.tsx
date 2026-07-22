@@ -9,6 +9,7 @@ import {
 } from "../../lib/api/posts.functions";
 import { CATEGORY_SEO, SITE, SITE_URL } from "../../lib/content";
 import { buildPublicPageHead, PUBLIC_PAGE_BY_PATH } from "../../lib/seo-pages";
+import { buildCollectionPageSchema, safeJsonLd } from "../../lib/structured-data";
 
 const blogPage = PUBLIC_PAGE_BY_PATH.get("/blog")!;
 
@@ -18,43 +19,50 @@ export const Route = createFileRoute("/blog/")({
       listCategories(),
       listPublishedPosts({ data: { limit: 50 } }),
     ]);
-    return { categories, posts };
+    return {
+      categories: categories.filter((category) => Number(category.post_count ?? 0) > 0),
+      posts: posts.filter((post) => Boolean(post.category_slug)),
+    };
   },
-  head: () => ({
-    ...buildPublicPageHead(blogPage),
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "CollectionPage",
-              name: blogPage.primaryKeyword,
-              description: blogPage.description,
-              url: `${SITE_URL}/blog`,
-              image: blogPage.image,
-              primaryImageOfPage: blogPage.image,
-              isPartOf: { "@id": `${SITE_URL}/#website` },
-              inLanguage: "ko",
-            },
-            {
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
-                {
-                  "@type": "ListItem",
-                  position: 2,
-                  name: "피아노 이야기",
-                  item: `${SITE_URL}/blog`,
-                },
-              ],
-            },
-          ],
-        }),
-      },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const posts = (loaderData as { posts: PostRow[] } | undefined)?.posts ?? [];
+    return {
+      ...buildPublicPageHead(blogPage),
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: safeJsonLd({
+            "@context": "https://schema.org",
+            "@graph": [
+              buildCollectionPageSchema({
+                name: blogPage.primaryKeyword,
+                description: blogPage.description,
+                url: `${SITE_URL}/blog`,
+                image: blogPage.image,
+                items: posts.map((post) => ({
+                  name: post.title,
+                  path: `/blog/${post.category_slug}/${post.slug}`,
+                  image: post.cover_image,
+                })),
+              }),
+              {
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: "피아노 이야기",
+                    item: `${SITE_URL}/blog`,
+                  },
+                ],
+              },
+            ],
+          }),
+        },
+      ],
+    };
+  },
   component: BlogHub,
 });
 
