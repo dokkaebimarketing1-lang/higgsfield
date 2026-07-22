@@ -1,12 +1,11 @@
-// Server-only access to this app's Cloudflare bindings. Each is present ONLY if
-// opted into via app.manifest.json (D1 `DB`, R2 `STORAGE`, KV `KV`, and the
-// container `CONTAINER`) — so the accessors are optional; guard before use.
-// `cloudflare:workers` is the Workers-runtime module that exposes the Worker
-// env (bindings) — usable inside any server-side code (server functions,
-// server routes). It is NOT bundled; the runtime provides it.
-import { env } from "cloudflare:workers";
-// Import the binding types directly — NOT via the global tsconfig `types` list,
-// which would clobber the DOM globals the client/SSR React code relies on.
+// Request-scoped access to this app's server bindings. `src/server.ts` stores
+// the environment passed to each fetch call, which works both in Cloudflare's
+// Worker runtime and in Vite's Node-based dev/preview server. Bindings are
+// optional because local preview intentionally runs without production data.
+import { AsyncLocalStorage } from "node:async_hooks";
+
+// Import binding types directly instead of adding them to tsconfig's global
+// `types` list, which would clobber DOM globals used by React code.
 import type {
   D1Database,
   DurableObjectNamespace,
@@ -14,19 +13,23 @@ import type {
   R2Bucket,
 } from "@cloudflare/workers-types";
 
-type AppEnv = {
+export type AppEnv = {
   DB?: D1Database;
   STORAGE?: R2Bucket;
   KV?: KVNamespace;
-  // The container's Durable Object — present only when "container" is set in
-  // the manifest. Reach an instance with env.CONTAINER.getByName(id), then
-  // .fetch(). See skills/containers.md.
+  // Present only when the matching resource is provisioned by the platform.
   CONTAINER?: DurableObjectNamespace;
   HF_ENV?: string;
   APP_SLUG?: string;
   ADMIN_PASSCODE?: string;
 };
 
+const bindingStorage = new AsyncLocalStorage<AppEnv>();
+
+export function withBindings<T>(env: unknown, callback: () => T): T {
+  return bindingStorage.run((env ?? {}) as AppEnv, callback);
+}
+
 export function bindings(): AppEnv {
-  return env as unknown as AppEnv;
+  return bindingStorage.getStore() ?? {};
 }

@@ -2,10 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 
 import { Monogram } from "../components/site/monogram";
-import {
-  listInquiries,
-  markInquiryDone,
-} from "../lib/api/inquiries.functions";
+import { adminSessionStatus, loginAdmin, logoutAdmin } from "../lib/api/auth.functions";
+import { listInquiries, markInquiryDone } from "../lib/api/inquiries.functions";
 import {
   adminGetPost,
   adminListPosts,
@@ -44,21 +42,60 @@ type Tab = "inquiries" | "posts" | "editor";
 
 function Admin() {
   const [passcode, setPasscode] = useState("");
-  const [authed, setAuthed] = useState(false);
+  const [authed, setAuthed] = useState<boolean | null>(null);
+  const [loggingIn, setLoggingIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("inquiries");
   const [editId, setEditId] = useState<number | null>(null);
+  const loseAuth = useCallback(() => setAuthed(false), []);
+
+  useEffect(() => {
+    let active = true;
+    void adminSessionStatus()
+      .then(({ authenticated }) => {
+        if (active) setAuthed(authenticated);
+      })
+      .catch(() => {
+        if (active) setAuthed(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const login = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loggingIn) return;
+    setLoggingIn(true);
     try {
-      await listInquiries({ data: { passcode } });
+      await loginAdmin({ data: { passcode } });
       setAuthed(true);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "로그인에 실패했습니다.");
+    } finally {
+      setPasscode("");
+      setLoggingIn(false);
     }
   };
+
+  const logout = async () => {
+    try {
+      await logoutAdmin();
+    } finally {
+      setAuthed(false);
+      setTab("inquiries");
+      setEditId(null);
+    }
+  };
+
+  if (authed === null) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-ebony px-6 text-ivory">
+        <p className="text-sm text-mute">관리자 세션을 확인하는 중...</p>
+      </main>
+    );
+  }
 
   if (!authed) {
     return (
@@ -75,15 +112,18 @@ function Admin() {
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
               placeholder="비밀번호를 입력하세요"
+              autoComplete="current-password"
+              required
               className="w-full border border-line bg-ebony-2 px-4 py-3 text-ivory outline-none placeholder:text-faint focus:border-brass"
             />
           </label>
           {error && <p className="mt-3 text-sm text-[#d98a8a]">{error}</p>}
           <button
             type="submit"
+            disabled={loggingIn}
             className="mt-5 w-full bg-brass py-3 font-serif-kr text-lg font-semibold text-ebony transition-all hover:bg-[#cdb07a] active:scale-[0.99]"
           >
-            로그인
+            {loggingIn ? "확인 중..." : "로그인"}
           </button>
           <p className="mt-8 text-center text-sm text-faint">
             <a href="/" className="underline underline-offset-4 hover:text-mute">
@@ -103,9 +143,18 @@ function Admin() {
             <Monogram className="h-7 w-7 text-brass" />
             <h1 className="font-serif-kr text-2xl font-bold">관리자</h1>
           </div>
-          <a href="/" className="text-sm text-faint underline underline-offset-4 hover:text-mute">
-            사이트로 돌아가기
-          </a>
+          <div className="flex items-center gap-4 text-sm">
+            <a href="/" className="text-faint underline underline-offset-4 hover:text-mute">
+              사이트로 돌아가기
+            </a>
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="text-faint underline underline-offset-4 hover:text-mute"
+            >
+              로그아웃
+            </button>
+          </div>
         </div>
 
         <div className="mt-8 flex gap-2 border-b border-line">
@@ -131,10 +180,10 @@ function Admin() {
         </div>
 
         <div className="py-8">
-          {tab === "inquiries" && <InquiriesTab passcode={passcode} />}
+          {tab === "inquiries" && <InquiriesTab onAuthLost={loseAuth} />}
           {tab === "posts" && (
             <PostsTab
-              passcode={passcode}
+              onAuthLost={loseAuth}
               onNew={() => {
                 setEditId(null);
                 setTab("editor");
@@ -147,7 +196,7 @@ function Admin() {
           )}
           {tab === "editor" && (
             <EditorTab
-              passcode={passcode}
+              onAuthLost={loseAuth}
               postId={editId}
               onDone={() => {
                 setEditId(null);
@@ -162,18 +211,23 @@ function Admin() {
 }
 
 /* ── 상담 신청 탭 ─────────────────────────────────────── */
-function InquiriesTab({ passcode }: { passcode: string }) {
+function isAuthError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes("관리자 로그인이 필요합니다");
+}
+
+function InquiriesTab({ onAuthLost }: { onAuthLost: () => void }) {
   const [list, setList] = useState<Inquiry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const res = await listInquiries({ data: { passcode } });
+      const res = await listInquiries();
       setList(res.inquiries as Inquiry[]);
     } catch (err) {
+      if (isAuthError(err)) onAuthLost();
       setError(err instanceof Error ? err.message : "불러오기에 실패했습니다.");
     }
-  }, [passcode]);
+  }, [onAuthLost]);
 
   useEffect(() => {
     void load();
@@ -181,11 +235,12 @@ function InquiriesTab({ passcode }: { passcode: string }) {
 
   const markDone = async (id: number) => {
     try {
-      await markInquiryDone({ data: { passcode, id } });
+      await markInquiryDone({ data: { id } });
       setList((prev) =>
         prev ? prev.map((q) => (q.id === id ? { ...q, status: "done" } : q)) : prev,
       );
-    } catch {
+    } catch (err) {
+      if (isAuthError(err)) onAuthLost();
       setError("상태 변경에 실패했습니다.");
     }
   };
@@ -244,11 +299,11 @@ function InquiriesTab({ passcode }: { passcode: string }) {
 
 /* ── 글 목록 탭 ───────────────────────────────────────── */
 function PostsTab({
-  passcode,
+  onAuthLost,
   onNew,
   onEdit,
 }: {
-  passcode: string;
+  onAuthLost: () => void;
   onNew: () => void;
   onEdit: (id: number) => void;
 }) {
@@ -257,12 +312,13 @@ function PostsTab({
 
   const load = useCallback(async () => {
     try {
-      const res = await adminListPosts({ data: { passcode } });
+      const res = await adminListPosts();
       setPosts(res.posts);
     } catch (err) {
+      if (isAuthError(err)) onAuthLost();
       setError(err instanceof Error ? err.message : "불러오기에 실패했습니다.");
     }
-  }, [passcode]);
+  }, [onAuthLost]);
 
   useEffect(() => {
     void load();
@@ -271,9 +327,10 @@ function PostsTab({
   const remove = async (id: number, title: string) => {
     if (!window.confirm(`"${title}" 글을 삭제할까요? 되돌릴 수 없습니다.`)) return;
     try {
-      await deletePost({ data: { passcode, id } });
+      await deletePost({ data: { id } });
       setPosts((prev) => (prev ? prev.filter((p) => p.id !== id) : prev));
-    } catch {
+    } catch (err) {
+      if (isAuthError(err)) onAuthLost();
       setError("삭제에 실패했습니다.");
     }
   };
@@ -299,7 +356,10 @@ function PostsTab({
       ) : (
         <div className="mt-6 space-y-3">
           {posts.map((p) => (
-            <article key={p.id} className="flex flex-wrap items-center gap-4 border border-line p-4">
+            <article
+              key={p.id}
+              className="flex flex-wrap items-center gap-4 border border-line p-4"
+            >
               <div className="min-w-0 flex-1">
                 <p className="truncate font-serif-kr text-lg font-semibold">{p.title}</p>
                 <p className="mt-1 text-xs text-faint">
@@ -372,11 +432,11 @@ const EMPTY_FORM: EditorForm = {
 };
 
 function EditorTab({
-  passcode,
+  onAuthLost,
   postId,
   onDone,
 }: {
-  passcode: string;
+  onAuthLost: () => void;
   postId: number | null;
   onDone: () => void;
 }) {
@@ -392,26 +452,31 @@ function EditorTab({
   useEffect(() => {
     void listCategories({ data: undefined }).then((r) => setCategories(r.categories));
     if (postId !== null) {
-      void adminGetPost({ data: { passcode, id: postId } }).then((r) => {
-        if (r.post) {
-          const p = r.post;
-          setForm({
-            title: p.title,
-            slug: p.slug,
-            categoryId: p.category_id,
-            excerpt: p.excerpt,
-            tags: p.tags,
-            coverImage: p.cover_image,
-            metaTitle: p.meta_title,
-            metaDescription: p.meta_description,
-            status: p.status === "published" ? "published" : "draft",
-            body: p.body,
-          });
-        }
-        setLoading(false);
-      });
+      void adminGetPost({ data: { id: postId } })
+        .then((r) => {
+          if (r.post) {
+            const p = r.post;
+            setForm({
+              title: p.title,
+              slug: p.slug,
+              categoryId: p.category_id,
+              excerpt: p.excerpt,
+              tags: p.tags,
+              coverImage: p.cover_image,
+              metaTitle: p.meta_title,
+              metaDescription: p.meta_description,
+              status: p.status === "published" ? "published" : "draft",
+              body: p.body,
+            });
+          }
+        })
+        .catch((err: unknown) => {
+          if (isAuthError(err)) onAuthLost();
+          setError(err instanceof Error ? err.message : "글을 불러오지 못했습니다.");
+        })
+        .finally(() => setLoading(false));
     }
-  }, [passcode, postId]);
+  }, [onAuthLost, postId]);
 
   const set = <K extends keyof EditorForm>(key: K, value: EditorForm[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -442,10 +507,11 @@ function EditorTab({
       });
       const base64 = dataUrl.split(",")[1] ?? "";
       const res = await uploadImage({
-        data: { passcode, filename: file.name, contentType: file.type, dataBase64: base64 },
+        data: { contentType: file.type, dataBase64: base64 },
       });
       set("coverImage", res.url);
     } catch (err) {
+      if (isAuthError(err)) onAuthLost();
       setError(err instanceof Error ? err.message : "업로드에 실패했습니다.");
     } finally {
       setUploading(false);
@@ -457,7 +523,6 @@ function EditorTab({
     setError(null);
     try {
       const payload = {
-        passcode,
         title: form.title,
         slug: form.slug,
         excerpt: form.excerpt,
@@ -476,6 +541,7 @@ function EditorTab({
       }
       onDone();
     } catch (err) {
+      if (isAuthError(err)) onAuthLost();
       setError(err instanceof Error ? err.message : "저장에 실패했습니다.");
       setSaving(false);
     }
@@ -547,7 +613,12 @@ function EditorTab({
           <div className="flex items-center gap-4">
             <label className="cursor-pointer border border-line px-4 py-3 text-sm text-mute transition-colors hover:border-brass hover:text-brass">
               {uploading ? "업로드 중..." : "이미지 선택"}
-              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={onFile} className="hidden" />
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                onChange={onFile}
+                className="hidden"
+              />
             </label>
             {form.coverImage && (
               <img src={form.coverImage} alt="커버 미리보기" className="h-16 w-24 object-cover" />

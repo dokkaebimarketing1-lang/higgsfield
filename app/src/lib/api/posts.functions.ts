@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { D1Database } from "@cloudflare/workers-types";
 
+import { requireAdmin } from "../auth.server";
 import { bindings } from "../bindings.server";
 
 /* ── Types ─────────────────────────────────────────────── */
@@ -61,13 +62,6 @@ async function uniqueSlug(DB: D1Database, base: string, excludeId?: number) {
   return `${base}-${Date.now()}`;
 }
 
-function requireAdmin(passcode: string) {
-  const { ADMIN_PASSCODE } = bindings();
-  if (!ADMIN_PASSCODE || passcode !== ADMIN_PASSCODE) {
-    throw new Error("비밀번호가 올바르지 않습니다.");
-  }
-}
-
 /* ── Public queries ────────────────────────────────────── */
 export const listCategories = createServerFn({ method: "GET" }).handler(
   async (): Promise<{ categories: CategoryRow[] }> => {
@@ -82,7 +76,7 @@ export const listCategories = createServerFn({ method: "GET" }).handler(
 );
 
 export const listPublishedPosts = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z
       .object({
         category: z.string().optional(),
@@ -112,7 +106,7 @@ export const listPublishedPosts = createServerFn({ method: "GET" })
   });
 
 export const getPostBySlug = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ category: z.string().min(1), slug: z.string().min(1) }))
+  .validator(z.object({ category: z.string().min(1), slug: z.string().min(1) }))
   .handler(async ({ data }): Promise<{ post: PostRow | null }> => {
     const { DB } = bindings();
     if (!DB) return { post: null };
@@ -125,7 +119,7 @@ export const getPostBySlug = createServerFn({ method: "GET" })
   });
 
 export const getCategoryBySlug = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ slug: z.string().min(1) }))
+  .validator(z.object({ slug: z.string().min(1) }))
   .handler(async ({ data }): Promise<{ category: CategoryRow | null }> => {
     const { DB } = bindings();
     if (!DB) return { category: null };
@@ -138,7 +132,7 @@ export const getCategoryBySlug = createServerFn({ method: "GET" })
   });
 
 export const listRelatedPosts = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ categoryId: z.number().int(), excludeId: z.number().int() }))
+  .validator(z.object({ categoryId: z.number().int(), excludeId: z.number().int() }))
   .handler(async ({ data }): Promise<{ posts: PostRow[] }> => {
     const { DB } = bindings();
     if (!DB) return { posts: [] };
@@ -153,7 +147,12 @@ export const listRelatedPosts = createServerFn({ method: "GET" })
 
 export const listSitemapEntries = createServerFn({ method: "GET" }).handler(
   async (): Promise<{
-    posts: { slug: string; category_slug: string | null; updated_at: string; published_at: string | null }[];
+    posts: {
+      slug: string;
+      category_slug: string | null;
+      updated_at: string;
+      published_at: string | null;
+    }[];
   }> => {
     const { DB } = bindings();
     if (!DB) return { posts: [] };
@@ -161,28 +160,33 @@ export const listSitemapEntries = createServerFn({ method: "GET" }).handler(
       `SELECT p.slug, c.slug AS category_slug, p.updated_at, p.published_at
        FROM posts p LEFT JOIN categories c ON c.id = p.category_id
        WHERE p.status = 'published' ORDER BY p.published_at DESC`,
-    ).all<{ slug: string; category_slug: string | null; updated_at: string; published_at: string | null }>();
+    ).all<{
+      slug: string;
+      category_slug: string | null;
+      updated_at: string;
+      published_at: string | null;
+    }>();
     return { posts: results ?? [] };
   },
 );
 
 /* ── Admin: post CRUD ──────────────────────────────────── */
-export const adminListPosts = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ passcode: z.string().min(1) }))
-  .handler(async ({ data }): Promise<{ posts: PostRow[] }> => {
-    requireAdmin(data.passcode);
+export const adminListPosts = createServerFn({ method: "POST" }).handler(
+  async (): Promise<{ posts: PostRow[] }> => {
+    await requireAdmin();
     const { DB } = bindings();
     if (!DB) throw new Error("DB가 연결되어 있지 않습니다.");
     const { results } = await DB.prepare(
       `${LIST_SELECT} ORDER BY p.updated_at DESC LIMIT 500`,
     ).all<PostRow>();
     return { posts: results ?? [] };
-  });
+  },
+);
 
 export const adminGetPost = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ passcode: z.string().min(1), id: z.number().int() }))
+  .validator(z.object({ id: z.number().int().positive() }))
   .handler(async ({ data }): Promise<{ post: PostRow | null }> => {
-    requireAdmin(data.passcode);
+    await requireAdmin();
     const { DB } = bindings();
     if (!DB) throw new Error("DB가 연결되어 있지 않습니다.");
     const post = await DB.prepare(`${LIST_SELECT} WHERE p.id = ? LIMIT 1`)
@@ -192,7 +196,6 @@ export const adminGetPost = createServerFn({ method: "POST" })
   });
 
 const postInput = z.object({
-  passcode: z.string().min(1),
   title: z.string().trim().min(1, "제목을 입력해 주세요").max(200),
   slug: z
     .string()
@@ -211,9 +214,9 @@ const postInput = z.object({
 });
 
 export const createPost = createServerFn({ method: "POST" })
-  .inputValidator(postInput)
+  .validator(postInput)
   .handler(async ({ data }): Promise<{ id: number; slug: string }> => {
-    requireAdmin(data.passcode);
+    await requireAdmin();
     const { DB } = bindings();
     if (!DB) throw new Error("DB가 연결되어 있지 않습니다.");
     const base = data.slug || `post-${Date.now().toString(36)}`;
@@ -244,9 +247,9 @@ export const createPost = createServerFn({ method: "POST" })
   });
 
 export const updatePost = createServerFn({ method: "POST" })
-  .inputValidator(postInput.extend({ id: z.number().int() }))
+  .validator(postInput.extend({ id: z.number().int().positive() }))
   .handler(async ({ data }): Promise<{ ok: true }> => {
-    requireAdmin(data.passcode);
+    await requireAdmin();
     const { DB } = bindings();
     if (!DB) throw new Error("DB가 연결되어 있지 않습니다.");
     const existing = await DB.prepare("SELECT status, published_at FROM posts WHERE id = ?")
@@ -255,12 +258,12 @@ export const updatePost = createServerFn({ method: "POST" })
     if (!existing) throw new Error("글을 찾을 수 없습니다.");
     const slug = data.slug
       ? await uniqueSlug(DB, data.slug, data.id)
-      : (await DB.prepare("SELECT slug FROM posts WHERE id = ?").bind(data.id).first<{ slug: string }>())!.slug;
+      : (await DB.prepare("SELECT slug FROM posts WHERE id = ?")
+          .bind(data.id)
+          .first<{ slug: string }>())!.slug;
     const reading = estimateReadingMinutes(data.body);
     const publishedAt =
-      data.status === "published"
-        ? existing.published_at ?? new Date().toISOString()
-        : null;
+      data.status === "published" ? (existing.published_at ?? new Date().toISOString()) : null;
     await DB.prepare(
       `UPDATE posts SET slug = ?, title = ?, excerpt = ?, body = ?, category_id = ?,
         tags = ?, cover_image = ?, meta_title = ?, meta_description = ?, status = ?,
@@ -287,9 +290,9 @@ export const updatePost = createServerFn({ method: "POST" })
   });
 
 export const deletePost = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ passcode: z.string().min(1), id: z.number().int() }))
+  .validator(z.object({ id: z.number().int().positive() }))
   .handler(async ({ data }): Promise<{ ok: true }> => {
-    requireAdmin(data.passcode);
+    await requireAdmin();
     const { DB } = bindings();
     if (!DB) throw new Error("DB가 연결되어 있지 않습니다.");
     await DB.prepare("DELETE FROM posts WHERE id = ?").bind(data.id).run();
@@ -297,24 +300,73 @@ export const deletePost = createServerFn({ method: "POST" })
   });
 
 /* ── Admin: image upload to R2 ─────────────────────────── */
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const imageExtensions: Record<string, string> = {
+  "image/gif": "gif",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+function hasBytes(bytes: Uint8Array, offset: number, expected: number[]): boolean {
+  return expected.every((value, index) => bytes[offset + index] === value);
+}
+
+function matchesImageSignature(contentType: string, bytes: Uint8Array): boolean {
+  switch (contentType) {
+    case "image/jpeg":
+      return bytes.length >= 3 && hasBytes(bytes, 0, [0xff, 0xd8, 0xff]);
+    case "image/png":
+      return (
+        bytes.length >= 8 && hasBytes(bytes, 0, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+      );
+    case "image/webp":
+      return (
+        bytes.length >= 12 &&
+        hasBytes(bytes, 0, [0x52, 0x49, 0x46, 0x46]) &&
+        hasBytes(bytes, 8, [0x57, 0x45, 0x42, 0x50])
+      );
+    case "image/gif":
+      return (
+        bytes.length >= 6 &&
+        (hasBytes(bytes, 0, [0x47, 0x49, 0x46, 0x38, 0x37, 0x61]) ||
+          hasBytes(bytes, 0, [0x47, 0x49, 0x46, 0x38, 0x39, 0x61]))
+      );
+    default:
+      return false;
+  }
+}
+
 export const uploadImage = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
-      passcode: z.string().min(1),
-      filename: z.string().min(1).max(200),
       contentType: z
         .string()
         .regex(/^image\/(png|jpeg|webp|gif)$/, "PNG, JPG, WebP, GIF 이미지만 업로드할 수 있습니다"),
-      dataBase64: z.string().max(14_000_000, "이미지는 10MB 이하여야 합니다"),
+      dataBase64: z.string().min(1).max(14_000_000, "이미지는 10MB 이하여야 합니다"),
     }),
   )
   .handler(async ({ data }): Promise<{ url: string }> => {
-    requireAdmin(data.passcode);
+    await requireAdmin();
     const { STORAGE } = bindings();
     if (!STORAGE) throw new Error("이미지 저장소가 연결되어 있지 않습니다.");
-    const ext = data.filename.split(".").pop()?.toLowerCase() ?? "bin";
-    const key = `covers/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
-    const bytes = Uint8Array.from(atob(data.dataBase64), (c) => c.charCodeAt(0));
+
+    let bytes: Uint8Array;
+    try {
+      bytes = Uint8Array.from(atob(data.dataBase64), (character) => character.charCodeAt(0));
+    } catch {
+      throw new Error("이미지 데이터를 확인해 주세요.");
+    }
+    if (bytes.byteLength > MAX_IMAGE_BYTES) {
+      throw new Error("이미지는 10MB 이하여야 합니다.");
+    }
+    if (!matchesImageSignature(data.contentType, bytes)) {
+      throw new Error("파일 형식과 이미지 내용이 일치하지 않습니다.");
+    }
+
+    const extension = imageExtensions[data.contentType];
+    if (!extension) throw new Error("지원하지 않는 이미지 형식입니다.");
+    const key = `covers/${Date.now()}-${crypto.randomUUID()}.${extension}`;
     await STORAGE.put(key, bytes, {
       httpMetadata: { contentType: data.contentType },
     });

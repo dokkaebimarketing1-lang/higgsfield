@@ -1,11 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { SubPageShell } from "../../../components/site/chrome";
-import {
-  getPostBySlug,
-  listRelatedPosts,
-  type PostRow,
-} from "../../../lib/api/posts.functions";
+import { getPostBySlug, listRelatedPosts, type PostRow } from "../../../lib/api/posts.functions";
 import { SITE, SITE_URL } from "../../../lib/content";
 import { extractFaq } from "../../../lib/faq";
 import { renderMarkdown } from "../../../lib/markdown";
@@ -143,10 +139,7 @@ function PostPage() {
         <div className="mx-auto max-w-3xl px-6 py-32 text-center">
           <h1 className="font-serif-kr text-3xl font-bold">글을 찾을 수 없습니다</h1>
           <p className="mt-4 text-mute">삭제되었거나 아직 발행되지 않은 글입니다.</p>
-          <a
-            href="/blog"
-            className="mt-6 inline-block text-brass underline underline-offset-8"
-          >
+          <a href="/blog" className="mt-6 inline-block text-brass underline underline-offset-8">
             피아노 이야기로 돌아가기
           </a>
         </div>
@@ -160,9 +153,13 @@ function PostPage() {
     <SubPageShell>
       <article className="mx-auto max-w-3xl px-6 py-16 md:py-24">
         <nav className="text-sm text-faint" aria-label="breadcrumb">
-          <a href="/" className="hover:text-mute">홈</a>
+          <a href="/" className="hover:text-mute">
+            홈
+          </a>
           <span className="mx-2">/</span>
-          <a href="/blog" className="hover:text-mute">피아노 이야기</a>
+          <a href="/blog" className="hover:text-mute">
+            피아노 이야기
+          </a>
           <span className="mx-2">/</span>
           <a href={`/blog/${post.category_slug}`} className="hover:text-mute">
             {post.category_name}
@@ -183,12 +180,8 @@ function PostPage() {
 
         {post.excerpt && (
           <div className="mt-8 border-l-2 border-brass bg-ebony-2 p-6">
-            <p className="text-xs font-medium uppercase tracking-widest text-brass">
-              한눈에 보기
-            </p>
-            <p className="mt-2 font-serif-kr text-lg leading-relaxed text-ivory">
-              {post.excerpt}
-            </p>
+            <p className="text-xs font-medium uppercase tracking-widest text-brass">한눈에 보기</p>
+            <p className="mt-2 font-serif-kr text-lg leading-relaxed text-ivory">{post.excerpt}</p>
           </div>
         )}
 
@@ -200,15 +193,12 @@ function PostPage() {
           />
         )}
 
-        <div
-          className="prose-ewha mt-12"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        <div className="prose-ewha mt-12" dangerouslySetInnerHTML={{ __html: html }} />
 
         <div className="mt-16 flex items-center gap-5 border border-line bg-ebony-2 p-6">
           <img
             src="/assets/portrait.jpg"
-            alt="피아노 앞에 앉은 김서연의 뒷모습"
+            alt="피아노 앞에 앉은 피아노 연주자"
             className="h-16 w-16 shrink-0 rounded-full object-cover"
             loading="lazy"
           />
@@ -227,12 +217,10 @@ function PostPage() {
         </div>
 
         <div className="mt-14 border border-brass/40 bg-ebony-2 p-8 text-center md:p-10">
-          <p className="font-serif-kr text-2xl font-semibold md:text-3xl">
-            피아노, 시작해 볼까요?
-          </p>
+          <p className="font-serif-kr text-2xl font-semibold md:text-3xl">피아노, 시작해 볼까요?</p>
           <p className="mx-auto mt-3 max-w-[46ch] text-sm leading-relaxed text-mute md:text-base">
-            첫 상담과 30분 체험 레슨은 무료입니다. 서울 서대문구·마포구 방문 레슨,
-            그 외 지역은 온라인으로 만나요.
+            첫 상담과 30분 체험 레슨은 무료입니다. 서울 서대문구·마포구 방문 레슨, 그 외 지역은
+            온라인으로 만나요.
           </p>
           <a
             href="/#contact"
@@ -255,9 +243,7 @@ function PostPage() {
                   <span className="font-serif-kr text-lg font-semibold transition-colors group-hover:text-brass">
                     {r.title}
                   </span>
-                  <span className="shrink-0 text-sm text-faint">
-                    {r.reading_minutes}분
-                  </span>
+                  <span className="shrink-0 text-sm text-faint">{r.reading_minutes}분</span>
                 </a>
               ))}
             </div>

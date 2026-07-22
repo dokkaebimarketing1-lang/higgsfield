@@ -1,16 +1,14 @@
 import { SITE } from "../../lib/content";
 import { Monogram } from "./monogram";
 
-// 사이트 공용 크롬 (낸드 + 푸터). 모든 페이지가 이 컴포넌트를 공유한다.
+// 공개 페이지가 공유하는 사이트 크롬(헤더 + 푸터).
 export function SiteNav() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line/60 bg-ebony/70 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 md:h-[72px] md:px-10">
         <a href="/" className="flex items-center gap-3 text-ivory">
           <Monogram className="h-6 w-6 text-brass" />
-          <span className="font-serif-kr text-lg font-semibold tracking-tight">
-            {SITE.brand}
-          </span>
+          <span className="font-serif-kr text-lg font-semibold tracking-tight">{SITE.brand}</span>
         </a>
         <nav className="hidden items-center gap-7 md:flex">
           {SITE.nav.map((item) => (
@@ -70,16 +68,17 @@ export function SiteFooter() {
             className="group flex items-center gap-3 font-serif-kr text-2xl text-ivory transition-colors hover:text-brass"
           >
             상담 신청하기
-            <span className="transition-transform duration-300 group-hover:translate-x-2">
-              →
-            </span>
+            <span className="transition-transform duration-300 group-hover:translate-x-2">→</span>
           </a>
         </div>
-        <div className="mt-14 flex items-center justify-between border-t border-line pt-6 text-xs text-faint">
+        <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 text-xs text-faint">
           <span>{SITE.footer.copyright}</span>
           <span className="flex gap-5">
             <a href="/sitemap" className="transition-colors hover:text-mute">
               사이트맵
+            </a>
+            <a href="/privacy" className="transition-colors hover:text-mute">
+              개인정보 처리 안내
             </a>
             <a href="/admin" className="transition-colors hover:text-mute">
               {SITE.footer.admin}
@@ -91,7 +90,7 @@ export function SiteFooter() {
   );
 }
 
-// 서브 페이지 상단 여백 (고정 낸드 높이 보상)
+// 서브 페이지 상단 여백 (고정 헤더 높이 보상)
 export function SubPageShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-dvh bg-ebony text-ivory antialiased">

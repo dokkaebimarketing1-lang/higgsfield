@@ -91,9 +91,13 @@ function CategoryPage() {
     <SubPageShell>
       <div className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
         <nav className="text-sm text-faint" aria-label="breadcrumb">
-          <a href="/" className="hover:text-mute">홈</a>
+          <a href="/" className="hover:text-mute">
+            홈
+          </a>
           <span className="mx-2">/</span>
-          <a href="/blog" className="hover:text-mute">피아노 이야기</a>
+          <a href="/blog" className="hover:text-mute">
+            피아노 이야기
+          </a>
           <span className="mx-2">/</span>
           <span className="text-mute">{category.name}</span>
         </nav>

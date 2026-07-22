@@ -18,18 +18,14 @@ export function HeroScrub({ frameCount, frameSrc, poster, children }: Props) {
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // Save-Data: 프레임을 받지 않고 포스터(정적)로 고정
-    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } })
-      .connection;
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
     const saveData = conn?.saveData === true;
     if (reduced || frameCount < 2 || saveData) return;
 
-    // 모바일: 짝수 프레임만 로드해 전송량 절감 (101장 → 51장, 약 2.7MB)
+    // 모바일은 짝수 프레임만 사용하고, 모든 환경에서 현재 스크롤 위치 주변만
+    // 요청한다. 이전 구현처럼 101장을 차례로 전부 받지 않아도 된다.
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    const loadList: number[] = [];
-    for (let i = 0; i < frameCount; i += 1) {
-      if (isMobile && i % 2 === 1 && i !== frameCount - 1) continue;
-      loadList.push(i);
-    }
+    const frameStep = isMobile ? 2 : 1;
 
     let cancelled = false;
     let cleanupScroll: (() => void) | undefined;
@@ -41,7 +37,16 @@ export function HeroScrub({ frameCount, frameSrc, poster, children }: Props) {
     if (!ctx) return;
 
     const frames: (HTMLImageElement | null)[] = new Array(frameCount).fill(null);
+    const loading = new Map<number, Promise<void>>();
     let current = -1;
+
+    const normalizedIndex = (index: number) => {
+      const clamped = Math.max(0, Math.min(frameCount - 1, index));
+      if (isMobile && clamped % 2 === 1 && clamped !== frameCount - 1) {
+        return clamped - 1;
+      }
+      return clamped;
+    };
 
     const nearestLoaded = (index: number): HTMLImageElement | null => {
       for (let d = 0; d < frameCount; d += 1) {
@@ -82,28 +87,39 @@ export function HeroScrub({ frameCount, frameSrc, poster, children }: Props) {
       if (clamped === current) return;
       current = clamped;
       draw(clamped);
+      for (const offset of [-2, -1, 0, 1, 2]) {
+        void load(clamped + offset * frameStep);
+      }
     };
 
-    // 첫 프레임을 즉시, 나머지는 loadList 순서로 스트리밍
-    const load = (i: number) =>
-      new Promise<void>((resolve) => {
+    const load = (requestedIndex: number): Promise<void> => {
+      const i = normalizedIndex(requestedIndex);
+      if (frames[i]) return Promise.resolve();
+      const pending = loading.get(i);
+      if (pending) return pending;
+
+      const promise = new Promise<void>((resolve) => {
         const img = new Image();
         img.decoding = "async";
         img.onload = () => {
           frames[i] = img;
-          if (i === loadList[0] && !cancelled) {
+          if (i === 0 && !cancelled) {
             setReady(true);
             sizeCanvas();
           }
-          if (i === current) draw(i);
+          if (Math.abs(i - current) <= frameStep * 2) draw(current);
           resolve();
         };
         img.onerror = () => resolve();
         img.src = frameSrc(i);
       });
+      loading.set(i, promise);
+      void promise.finally(() => loading.delete(i));
+      return promise;
+    };
 
     (async () => {
-      await load(loadList[0] ?? 0);
+      await load(0);
       if (cancelled) return;
       const { gsap } = await import("gsap");
       const { ScrollTrigger } = await import("gsap/ScrollTrigger");
@@ -117,10 +133,11 @@ export function HeroScrub({ frameCount, frameSrc, poster, children }: Props) {
       });
       cleanupScroll = () => st.kill();
       window.addEventListener("resize", sizeCanvas);
-      for (const i of loadList.slice(1)) {
-        if (cancelled) break;
-        // eslint-disable-next-line no-await-in-loop
-        await load(i);
+
+      // 네 구간의 대표 프레임만 미리 데워 빠른 점프에서도 빈 캔버스를 피한다.
+      // 나머지 프레임은 setFrame()에서 필요할 때만 받는다.
+      for (const progress of [0.25, 0.5, 0.75, 1]) {
+        void load(Math.round((frameCount - 1) * progress));
       }
     })();
 

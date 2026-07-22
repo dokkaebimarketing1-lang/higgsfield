@@ -41,14 +41,13 @@ function SitemapPage() {
     { href: "/#pricing", label: "레슨 요금 안내" },
     { href: "/#faq", label: "자주 묻는 질문" },
     { href: "/#contact", label: "상담 신청" },
+    { href: "/privacy", label: "개인정보 처리 안내" },
   ];
 
   return (
     <SubPageShell>
       <div className="mx-auto max-w-4xl px-6 py-20 md:px-10 md:py-28">
-        <h1 className="font-serif-kr text-4xl font-bold tracking-tight md:text-5xl">
-          사이트맵
-        </h1>
+        <h1 className="font-serif-kr text-4xl font-bold tracking-tight md:text-5xl">사이트맵</h1>
         <p className="mt-4 text-mute">이화 피아노 과외의 전체 페이지와 글 목록입니다.</p>
 
         <h2 className="mt-14 font-serif-kr text-2xl font-bold">주요 페이지</h2>

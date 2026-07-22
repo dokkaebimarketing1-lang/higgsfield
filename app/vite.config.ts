@@ -5,60 +5,23 @@ import {
   higgsfieldDesignInspectorVitePlugin,
   higgsfieldDesignSourceBabelPlugin,
 } from "./src/module/design-inspector/vite";
-import svgr from "vite-plugin-svgr";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { fileURLToPath } from "node:url";
 
-// The vendored @higgsfield/quanta components import their glyphs from the private
-// Nexus-only `@higgsfield-ai/icons`. Generated sites build on the PUBLIC npm
-// registry, so we redirect every `@higgsfield-ai/icons/*` import to a Material
-// Symbols shim instead (see src/lib/quanta-material-icons.ts). tsconfig.json has
-// the matching `paths` entry so type-checking resolves it too.
-const QUANTA_ICONS_SHIM = fileURLToPath(
-  new URL("./src/lib/quanta-material-icons.ts", import.meta.url),
-);
-
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   const designInspectorEnabled = process.env.HF_DESIGN_INSPECTOR === "1" || mode === "design";
 
   return {
-    resolve: {
-      alias: [{ find: /^@higgsfield-ai\/icons(\/.*)?$/, replacement: QUANTA_ICONS_SHIM }],
-    },
     // The server bundle runs as a Cloudflare Worker — there is no node_modules
     // at runtime. Vite's default SSR build leaves npm deps as bare external
     // imports (h3, react, @tanstack/*, seroval, …), which resolve on a Node
-    // server but throw "No such module" in a Worker. Bundle them all in.
+    // server but throw "No such module" in a Worker. Bundle them for builds;
+    // dev keeps Vite's normal dependency externalization for Node compatibility.
     // (node: builtins stay external — nodejs_compat provides them.)
     ssr: {
-      noExternal: true,
-      // `cloudflare:workers` is a workerd runtime built-in that exposes the Worker
-      // env / bindings (D1 `DB`, R2 `STORAGE`). Like node: builtins it must NOT be
-      // bundled; the runtime provides it. (`ssr.external` is typed string[].)
-      external: ["cloudflare:workers"],
-    },
-    build: {
-      // Keep `cloudflare:*` external in the SSR rollup pass too — `noExternal`
-      // above would otherwise try to resolve+bundle it and fail.
-      rollupOptions: { external: [/^cloudflare:/] },
+      ...(command === "build" ? { noExternal: true } : {}),
     },
     plugins: [
-      // Material Symbols SVGs (the app icon set) import as React components via
-      // `?react`. `icon: true` sizes them 1em; fill is forced to currentColor so
-      // they color like text (the raw SVGs have no fill attribute). Keep the
-      // viewBox so CSS sizing scales the glyph.
-      svgr({
-        svgrOptions: {
-          icon: true,
-          svgProps: { fill: "currentColor" },
-          svgoConfig: {
-            plugins: [
-              { name: "preset-default", params: { overrides: { removeViewBox: false } } },
-            ],
-          },
-        },
-      }),
       // TanStack Start plugin must run before React's plugin.
       //
       // SSR build: `vite build` emits a Workers-shaped server bundle

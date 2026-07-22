@@ -13,6 +13,7 @@ const STATIC_ROUTES: UrlEntry[] = [
   { loc: "/", changefreq: "weekly", priority: "1.0" },
   { loc: "/about", changefreq: "monthly", priority: "0.8" },
   { loc: "/blog", changefreq: "daily", priority: "0.9" },
+  { loc: "/privacy", changefreq: "yearly", priority: "0.2" },
   { loc: "/sitemap", changefreq: "monthly", priority: "0.3" },
 ];
 

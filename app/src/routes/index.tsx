@@ -10,8 +10,7 @@ import { SITE } from "../lib/content";
 import { useSiteMotion } from "../lib/use-motion";
 
 const HERO_FRAME_COUNT = 101;
-const heroFrame = (i: number) =>
-  `/frames/hero/frame_${String(i + 1).padStart(4, "0")}.jpg`;
+const heroFrame = (i: number) => `/frames/hero/frame_${String(i + 1).padStart(4, "0")}.jpg`;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -81,7 +80,6 @@ function Index() {
       <AboutSection />
       <ProgramsSection />
       <ProcessSection />
-      <StoriesSection />
       <FaqSection />
       <PricingSection />
       <LatestPostsSection posts={latest} />
@@ -91,17 +89,14 @@ function Index() {
   );
 }
 
-/* ── 최신 칼럼 (낸드 링크에서 유입되는 SEO 낸드게이션) ── */
+/* ── 최신 칼럼 (내부 링크로 이어지는 SEO 내비게이션) ── */
 function LatestPostsSection({ posts }: { posts: PostRow[] }) {
   if (!posts || posts.length === 0) return null;
   return (
     <section id="latest" className="border-t border-line py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6 md:px-10">
         <div className="flex flex-wrap items-end justify-between gap-6">
-          <h2
-            data-build
-            className="font-serif-kr text-4xl font-bold tracking-tight md:text-5xl"
-          >
+          <h2 data-build className="font-serif-kr text-4xl font-bold tracking-tight md:text-5xl">
             피아노 이야기
           </h2>
           <a
@@ -149,11 +144,7 @@ function formatDate(iso: string | null): string {
 function HeroSection() {
   return (
     <section id="top" className="relative">
-      <HeroScrub
-        frameCount={HERO_FRAME_COUNT}
-        frameSrc={heroFrame}
-        poster="/assets/hero-still.jpg"
-      >
+      <HeroScrub frameCount={HERO_FRAME_COUNT} frameSrc={heroFrame} poster="/assets/hero-still.jpg">
         <div className="pointer-events-none absolute inset-0 flex items-end">
           <div className="mx-auto w-full max-w-6xl px-6 pb-24 md:px-10 md:pb-28">
             <p className="pointer-events-auto text-[11px] font-medium uppercase tracking-[0.35em] text-brass">
@@ -193,9 +184,7 @@ function HeroSection() {
 
 /* ── Tempo marking (악장 라벨) ──────────────────────────── */
 function Tempo({ children }: { children: string }) {
-  return (
-    <p className="font-latin text-xl italic text-brass md:text-2xl">{children}</p>
-  );
+  return <p className="font-latin text-xl italic text-brass md:text-2xl">{children}</p>;
 }
 
 /* ── About ──────────────────────────────────────────────── */
@@ -268,10 +257,7 @@ function ProgramsSection() {
     <section id="programs" className="py-24 md:py-36">
       <div className="mx-auto max-w-6xl px-6 md:px-10">
         <Tempo>{p.tempo}</Tempo>
-        <h2
-          data-build
-          className="mt-3 font-serif-kr text-4xl font-bold tracking-tight md:text-5xl"
-        >
+        <h2 data-build className="mt-3 font-serif-kr text-4xl font-bold tracking-tight md:text-5xl">
           {p.headline}
         </h2>
 
@@ -405,51 +391,11 @@ function ProcessSection() {
                   {s.num}
                 </span>
                 <div>
-                  <h3 className="font-serif-kr text-2xl font-semibold md:text-3xl">
-                    {s.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-mute md:text-base">
-                    {s.body}
-                  </p>
+                  <h3 className="font-serif-kr text-2xl font-semibold md:text-3xl">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-mute md:text-base">{s.body}</p>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ── Testimonials ───────────────────────────────────────── */
-function StoriesSection() {
-  const s = SITE.stories;
-  return (
-    <section id="stories" className="py-24 md:py-36">
-      <div className="mx-auto max-w-6xl px-6 md:px-10">
-        <h2
-          data-build
-          className="text-center font-serif-kr text-4xl font-bold tracking-tight md:text-5xl"
-        >
-          {s.headline}
-        </h2>
-        <div className="mt-14 grid border border-line md:grid-cols-2">
-          {s.items.map((t, i) => (
-            <figure
-              key={t.by}
-              data-settle
-              className={`border-line p-8 md:p-12 ${
-                i < 2 ? "border-b" : i === 2 ? "border-b md:border-b-0" : ""
-              } ${i % 2 === 0 ? "md:border-r" : ""}`}
-            >
-              <span aria-hidden="true" className="font-latin text-6xl leading-none text-brass">
-                &ldquo;
-              </span>
-              <blockquote className="mt-4 font-serif-kr text-lg leading-relaxed md:text-xl">
-                {t.quote}
-              </blockquote>
-              <figcaption className="mt-6 text-sm text-faint">{t.by}</figcaption>
-            </figure>
           ))}
         </div>
       </div>
@@ -477,9 +423,7 @@ function FaqSection() {
               open={i === 0}
             >
               <summary className="flex cursor-pointer list-none items-baseline justify-between gap-6 py-6 [&::-webkit-details-marker]:hidden">
-                <h3 className="font-serif-kr text-xl font-semibold md:text-2xl">
-                  {item.q}
-                </h3>
+                <h3 className="font-serif-kr text-xl font-semibold md:text-2xl">{item.q}</h3>
                 <span
                   aria-hidden="true"
                   className="shrink-0 font-latin text-2xl italic text-brass transition-transform duration-300 group-open:rotate-45"
@@ -522,9 +466,7 @@ function PricingSection() {
                   {t.badge}
                 </span>
               )}
-              <h3 className="text-center font-serif-kr text-2xl font-semibold">
-                {t.name}
-              </h3>
+              <h3 className="text-center font-serif-kr text-2xl font-semibold">{t.name}</h3>
               <p className="mt-8 text-center">
                 <span className="align-top text-sm text-mute">{t.per}</span>{" "}
                 <span
@@ -564,8 +506,6 @@ function PricingSection() {
 
 /* ── Contact + 상담 신청 폼 ─────────────────────────────── */
 const ICON_SRC: Record<string, string> = {
-  chat: "/assets/icons/chat.png",
-  mail: "/assets/icons/mail.png",
   pin: "/assets/icons/pin.png",
 };
 
@@ -576,6 +516,8 @@ type FormState = {
   goal: string;
   preferredDays: string;
   message: string;
+  website: string;
+  privacyAcknowledged: boolean;
 };
 
 function ContactSection() {
@@ -587,26 +529,38 @@ function ContactSection() {
     goal: c.form.goals[0],
     preferredDays: "",
     message: "",
+    website: "",
+    privacyAcknowledged: false,
   });
+  const startedAt = useRef(Date.now());
   const [status, setStatus] = useState<
     { kind: "idle" } | { kind: "sending" } | { kind: "done" } | { kind: "error"; message: string }
   >({ kind: "idle" });
 
   const update =
     (key: keyof FormState) =>
-    (
-      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-    ) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
       setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (status.kind === "sending") return;
+    if (!form.privacyAcknowledged) {
+      setStatus({ kind: "error", message: "개인정보 처리 안내를 확인해 주세요." });
+      return;
+    }
     setStatus({ kind: "sending" });
     try {
-      await submitInquiry({ data: form });
+      await submitInquiry({
+        data: {
+          ...form,
+          privacyAcknowledged: true,
+          startedAt: startedAt.current,
+        },
+      });
       setStatus({ kind: "done" });
     } catch (err) {
+      startedAt.current = Date.now();
       setStatus({
         kind: "error",
         message:
@@ -662,33 +616,62 @@ function ContactSection() {
                 <Monogram className="mx-auto h-10 w-10 text-brass" />
                 <p className="mt-6 font-serif-kr text-2xl font-semibold">접수되었습니다</p>
                 <p className="mt-3 leading-relaxed text-mute">{c.form.success}</p>
-                <p className="mt-6 text-sm text-faint">
-                  빠른 상담은 카카오톡 채널로도 가능합니다.
-                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    startedAt.current = Date.now();
+                    setStatus({ kind: "idle" });
+                  }}
+                  className="mt-6 text-sm text-brass underline underline-offset-4 hover:text-ivory"
+                >
+                  입력 내용 수정하기
+                </button>
               </div>
             ) : (
-              <form onSubmit={onSubmit} noValidate>
+              <form onSubmit={onSubmit}>
+                <label
+                  className="pointer-events-none absolute -left-[10000px] h-px w-px overflow-hidden"
+                  aria-hidden="true"
+                >
+                  웹사이트
+                  <input
+                    type="text"
+                    name="website"
+                    value={form.website}
+                    onChange={update("website")}
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </label>
                 <Field label="이름" required>
                   <input
                     type="text"
+                    name="name"
                     value={form.name}
                     onChange={update("name")}
                     placeholder="이름을 입력해 주세요"
+                    autoComplete="name"
+                    required
                     className="w-full border border-line bg-ebony px-4 py-3 text-ivory outline-none transition-colors placeholder:text-faint focus:border-brass"
                   />
                 </Field>
                 <Field label="연락처" required>
                   <input
                     type="tel"
+                    name="tel"
                     value={form.phone}
                     onChange={update("phone")}
                     placeholder="010-0000-0000"
+                    autoComplete="tel"
+                    inputMode="tel"
+                    required
                     className="w-full border border-line bg-ebony px-4 py-3 text-ivory outline-none transition-colors placeholder:text-faint focus:border-brass"
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="수강 대상">
                     <select
+                      name="studentType"
                       value={form.studentType}
                       onChange={update("studentType")}
                       className="w-full border border-line bg-ebony px-4 py-3 text-ivory outline-none transition-colors focus:border-brass"
@@ -699,6 +682,7 @@ function ContactSection() {
                   </Field>
                   <Field label="학습 목표">
                     <select
+                      name="goal"
                       value={form.goal}
                       onChange={update("goal")}
                       className="w-full border border-line bg-ebony px-4 py-3 text-ivory outline-none transition-colors focus:border-brass"
@@ -714,6 +698,7 @@ function ContactSection() {
                 <Field label="희망 요일 · 시간">
                   <input
                     type="text"
+                    name="preferredDays"
                     value={form.preferredDays}
                     onChange={update("preferredDays")}
                     placeholder="예: 화·목 저녁 7시 이후"
@@ -722,6 +707,7 @@ function ContactSection() {
                 </Field>
                 <Field label="메시지">
                   <textarea
+                    name="message"
                     value={form.message}
                     onChange={update("message")}
                     rows={4}
@@ -729,8 +715,36 @@ function ContactSection() {
                     className="w-full resize-none border border-line bg-ebony px-4 py-3 text-ivory outline-none transition-colors placeholder:text-faint focus:border-brass"
                   />
                 </Field>
+                <label className="mt-5 flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-mute">
+                  <input
+                    type="checkbox"
+                    name="privacyAcknowledged"
+                    checked={form.privacyAcknowledged}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        privacyAcknowledged: event.target.checked,
+                      }))
+                    }
+                    required
+                    className="mt-1 h-4 w-4 accent-[#b89a64]"
+                  />
+                  <span>
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-ivory underline underline-offset-4 hover:text-brass"
+                    >
+                      개인정보 처리 안내
+                    </a>
+                    를 확인했습니다. 상담 답변에 필요한 정보만 수집합니다.
+                  </span>
+                </label>
                 {status.kind === "error" && (
-                  <p className="mt-4 text-sm text-[#d98a8a]">{status.message}</p>
+                  <p className="mt-4 text-sm text-[#d98a8a]" role="alert">
+                    {status.message}
+                  </p>
                 )}
                 <button
                   type="submit"

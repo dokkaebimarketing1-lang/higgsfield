@@ -2,10 +2,7 @@
 export const SITE_URL = "https://ewha-piano.higgsfield.app";
 
 // 카테고리 랜딩 페이지 SEO 맵: 메타 설명 + 랜딩 소개 문단 (키워드 포함)
-export const CATEGORY_SEO: Record<
-  string,
-  { metaDescription: string; intro: string }
-> = {
+export const CATEGORY_SEO: Record<string, { metaDescription: string; intro: string }> = {
   "lesson-guide": {
     metaDescription:
       "피아노 과외 비용, 과외 선생님 고르는 법, 학원과 과외 비교까지. 피아노 과외를 시작하기 전 알아야 할 모든 것을 레슨 현장의 시선으로 정리합니다.",
@@ -16,7 +13,7 @@ export const CATEGORY_SEO: Record<
     metaDescription:
       "피아노 연습 방법, 하농 활용법, 악보 읽는 법, 메트로놈 사용, 연습 습관 만들기. 효율적인 피아노 연습의 구조를 단계별로 안내합니다.",
     intro:
-      "같은 30분이라도 구조가 다륭니다. 워밍업부터 구간 연습, 악보 읽기, 메트로놈 활용, 매일 이어지는 습관까지. 실제 레슨에서 쓰는 연습법을 공개합니다.",
+      "같은 30분이라도 구조가 다릅니다. 워밍업부터 구간 연습, 악보 읽기, 메트로놈 활용, 매일 이어지는 습관까지. 실제 레슨에서 쓰는 연습법을 공개합니다.",
   },
   exam: {
     metaDescription:
@@ -52,7 +49,6 @@ export const SITE = {
   nav: [
     { label: "선생님 소개", href: "/about" },
     { label: "레슨 프로그램", href: "/#programs" },
-    { label: "수강생 후기", href: "/#stories" },
     { label: "요금 안내", href: "/#pricing" },
     { label: "피아노 이야기", href: "/blog" },
   ],
@@ -72,7 +68,7 @@ export const SITE = {
     credentials: [
       { label: "학력", value: "이화여자대학교 피아노과 재학" },
       { label: "수상", value: "국내 피아노 콩쿠르 수상 다수" },
-      { label: "경력", value: "1:1 개인 레슨 지도 3년" },
+      { label: "레슨", value: "학생별 1:1 맞춤 수업 운영" },
     ],
     facts: [
       { label: "레슨 요일", value: "월~토, 시간 협의" },
@@ -123,31 +119,6 @@ export const SITE = {
         num: "04",
         title: "주 1회 레슨과 피드백",
         body: "매주 레슨 후 연습 과제와 세밀한 피드백을 전합니다.",
-      },
-    ],
-  },
-  stories: {
-    headline: "수강생 후기",
-    items: [
-      {
-        quote:
-          "아이가 스스로 연습하는 습관이 생겼어요. 생각하는 힘도 함께 자라는 것 같아 기쁩니다.",
-        by: "초등 3학년 학부모",
-      },
-      {
-        quote:
-          "처음에는 막연했는데, 지금은 제 일상에서 가장 큰 즐거움이 되었어요.",
-        by: "성인 취미 수강생",
-      },
-      {
-        quote:
-          "선생님의 세심한 지도 덕분에 짧은 시간 안에 큰 변화를 느낄 수 있었습니다.",
-        by: "중등 2학년 학부모",
-      },
-      {
-        quote:
-          "단순히 기술만 배우는 것이 아니라, 음악을 대하는 태도까지 바뀌게 되었습니다.",
-        by: "음대 입시 준비생",
       },
     ],
   },
@@ -211,11 +182,7 @@ export const SITE = {
     tempo: "Finale",
     headline: "첫 상담을 신청하세요",
     body: "레슨에 대한 궁금한 점, 아이의 성향, 원하는 방향을 편하게 남겨 주세요. 24시간 이내에 답변드립니다.",
-    rows: [
-      { icon: "chat", label: "카카오톡 채널", value: "이화피아노과외" },
-      { icon: "mail", label: "이메일", value: "lesson@ewha-piano.kr" },
-      { icon: "pin", label: "레슨 지역", value: "서울 서대문구 · 마포구 방문 · 전역 온라인" },
-    ],
+    rows: [{ icon: "pin", label: "레슨 지역", value: "서울 서대문구 · 마포구 방문 · 전역 온라인" }],
     hours: "운영 시간 | 평일 15:00~21:00 · 토요일 10:00~18:00",
     form: {
       submit: "상담 신청하기",

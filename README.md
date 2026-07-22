@@ -1,43 +1,71 @@
 # 이화 피아노 과외 (ewha-piano)
 
-이화여자대학교 피아노과 재학생의 1:1 피아노 과외 웹사이트 + SEO 콘텐츠 CMS.
-라이브: https://ewha-piano.higgsfield.app
+이화여자대학교 피아노과 재학생의 1:1 피아노 과외 웹사이트와 SEO 콘텐츠 CMS입니다.
 
-## 스택
+- 라이브: https://ewha-piano.higgsfield.app
+- 앱 소스: `app/`
+- 로컬 개발: [LOCAL-DEV.md](LOCAL-DEV.md)
 
-- React 19 + TanStack Start (SSR, Cloudflare Worker 단일 배포)
-- Tailwind CSS v4 (커스텀 브랜드 토큰)
-- Cloudflare D1 (상담 신청, 블로그 글/카테고리) + R2 (CMS 이미지 업로드)
-- Lenis + GSAP ScrollTrigger (스크롤 스크럽 히어로 필름)
+## 기술 구성
 
-## 구조
+- React 19 + TanStack Start SSR
+- Vite 7 + Tailwind CSS v4
+- Cloudflare Worker
+- Cloudflare D1: 상담 신청과 블로그/CMS
+- Cloudflare R2: CMS 이미지
+- Lenis + GSAP ScrollTrigger: 히어로 스크롤 연출
 
-```
+이 사이트는 Higgsfield SDK를 사용하지 않는 마케팅 사이트입니다. 따라서 private
+`@higgsfield/*` 워크스페이스나 Quanta UI 패키지 없이 공개 npm 의존성만으로 설치하고
+빌드할 수 있습니다.
+
+## 주요 구조
+
+```text
 app/
-  src/routes/          페이지 (홈 / about / blog 허브·카테고리·글 / admin CMS / sitemap / rss / llms.txt)
-  src/lib/content.ts   사이트 전체 카피 (문구는 여기만 수정)
-  src/lib/api/         서버 함수 (상담 신청, 글 CRUD, 이미지 업로드)
-  src/components/site/ 낸드·푸터, 히어로 스크러버, 모노그램
-  public/assets/       생성 이미지 (AI 생성 브랜드 에셋)
-  public/frames/hero/  히어로 스크럽 필름 프레임 (101장, 모바일은 51장 로드)
-  migrations/          D1 마이그레이션 (카테고리 6 + 칼럼 시드 31편)
-  design-brief.md      디자인 설계 문서
-seed/                  칼럼 원고 (마크다운 소스)
-refs/                  디자인 보드, 원본 필름
+  src/routes/          홈, 소개, 블로그, 관리자, sitemap, RSS, llms.txt
+  src/lib/content.ts   사이트 공통 카피와 운영 정보
+  src/lib/api/         상담 및 블로그/CMS 서버 함수
+  src/components/site/ 내비게이션, 푸터, 히어로, 모노그램
+  public/assets/       브랜드 이미지
+  public/frames/hero/  히어로 스크럽 프레임
+  migrations/          D1 스키마와 콘텐츠 시드
+  app.manifest.json    Higgsfield가 프로비저닝할 D1/R2 선언
+  wrangler.jsonc       로컬 빌드/개발용 Cloudflare 설정
+seed/                  블로그 원고
+refs/                  디자인 보드와 원본 영상
 ```
 
-## SEO / GEO 기능
+## 로컬 실행
 
-- 주제 클러스터 URL: /blog → /blog/[category] → /blog/[category]/[slug]
-- 페이지별 고유 title/description/canonical/OG, JSON-LD 6종 (LocalBusiness, WebSite, FAQPage, Person, BlogPosting, BreadcrumbList)
-- 동적 sitemap.xml, RSS, HTML 사이트맵, /llms.txt
-- 홈 FAQ(FAQPage), 글 상단 "한눈에 보기" 요약, 글별 FAQ 자동 스키마
+```bash
+cd app
+bun install --frozen-lockfile
+bun run dev
+```
 
-## 관리자
+검증 명령:
 
-- /admin: 상담 신청 내역 + 글 작성/수정/발행 CMS (마크다운 에디터, 이미지 업로드)
+```bash
+bun run lint
+bun run typecheck
+bun run build
+```
+
+별도의 변환 스크립트나 백업 파일 생성은 필요하지 않습니다. 자세한 로컬 데이터 바인딩
+제약과 Design Inspector 빌드는 [LOCAL-DEV.md](LOCAL-DEV.md)를 참고하세요.
+
+## SEO / GEO
+
+- 주제 클러스터 URL: `/blog` → `/blog/[category]` → `/blog/[category]/[slug]`
+- 페이지별 title, description, canonical, Open Graph
+- LocalBusiness, WebSite, FAQPage, Person, BlogPosting, BreadcrumbList JSON-LD
+- 동적 `sitemap.xml`, RSS, HTML 사이트맵, `/llms.txt`
 
 ## 배포
 
-이 저장소는 소스 백업(미러)입니다. 실제 빌드·배포·DB/R2 프로비저닝은
-Higgsfield 웹사이트 빌더 플랫폼에서 수행합니다 (플랫폼 남부 packages/ 등은 제외됨).
+`app/app.manifest.json`, `app/wrangler.jsonc`, TanStack Worker 엔트리와 Higgsfield
+Design Inspector 모듈은 유지됩니다. Git 변경을 Higgsfield 저장소에 반영한 뒤 기존
+Higgsfield 웹사이트 배포 흐름으로 미리보기 또는 프로덕션을 배포합니다. 실제 D1/R2
+리소스와 운영 비밀값은 플랫폼에서 주입하며 저장소에 커밋하지 않습니다.
+배포 전에는 `0008_copy_fixes.sql`과 `0009_security.sql`이 적용되는지 확인해야 합니다.

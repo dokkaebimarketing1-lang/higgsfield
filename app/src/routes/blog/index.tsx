@@ -57,9 +57,9 @@ function BlogHub() {
           피아노 이야기
         </h1>
         <p className="mt-5 max-w-[56ch] leading-relaxed text-mute">
-          {SITE.brand}는 이화여자대학교 피아노과 재학생이 운영하는 1:1 피아노 레슨입니다.
-          이 칼럼에는 피아노 과외 선택부터 연습 방법, 입시와 콩쿠르, 곡 추천까지,
-          레슨 현장에서 나온 이야기를 정리해 전합니다.
+          {SITE.brand}는 이화여자대학교 피아노과 재학생이 운영하는 1:1 피아노 레슨입니다. 이
+          칼럼에는 피아노 과외 선택부터 연습 방법, 입시와 콩쿠르, 곡 추천까지, 레슨 현장에서 나온
+          이야기를 정리해 전합니다.
         </p>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -91,9 +91,7 @@ function BlogHub() {
         <h2 className="mt-20 font-serif-kr text-2xl font-bold md:text-3xl">최근 글</h2>
         <div className="mt-8">
           {posts.length === 0 ? (
-            <p className="border border-line p-10 text-center text-mute">
-              곧 첫 글이 올라옵니다.
-            </p>
+            <p className="border border-line p-10 text-center text-mute">곧 첫 글이 올라옵니다.</p>
           ) : (
             posts.map((p) => (
               <a

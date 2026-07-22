@@ -12,12 +12,10 @@ const personLd = {
   description:
     "이화여자대학교 피아노과 재학생. 유아·초등 취미부터 입시·콩쿠르, 성인 취미까지 지도하는 1:1 피아노 레슨 강사.",
   url: `${SITE_URL}/about`,
-  image: `${SITE_URL}/assets/portrait.jpg`,
-  alumniOf: { "@type": "CollegeOrUniversity", name: "이화여자대학교" },
+  affiliation: { "@type": "CollegeOrUniversity", name: "이화여자대학교" },
   award: "국내 피아노 콩쿠르 입상 및 수상 다수",
   knowsAbout: ["피아노", "피아노 교육", "음대 입시", "콩쿠르 지도", "클래식 음악"],
   worksFor: { "@id": `${SITE_URL}/#business` },
-  nationality: "대한민국",
 };
 
 export const Route = createFileRoute("/about")({
@@ -27,7 +25,7 @@ export const Route = createFileRoute("/about")({
       {
         name: "description",
         content:
-          "이화여자대학교 피아노과 재학생 김서연의 소개. 콩쿠르 수상 경력과 1:1 레슨 철학, 지도 연력을 안내합니다.",
+          "이화여자대학교 피아노과 재학생 김서연의 소개. 콩쿠르 수상 경력과 1:1 레슨 철학, 수업 방식을 안내합니다.",
       },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/about` }],
@@ -37,10 +35,10 @@ export const Route = createFileRoute("/about")({
 });
 
 const MILESTONES = [
-  { year: "입시", text: "피아노 실기 수석 입학, 이화여자대학교 피아노과 재학" },
+  { year: "학력", text: "이화여자대학교 피아노과 재학" },
   { year: "수상", text: "국내 피아노 콩쿠르 입상 및 수상 다수" },
-  { year: "지도", text: "유아부터 성인까지 1:1 개인 레슨 3년" },
-  { year: "연주", text: "학부 정기 연주회 및 지역 초청 연주 다수" },
+  { year: "레슨", text: "학생 수준과 목표에 맞춘 1:1 수업 운영" },
+  { year: "방식", text: "방문 레슨과 온라인 화상 수업" },
 ];
 
 const PHILOSOPHY = [
@@ -63,7 +61,9 @@ function AboutPage() {
     <SubPageShell>
       <div className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
         <nav className="text-sm text-faint" aria-label="breadcrumb">
-          <a href="/" className="hover:text-mute">홈</a>
+          <a href="/" className="hover:text-mute">
+            홈
+          </a>
           <span className="mx-2">/</span>
           <span className="text-mute">선생님 소개</span>
         </nav>
@@ -72,7 +72,7 @@ function AboutPage() {
           <div className="md:col-span-5">
             <img
               src="/assets/portrait.jpg"
-              alt="그랜드 피아노 앞에 앉은 김서연의 뒷모습"
+              alt="그랜드 피아노 앞에 앉은 피아노 연주자"
               className="aspect-[3/4] w-full object-cover"
             />
           </div>
@@ -83,10 +83,8 @@ function AboutPage() {
             </h1>
             <p className="mt-3 text-lg text-mute">이화여자대학교 피아노과 재학</p>
             <p className="mt-7 max-w-[58ch] leading-relaxed text-mute">
-              다섯 살에 피아노를 시작해 지금까지 건반 위에서 살고 있습니다. 입시를
-              거치며 배운 정확한 기초와, 음악을 사랑하는 마음을 1:1 레슨에 그대로
-              전하고 있습니다. 어린이의 첫 건반부터 성인의 오랜 꿈, 입시생의 목표까지
-              한 사람의 속도에 맞춥니다.
+              전공 과정에서 익힌 정확한 기초와 음악을 사랑하는 마음을 1:1 레슨에 전하고 있습니다.
+              어린이의 첫 건반부터 성인의 오랜 꿈, 입시생의 목표까지 한 사람의 속도에 맞춥니다.
             </p>
             <div className="mt-10">
               {MILESTONES.map((m) => (
@@ -121,8 +119,8 @@ function AboutPage() {
             첫 상담과 30분 체험 레슨은 무료입니다
           </p>
           <p className="mx-auto mt-3 max-w-[46ch] text-sm leading-relaxed text-mute md:text-base">
-            아이의 성향, 목표, 궁금한 점을 편하게 이야기해 주세요. 서울
-            서대문구·마포구 방문 레슨, 그 외 지역은 온라인으로 만납니다.
+            아이의 성향, 목표, 궁금한 점을 편하게 이야기해 주세요. 서울 서대문구·마포구 방문 레슨,
+            그 외 지역은 온라인으로 만납니다.
           </p>
           <a
             href="/#contact"

@@ -21,6 +21,7 @@ export const Route = createFileRoute("/llms.txt")({
 - [레슨 요금 안내](${SITE_URL}/#pricing): 반별 월 요금 (160,000원 / 240,000원 / 320,000원)
 - [자주 묻는 질문](${SITE_URL}/#faq): 비용, 지역, 시작 나이, 성인 초보, 입시 준비에 대한 답변
 - [상담 신청](${SITE_URL}/#contact): 상담 신청 폼과 연락처
+- [개인정보 처리 안내](${SITE_URL}/privacy): 상담 정보의 수집 목적, 보관 기간, 이용자 권리
 - [피아노 이야기 (칼럼)](${SITE_URL}/blog): 피아노 과외 · 연습 · 입시 · 곡 추천 칼럼 모음
 
 ## 칼럼 카테고리
@@ -34,8 +35,6 @@ export const Route = createFileRoute("/llms.txt")({
 
 ## 연락 · 지역
 
-- 카카오톡 채널: 이화피아노과외
-- 이메일: lesson@ewha-piano.kr
 - 지역: 서울 서대문구 · 마포구 (방문), 서울 전역 (온라인)
 - 운영 시간: 평일 15:00~21:00, 토요일 10:00~18:00
 `;

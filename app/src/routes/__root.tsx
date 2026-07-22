@@ -123,12 +123,8 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-ebony px-6 text-center text-ivory">
       <p className="font-latin text-7xl italic text-brass">404</p>
-      <p className="mt-6 font-serif-kr text-2xl font-semibold">
-        페이지를 찾을 수 없습니다
-      </p>
-      <p className="mt-3 text-sm text-mute">
-        주소가 변경되었거나 없는 페이지입니다.
-      </p>
+      <p className="mt-6 font-serif-kr text-2xl font-semibold">페이지를 찾을 수 없습니다</p>
+      <p className="mt-3 text-sm text-mute">주소가 변경되었거나 없는 페이지입니다.</p>
       <a
         href="/"
         className="mt-10 border border-line px-7 py-3 font-serif-kr text-lg text-ivory transition-colors hover:border-brass hover:text-brass"
@@ -148,9 +144,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-ebony px-6 text-center text-ivory">
-      <p className="font-serif-kr text-2xl font-semibold">
-        페이지를 불러오지 못했습니다
-      </p>
+      <p className="font-serif-kr text-2xl font-semibold">페이지를 불러오지 못했습니다</p>
       <p className="mt-3 max-w-md text-sm leading-relaxed text-mute">
         일시적인 문제일 수 있습니다. 새로고침하거나 홈으로 돌아가 주세요.
       </p>

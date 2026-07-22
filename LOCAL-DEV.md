@@ -1,112 +1,80 @@
-# 로컬 개발 가이드 (LOCAL-DEV)
+# 로컬 개발 가이드
 
-이 문서는 세 가지를 설명합니다.
+이 저장소는 변환 없이 바로 설치하고 빌드할 수 있습니다. 피아노 사이트는 Higgsfield
+SDK 기능을 사용하지 않으므로 private `@higgsfield/*` 패키지와 Quanta CSS가 필요하지
+않습니다.
 
-1. 왜 이 미러를 그대로 클론하면 빌드가 안 되는지
-2. 그래도 콘텐츠·컴포넌트·스타일을 어떻게 수정하는지
-3. 임시로 로컬 빌드/실행하는 우회 방법
+## 준비물
 
----
-
-## 1. 왜 그대로는 외부 빌드가 안 되나
-
-이 저장소는 플랫폼 소유 스캐폴을 뺀 **소스 미러**입니다. 빠진 파일들:
-
-| 제외된 것 | 역할 | 빠진 이유 |
-|---|---|---|
-| `app/packages/` (`@higgsfield/fnf`, `fnf-react`, `quanta`) | 플랫폼 전용 UI/SDK 벤더 패키지 | 플랫폼 남부 자산 |
-| `skills/` | 플랫폼 에이전트 스킬 파일 | 플랫폼 남부 자산 |
-| `AGENTS.md` | 플랫폼 에이전트 지침 | 플랫폼 남부 자산 |
-| `.github/` | 플랫폼 CI 워크플로 | 플랫폼 남부 자산 |
-
-이 때문에 두 곳이 깨집니다.
-
-- **`app/package.json`** — `"@higgsfield/*": "workspace:*"` 의존성이 `app/packages/`를 가리키는데, 그 폴터가 없어서 `bun install`이 실패합니다.
-- **`app/src/styles.css`** — `@import "@higgsfield/quanta/tailwind.css"` 와 `@source "../packages/quanta/src"` 가 없는 파일을 가리킵니다.
-
-라이브 배포(ewha-piano.higgsfield.app)에는 영향이 없습니다. 배포 시 플랫폼이 이 파일들을 자동으로 다시 주입하거든요.
-
----
-
-## 2. 콘텐츠 · 컴포넌트 · 스타일 수정 방법
-
-실제 사이트를 이루는 파일은 전부 미러에 있습니다. 어디를 고치면 되는지 표로 정리했습니다.
-
-| 하고 싶은 것 | 고칠 파일 |
-|---|---|
-| 문구, 가격, 연락처, FAQ, 카피 전반 | `app/src/lib/content.ts` |
-| 블로그 글 추가/수정 | 운영 중인 `/admin` CMS (권장) 또는 `seed/*.md` 편집 후 SQL 변환 |
-| DB 스키마 · 시드 데이터 | `app/migrations/000N_*.sql` (신규 번호로 추가) |
-| 홈 섹션 구성 | `app/src/routes/index.tsx` |
-| 블로그 허브/카테고리/글 페이지 | `app/src/routes/blog/**` |
-| 선생님 소개 페이지 | `app/src/routes/about.tsx` |
-| 낸드/푸터 | `app/src/components/site/chrome.tsx` |
-| 히어로 스크럽 동작 | `app/src/components/site/hero-scrub.tsx` |
-| 색상/폰트/브랜드 토큰 | `app/src/styles.css` 상단 `@theme` 블록 |
-| 이미지 교체 | `app/public/assets/` (같은 파일명으로 교체하면 코드 수정 불필요) |
-| 히어로 프레임 교체 | `app/public/frames/hero/` + `HERO_FRAME_COUNT` 값 (`index.tsx`) |
-
-**칼럼 글을 코드로 추가하고 싶다면** (CMS 대신): `seed/`의 `###POST###` 형식에 맞춰 원고를 쓰고, 기존 배치를 만든 방식대로 SQL INSERT를 `app/migrations/` 새 번호 파일로 추가합니다. 다만 운영 중이라면 `/admin`에서 바로 쓰는 편이 간단합니다 (글 즉시 발행, 사이트맵/RSS 자동 반영).
-
----
-
-## 3. 임시 로컬 빌드 우회 방법 (단계별)
-
-변환은 한 번만 하면 됩니다. 원본 파일은 `.bak`으로 백업됩니다.
-
-### 3.1 준비물
-
-- [bun](https://bun.sh) 설치 (`npm install -g bun` 또는 공식 인스톨러)
 - Git
+- Bun 1.3 이상
 
-### 3.2 클론 + 변환
+## 처음 실행
 
 ```bash
 git clone https://github.com/dokkaebimarketing1-lang/higgsfield.git
-cd higgsfield
-bash scripts/make-local.sh
-```
-
-`make-local.sh`가 하는 일 (원본은 건드리지 않고 백업만 남김):
-
-1. `app/package.json` → `app/package.platform.json.bak` 백업 후, `workspaces` 필드와 `@higgsfield/*` 의존성 3개 제거
-2. `app/src/styles.css` → `app/src/styles.platform.css.bak` 백업 후, 플랫폼 전용 `@source`/`@import` 2줄 제거
-
-### 3.3 설치 + 실행
-
-```bash
-cd app
-bun install
+cd higgsfield/app
+bun install --frozen-lockfile
 bun run dev
 ```
 
-브라우저에서 안내 주소(보통 http://localhost:3000)를 열어 확인합니다.
+Vite가 출력한 로컬 주소를 브라우저에서 엽니다. 의존성을 변경한 경우에만
+`bun install`을 실행해 `bun.lock`을 갱신합니다.
 
-### 3.4 로컬에서 되는 것 / 안 되는 것
-
-| 되는 것 | 안 되는 것 (플랫폼 의존) |
-|---|---|
-| 홈/블로그/소개 등 모든 화면 렌더링 | 글 목록·글 내용 (D1 DB 없음 → 빈 목록/오류 메시지) |
-| 디자인·스타일·레이아웃 확인 | 상담 신청 폼 전송 (D1 없음 → 오류 안내) |
-| 히어로 스크럽, 모션 | CMS 이미지 업로드 (R2 없음) |
-| 코드 수정 후 핫 리로드 | 실제 배포 (플랫폼만 가능) |
-
-### 3.5 원래 상태로 되돌리기
+## 검증
 
 ```bash
-cd app
-cp package.platform.json.bak package.json
-cp src/styles.platform.css.bak src/styles.css
+# ESLint + Prettier 규칙
+bun run lint
+
+# TypeScript
+bun run typecheck
+
+# 타입 검사 후 프로덕션 Worker/client 번들 생성
+bun run build
+
+# Higgsfield 미리보기용 Design Inspector 포함 빌드
+bun run build:design
 ```
 
----
+`bun run build` 결과는 `app/dist/server/server.js`와 `app/dist/client/`에
+생성됩니다. 서버 바인딩은 요청 단위 환경에서 읽기 때문에 같은 번들을 Cloudflare
+Worker와 Vite의 Node 기반 개발/미리보기 서버에서 모두 실행할 수 있습니다.
 
-## 4. 수정 → 라이브 반영 플로우
+빌드 결과를 로컬에서 확인하려면 다음 명령을 실행합니다.
 
-로컬/GitHub에서의 수정은 자동 배포되지 않습니다.
+```bash
+bun run preview
+```
 
-1. 원하는 파일 수정 (위 표 참고)
-2. GitHub에 푸시 (백업 유지)
-3. Higgsfield Supercomputer에 "배포해줘" 요청 → 플랫폼 저장소로 옮겨 라이브 반영
+미리보기는 운영 D1/R2 없이 안전한 빈 바인딩으로 실행됩니다.
 
-DB/R2는 프로덕션에만 있으므로, 콘텐츠 데이터(글, 상담 신청 내역)는 항상 라이브가 기준입니다.
+## 로컬 데이터와 비밀값
+
+`app/app.manifest.json`은 배포 시 D1(`DB`)과 R2(`STORAGE`) 사용을 선언합니다.
+저장소의 `wrangler.jsonc`에는 실제 운영 리소스 ID가 없으며, 운영 데이터와 비밀값도
+포함되지 않습니다.
+
+- `bun run dev`는 안전한 빈 Worker 바인딩을 사용하므로 정적 페이지와 클라이언트
+  상호작용을 운영 데이터 없이 확인할 수 있습니다.
+- 블로그/CMS, 상담 저장, 이미지 업로드처럼 D1/R2가 필요한 기능은 로컬 바인딩을
+  별도로 구성해야 실제 저장까지 검증할 수 있습니다.
+- 관리자 기능에는 Worker 비밀값 `ADMIN_PASSCODE`가 필요합니다. 값을 문서나 Git에
+  기록하지 마세요.
+- D1/R2까지 테스트하려면 `bun run build` 후 `wrangler.jsonc`의 주석 안내에 따라
+  개발 전용 바인딩을 구성하고 `bunx wrangler dev`로 Worker 빌드를 실행하세요.
+  운영 리소스 ID를 재사용하지 마세요.
+
+## Higgsfield 배포 호환성
+
+독립 로컬 빌드를 위해 제거한 것은 사용되지 않던 SDK/Quanta 템플릿 코드뿐입니다.
+다음 배포 계약은 그대로 유지됩니다.
+
+- TanStack Start SSR Worker 엔트리: `src/server.ts`
+- 인프라 선언: `app.manifest.json`
+- Cloudflare 빌드 설정: `wrangler.jsonc`
+- Higgsfield Design mode: `src/module/design-inspector/`
+- 미리보기 빌드: `bun run build:design`
+- 프로덕션 정리 빌드: `bun run build`
+
+실제 배포와 D1/R2 프로비저닝은 기존 Higgsfield 웹사이트 배포 흐름에서 수행합니다.

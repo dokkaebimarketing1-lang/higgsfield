@@ -15,15 +15,15 @@ export function useSiteMotion(rootRef: RefObject<HTMLElement | null>) {
     let cancelled = false;
     let lenis: Lenis | null = null;
     let tickerFn: ((time: number) => void) | null = null;
+    const textSplits: Array<{ revert: () => void }> = [];
 
     (async () => {
-      const [{ gsap }, { ScrollTrigger }, LenisModule, SplitTypeModule] =
-        await Promise.all([
-          import("gsap"),
-          import("gsap/ScrollTrigger"),
-          import("lenis"),
-          import("split-type"),
-        ]);
+      const [{ gsap }, { ScrollTrigger }, LenisModule, SplitTypeModule] = await Promise.all([
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+        import("lenis"),
+        import("split-type"),
+      ]);
       if (cancelled) return;
       gsap.registerPlugin(ScrollTrigger);
 
@@ -46,7 +46,12 @@ export function useSiteMotion(rootRef: RefObject<HTMLElement | null>) {
 
       // 1) 헤드라인 마운트 빌드 (스크롤 게이트 없이 즉시 실행)
       root.querySelectorAll<HTMLElement>("[data-build]").forEach((el) => {
-        const split = new SplitType(el, { types: "chars" });
+        const split = new SplitType(el, {
+          types: "words,chars",
+          wordClass: "motion-word",
+          charClass: "motion-char",
+        });
+        textSplits.push(split);
         const chars = split.chars ?? [];
         gsap.fromTo(
           chars,
@@ -126,6 +131,7 @@ export function useSiteMotion(rootRef: RefObject<HTMLElement | null>) {
       if (tickerFn) {
         import("gsap").then(({ gsap }) => gsap.ticker.remove(tickerFn!));
       }
+      textSplits.forEach((split) => split.revert());
       lenis?.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
