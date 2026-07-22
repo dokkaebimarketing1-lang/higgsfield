@@ -7,7 +7,7 @@ import {
   type CategoryRow,
   type PostRow,
 } from "../lib/api/posts.functions";
-import { SITE, SITE_URL } from "../lib/content";
+import { CATEGORY_SEO, SITE, SITE_URL } from "../lib/content";
 
 export const Route = createFileRoute("/sitemap")({
   loader: async () => {
@@ -70,7 +70,7 @@ function SitemapPage() {
                 href={`/blog/${c.slug}`}
                 className="font-serif-kr text-xl font-semibold text-ivory transition-colors hover:text-brass"
               >
-                {c.name}
+                {CATEGORY_SEO[c.slug]?.primaryKeyword ?? c.name}
                 <span className="ml-3 text-sm font-normal text-faint">{catPosts.length}편</span>
               </a>
               {catPosts.length > 0 && (

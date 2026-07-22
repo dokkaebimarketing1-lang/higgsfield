@@ -1,39 +1,52 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { bindings } from "../lib/bindings.server";
+import { buildSitemapXml, type SitemapUrlEntry } from "../lib/seo";
 
-type UrlEntry = {
-  loc: string;
-  lastmod?: string;
-  changefreq: string;
-  priority: string;
-};
-
-const STATIC_ROUTES: UrlEntry[] = [
-  { loc: "/", changefreq: "weekly", priority: "1.0" },
-  { loc: "/about", changefreq: "monthly", priority: "0.8" },
-  { loc: "/blog", changefreq: "daily", priority: "0.9" },
-  { loc: "/privacy", changefreq: "yearly", priority: "0.2" },
-  { loc: "/sitemap", changefreq: "monthly", priority: "0.3" },
+const STATIC_ROUTES: SitemapUrlEntry[] = [
+  { path: "/" },
+  { path: "/about" },
+  { path: "/blog" },
+  { path: "/privacy" },
+  { path: "/sitemap" },
 ];
+
+function sitemapDate(value: string | null | undefined): string | undefined {
+  const date = value?.slice(0, 10);
+  return date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined;
+}
+
+function latestDate(
+  posts: { updated_at: string }[],
+  limit: number = posts.length,
+): string | undefined {
+  return posts
+    .slice(0, limit)
+    .map((post) => sitemapDate(post.updated_at))
+    .filter((date): date is string => Boolean(date))
+    .sort()
+    .at(-1);
+}
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
-        const origin = new URL(request.url).origin;
-        const entries: UrlEntry[] = [...STATIC_ROUTES];
+      GET: async () => {
+        const entries: SitemapUrlEntry[] = STATIC_ROUTES.map((entry) => ({ ...entry }));
         const { DB } = bindings();
 
         if (DB) {
           const { results: categories } = await DB.prepare(
-            "SELECT slug FROM categories ORDER BY sort_order ASC",
-          ).all<{ slug: string }>();
+            `SELECT c.slug, MAX(p.updated_at) AS updated_at
+             FROM categories c
+             LEFT JOIN posts p ON p.category_id = c.id AND p.status = 'published'
+             GROUP BY c.id, c.slug, c.sort_order
+             ORDER BY c.sort_order ASC`,
+          ).all<{ slug: string; updated_at: string | null }>();
           for (const c of categories ?? []) {
             entries.push({
-              loc: `/blog/${c.slug}`,
-              changefreq: "weekly",
-              priority: "0.7",
+              path: `/blog/${c.slug}`,
+              lastmod: sitemapDate(c.updated_at),
             });
           }
           const { results: posts } = await DB.prepare(
@@ -44,31 +57,22 @@ export const Route = createFileRoute("/sitemap.xml")({
           ).all<{ slug: string; category_slug: string; updated_at: string }>();
           for (const p of posts ?? []) {
             entries.push({
-              loc: `/blog/${p.category_slug}/${p.slug}`,
-              lastmod: p.updated_at?.slice(0, 10),
-              changefreq: "monthly",
-              priority: "0.6",
+              path: `/blog/${p.category_slug}/${p.slug}`,
+              lastmod: sitemapDate(p.updated_at),
             });
+          }
+
+          const homeLastmod = latestDate(posts ?? [], 3);
+          const blogLastmod = latestDate(posts ?? [], 50);
+          const sitemapLastmod = latestDate(posts ?? [], 100);
+          for (const entry of entries) {
+            if (entry.path === "/") entry.lastmod = homeLastmod;
+            if (entry.path === "/blog") entry.lastmod = blogLastmod;
+            if (entry.path === "/sitemap") entry.lastmod = sitemapLastmod;
           }
         }
 
-        const xml = [
-          '<?xml version="1.0" encoding="UTF-8"?>',
-          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-          ...entries.map((e) =>
-            [
-              "  <url>",
-              `    <loc>${origin}${e.loc}</loc>`,
-              e.lastmod ? `    <lastmod>${e.lastmod}</lastmod>` : null,
-              `    <changefreq>${e.changefreq}</changefreq>`,
-              `    <priority>${e.priority}</priority>`,
-              "  </url>",
-            ]
-              .filter(Boolean)
-              .join("\n"),
-          ),
-          "</urlset>",
-        ].join("\n");
+        const xml = buildSitemapXml(entries);
 
         return new Response(xml, {
           headers: {

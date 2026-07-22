@@ -58,6 +58,8 @@ bun run build
 ## SEO / GEO
 
 - 주제 클러스터 URL: `/blog` → `/blog/[category]` → `/blog/[category]/[slug]`
+- 글의 `tags` 첫 항목을 대표 목표 키워드로 사용하며 title, H1, 요약, SEO 설명에 자연스럽게 일치
+- 카테고리 허브 목표 키워드는 `app/src/lib/content.ts`의 `CATEGORY_SEO`에서 개별 글과 겹치지 않게 관리
 - 페이지별 title, description, canonical, Open Graph
 - LocalBusiness, WebSite, FAQPage, Person, BlogPosting, BreadcrumbList JSON-LD
 - 동적 `sitemap.xml`, RSS, HTML 사이트맵, `/llms.txt`

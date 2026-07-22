@@ -11,6 +11,7 @@
     "build:design": "bun run typecheck && vite build --mode design",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
+    "test": "bun test tests",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"

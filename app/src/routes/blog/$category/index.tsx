@@ -21,6 +21,7 @@ export const Route = createFileRoute("/blog/$category/")({
     const category = (loaderData as { category: CategoryRow | null } | undefined)?.category;
     const name = category?.name ?? "피아노 이야기";
     const seo = category ? CATEGORY_SEO[category.slug] : undefined;
+    const heading = seo?.primaryKeyword ?? name;
     const description =
       seo?.metaDescription ||
       category?.description ||
@@ -28,7 +29,11 @@ export const Route = createFileRoute("/blog/$category/")({
     const url = `${SITE_URL}/blog/${category?.slug ?? ""}`;
     return {
       meta: [
-        { title: `${name} | 피아노 이야기 | ${SITE.brand}` },
+        {
+          title: seo
+            ? `${seo.pageTitle} | ${SITE.brand}`
+            : `${name} | 피아노 이야기 | ${SITE.brand}`,
+        },
         { name: "description", content: description },
       ],
       links: [{ rel: "canonical", href: url }],
@@ -40,7 +45,7 @@ export const Route = createFileRoute("/blog/$category/")({
             "@graph": [
               {
                 "@type": "CollectionPage",
-                name,
+                name: heading,
                 description,
                 url,
                 isPartOf: { "@id": `${SITE_URL}/#website` },
@@ -56,7 +61,7 @@ export const Route = createFileRoute("/blog/$category/")({
                     name: "피아노 이야기",
                     item: `${SITE_URL}/blog`,
                   },
-                  { "@type": "ListItem", position: 3, name, item: url },
+                  { "@type": "ListItem", position: 3, name: heading, item: url },
                 ],
               },
             ],
@@ -87,6 +92,9 @@ function CategoryPage() {
     );
   }
 
+  const seo = CATEGORY_SEO[category.slug];
+  const heading = seo?.primaryKeyword ?? category.name;
+
   return (
     <SubPageShell>
       <div className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
@@ -99,7 +107,7 @@ function CategoryPage() {
             피아노 이야기
           </a>
           <span className="mx-2">/</span>
-          <span className="text-mute">{category.name}</span>
+          <span className="text-mute">{heading}</span>
         </nav>
 
         <div className="relative mt-8 overflow-hidden border border-line">
@@ -111,7 +119,7 @@ function CategoryPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ebony via-ebony/50 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-7 md:p-10">
             <h1 className="font-serif-kr text-4xl font-bold tracking-tight md:text-5xl">
-              {category.name}
+              {heading}
             </h1>
             <p className="mt-3 max-w-[56ch] text-sm leading-relaxed text-ivory/80 md:text-base">
               {category.description}
@@ -120,10 +128,8 @@ function CategoryPage() {
         </div>
 
         <div className="mt-14">
-          {CATEGORY_SEO[category.slug]?.intro && (
-            <p className="mb-10 max-w-[62ch] leading-relaxed text-mute">
-              {CATEGORY_SEO[category.slug].intro}
-            </p>
+          {seo?.intro && (
+            <p className="mb-10 max-w-[62ch] leading-relaxed text-mute">{seo.intro}</p>
           )}
           {posts.length === 0 ? (
             <p className="border border-line p-10 text-center text-mute">

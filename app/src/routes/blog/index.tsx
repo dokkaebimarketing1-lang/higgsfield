@@ -7,7 +7,7 @@ import {
   type CategoryRow,
   type PostRow,
 } from "../../lib/api/posts.functions";
-import { SITE, SITE_URL } from "../../lib/content";
+import { CATEGORY_SEO, SITE, SITE_URL } from "../../lib/content";
 
 export const Route = createFileRoute("/blog/")({
   loader: async () => {
@@ -19,11 +19,11 @@ export const Route = createFileRoute("/blog/")({
   },
   head: () => ({
     meta: [
-      { title: `피아노 이야기 | ${SITE.brand}` },
+      { title: `피아노 레슨·연습 칼럼 | ${SITE.brand}` },
       {
         name: "description",
         content:
-          "피아노 과외 선택부터 연습법, 입시, 곡 추천까지. 이화여대 피아노과 선생님이 레슨 현장에서 전하는 피아노 칼럼.",
+          "피아노 레슨 선택, 연습법, 입시·콩쿠르, 곡 추천, 학부모와 지역 안내를 검색 주제별로 묶은 이화여대 피아노과 재학생의 칼럼입니다.",
       },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/blog` }],
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/blog/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          name: "피아노 이야기",
+          name: "피아노 레슨·연습 칼럼",
           url: `${SITE_URL}/blog`,
           isPartOf: { "@id": `${SITE_URL}/#website` },
           inLanguage: "ko",
@@ -54,12 +54,12 @@ function BlogHub() {
     <SubPageShell>
       <div className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
         <h1 className="font-serif-kr text-4xl font-bold tracking-tight md:text-6xl">
-          피아노 이야기
+          피아노 레슨·연습 칼럼
         </h1>
         <p className="mt-5 max-w-[56ch] leading-relaxed text-mute">
-          {SITE.brand}는 이화여자대학교 피아노과 재학생이 운영하는 1:1 피아노 레슨입니다. 이
-          칼럼에는 피아노 과외 선택부터 연습 방법, 입시와 콩쿠르, 곡 추천까지, 레슨 현장에서 나온
-          이야기를 정리해 전합니다.
+          피아노 레슨·연습 칼럼은 과외 선택부터 연습 방법, 입시와 콩쿠르, 곡 추천, 학부모와 지역
+          안내까지 검색 목적에 맞춰 나눠 전합니다. {SITE.brand}를 운영하는 이화여자대학교 피아노과
+          재학생이 레슨 현장에서 얻은 경험을 정리했습니다.
         </p>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -78,7 +78,7 @@ function BlogHub() {
               <div className="absolute inset-0 bg-gradient-to-t from-ebony via-ebony/40 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-5">
                 <h2 className="font-serif-kr text-xl font-semibold transition-colors group-hover:text-brass">
-                  {c.name}
+                  {CATEGORY_SEO[c.slug]?.primaryKeyword ?? c.name}
                 </h2>
                 <p className="mt-1 text-xs text-mute">
                   {c.description} · {c.post_count ?? 0}편

@@ -5,8 +5,13 @@ import { SiteFooter, SiteNav } from "../components/site/chrome";
 import { HeroScrub } from "../components/site/hero-scrub";
 import { Monogram } from "../components/site/monogram";
 import { submitInquiry } from "../lib/api/inquiries.functions";
-import { listPublishedPosts, type PostRow } from "../lib/api/posts.functions";
-import { SITE } from "../lib/content";
+import {
+  listCategories,
+  listPublishedPosts,
+  type CategoryRow,
+  type PostRow,
+} from "../lib/api/posts.functions";
+import { CATEGORY_SEO, SITE, SITE_URL } from "../lib/content";
 import { useSiteMotion } from "../lib/use-motion";
 
 const HERO_FRAME_COUNT = 101;
@@ -17,28 +22,28 @@ const jsonLd = {
   "@graph": [
     {
       "@type": ["LocalBusiness", "ProfessionalService"],
-      "@id": "https://ewha-piano.higgsfield.app/#business",
+      "@id": `${SITE_URL}/#business`,
       name: SITE.brand,
       description: SITE.description,
-      url: "https://ewha-piano.higgsfield.app/",
+      url: `${SITE_URL}/`,
       serviceType: "1:1 피아노 레슨",
       image:
         "https://d2ol7oe51mr4n9.cloudfront.net/user_34g8tGWyYG4JUcCJYEK7ikRiSGl/3ac1a2a4-c77e-49fc-ac0b-b721b1430517.png",
       areaServed: ["서울특별시", "서울특별시 서대문구", "서울특별시 마포구"],
       priceRange: "₩₩",
-      founder: { "@id": "https://ewha-piano.higgsfield.app/about#person" },
+      founder: { "@id": `${SITE_URL}/about#person` },
     },
     {
       "@type": "WebSite",
-      "@id": "https://ewha-piano.higgsfield.app/#website",
+      "@id": `${SITE_URL}/#website`,
       name: SITE.brand,
-      url: "https://ewha-piano.higgsfield.app/",
-      publisher: { "@id": "https://ewha-piano.higgsfield.app/#business" },
+      url: `${SITE_URL}/`,
+      publisher: { "@id": `${SITE_URL}/#business` },
       inLanguage: "ko",
     },
     {
       "@type": "FAQPage",
-      "@id": "https://ewha-piano.higgsfield.app/#faq",
+      "@id": `${SITE_URL}/#faq`,
       mainEntity: SITE.faq.items.map((f) => ({
         "@type": "Question",
         name: f.q,
@@ -50,12 +55,15 @@ const jsonLd = {
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const { posts } = await listPublishedPosts({ data: { limit: 3 } });
-    return { latest: posts };
+    const [{ posts }, { categories }] = await Promise.all([
+      listPublishedPosts({ data: { limit: 3 } }),
+      listCategories(),
+    ]);
+    return { latest: posts, categories };
   },
   head: () => ({
     links: [
-      { rel: "canonical", href: "https://ewha-piano.higgsfield.app/" },
+      { rel: "canonical", href: `${SITE_URL}/` },
       {
         rel: "preload",
         as: "image",
@@ -71,7 +79,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const rootRef = useRef<HTMLElement | null>(null);
   useSiteMotion(rootRef);
-  const { latest } = Route.useLoaderData();
+  const { latest, categories } = Route.useLoaderData();
 
   return (
     <main ref={rootRef} className="bg-ebony text-ivory antialiased">
@@ -82,7 +90,7 @@ function Index() {
       <ProcessSection />
       <FaqSection />
       <PricingSection />
-      <LatestPostsSection posts={latest} />
+      <LatestPostsSection posts={latest} categories={categories} />
       <ContactSection />
       <SiteFooter />
     </main>
@@ -90,22 +98,41 @@ function Index() {
 }
 
 /* ── 최신 칼럼 (내부 링크로 이어지는 SEO 내비게이션) ── */
-function LatestPostsSection({ posts }: { posts: PostRow[] }) {
+function LatestPostsSection({
+  posts,
+  categories,
+}: {
+  posts: PostRow[];
+  categories: CategoryRow[];
+}) {
   if (!posts || posts.length === 0) return null;
   return (
     <section id="latest" className="border-t border-line py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6 md:px-10">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <h2 data-build className="font-serif-kr text-4xl font-bold tracking-tight md:text-5xl">
-            피아노 이야기
+            피아노 레슨·연습 칼럼
           </h2>
           <a
             href="/blog"
             className="text-sm text-brass underline underline-offset-8 transition-colors hover:text-ivory"
           >
-            모든 글 보기
+            피아노 칼럼 전체 보기
           </a>
         </div>
+        {categories.length > 0 && (
+          <nav className="mt-8 flex flex-wrap gap-2" aria-label="피아노 칼럼 주제">
+            {categories.map((category) => (
+              <a
+                key={category.id}
+                href={`/blog/${category.slug}`}
+                className="border border-line px-4 py-2 text-sm text-mute transition-colors hover:border-brass hover:text-brass"
+              >
+                {CATEGORY_SEO[category.slug]?.primaryKeyword ?? category.name}
+              </a>
+            ))}
+          </nav>
+        )}
         <div className="mt-12">
           {posts.map((post) => (
             <a

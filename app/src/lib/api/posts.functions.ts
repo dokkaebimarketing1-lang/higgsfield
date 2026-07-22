@@ -4,6 +4,7 @@ import type { D1Database } from "@cloudflare/workers-types";
 
 import { requireAdmin } from "../auth.server";
 import { bindings } from "../bindings.server";
+import { getKeywordAlignmentIssues } from "../seo";
 
 /* ── Types ─────────────────────────────────────────────── */
 export type PostRow = {
@@ -138,9 +139,9 @@ export const listRelatedPosts = createServerFn({ method: "GET" })
     if (!DB) return { posts: [] };
     const { results } = await DB.prepare(
       `${LIST_SELECT} WHERE p.status = 'published' AND p.category_id = ? AND p.id != ?
-       ORDER BY p.published_at DESC LIMIT 3`,
+       ORDER BY ABS(p.id - ?) ASC, p.published_at DESC LIMIT 3`,
     )
-      .bind(data.categoryId, data.excludeId)
+      .bind(data.categoryId, data.excludeId, data.excludeId)
       .all<PostRow>();
     return { posts: results ?? [] };
   });
@@ -195,23 +196,30 @@ export const adminGetPost = createServerFn({ method: "POST" })
     return { post: post ?? null };
   });
 
-const postInput = z.object({
-  title: z.string().trim().min(1, "제목을 입력해 주세요").max(200),
-  slug: z
-    .string()
-    .trim()
-    .max(120)
-    .regex(/^[a-z0-9-]*$/, "슬러그는 영문 소문자, 숫자, 하이픈만 사용할 수 있습니다")
-    .default(""),
-  excerpt: z.string().trim().max(300).default(""),
-  body: z.string().min(1, "본문을 입력해 주세요"),
-  categoryId: z.number().int().nullable().default(null),
-  tags: z.string().trim().max(200).default(""),
-  coverImage: z.string().trim().max(500).default(""),
-  metaTitle: z.string().trim().max(200).default(""),
-  metaDescription: z.string().trim().max(300).default(""),
-  status: z.enum(["draft", "published"]).default("draft"),
-});
+const postInput = z
+  .object({
+    title: z.string().trim().min(1, "제목을 입력해 주세요").max(200),
+    slug: z
+      .string()
+      .trim()
+      .max(120)
+      .regex(/^[a-z0-9-]*$/, "슬러그는 영문 소문자, 숫자, 하이픈만 사용할 수 있습니다")
+      .default(""),
+    excerpt: z.string().trim().max(300).default(""),
+    body: z.string().min(1, "본문을 입력해 주세요"),
+    categoryId: z.number().int().nullable().default(null),
+    tags: z.string().trim().max(200).default(""),
+    coverImage: z.string().trim().max(500).default(""),
+    metaTitle: z.string().trim().max(200).default(""),
+    metaDescription: z.string().trim().max(300).default(""),
+    status: z.enum(["draft", "published"]).default("draft"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status !== "published") return;
+    for (const issue of getKeywordAlignmentIssues(data)) {
+      ctx.addIssue({ code: "custom", path: [issue.field], message: issue.message });
+    }
+  });
 
 export const createPost = createServerFn({ method: "POST" })
   .validator(postInput)

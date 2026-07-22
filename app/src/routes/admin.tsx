@@ -15,6 +15,7 @@ import {
   type CategoryRow,
   type PostRow,
 } from "../lib/api/posts.functions";
+import { getPrimaryKeyword } from "../lib/seo";
 
 type Inquiry = {
   id: number;
@@ -552,6 +553,7 @@ function EditorTab({
   const inputCls =
     "w-full border border-line bg-ebony px-4 py-3 text-ivory outline-none transition-colors placeholder:text-faint focus:border-brass";
   const labelCls = "mb-2 block text-sm text-mute";
+  const primaryKeyword = getPrimaryKeyword(form.tags);
 
   return (
     <div>
@@ -600,13 +602,19 @@ function EditorTab({
           />
         </label>
         <label className="block">
-          <span className={labelCls}>태그 (쉼표로 구분)</span>
+          <span className={labelCls}>목표 키워드 · 연관 키워드 (쉼표로 구분)</span>
           <input
             value={form.tags}
             onChange={(e) => set("tags", e.target.value)}
             placeholder="피아노 과외, 비용, 초등"
             className={inputCls}
           />
+          <span className="mt-2 block text-xs leading-relaxed text-faint">
+            첫 항목이 대표 목표 키워드입니다
+            {primaryKeyword
+              ? `: ${primaryKeyword}`
+              : ". 발행 전 제목, 요약, SEO 설명에 자연스럽게 포함해야 합니다."}
+          </span>
         </label>
         <div className="block">
           <span className={labelCls}>커버 이미지</span>
