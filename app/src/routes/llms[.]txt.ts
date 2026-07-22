@@ -1,12 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { SITE, SITE_URL } from "../lib/content";
+import { SERVICE_PAGES } from "../lib/seo-pages";
 
 // AI 검색 엔진을 위한 사이트 설명 파일 (/llms.txt)
 export const Route = createFileRoute("/llms.txt")({
   server: {
     handlers: {
       GET: async () => {
+        const servicePages = Object.values(SERVICE_PAGES)
+          .map((page) => `- [${page.primaryKeyword}](${SITE_URL}${page.path}): ${page.description}`)
+          .join("\n");
         const body = `# ${SITE.brand}
 
 > 이화여자대학교 피아노과 재학생 김서연이 운영하는 1:1 피아노 레슨 사이트입니다.
@@ -16,13 +20,17 @@ export const Route = createFileRoute("/llms.txt")({
 
 ## 주요 페이지
 
-- [홈](${SITE_URL}/): 이화여대 피아노과 재학생의 1:1 피아노 과외 소개, 프로그램, 요금, FAQ
+- [홈](${SITE_URL}/): 이화여대 피아노과 재학생의 1:1 피아노 레슨 소개, 프로그램, 요금, FAQ
 - [선생님 소개](${SITE_URL}/about): 김서연 프로필, 경력, 레슨 철학
-- [레슨 요금 안내](${SITE_URL}/#pricing): 반별 월 요금 (160,000원 / 240,000원 / 320,000원)
+- [레슨 요금 안내](${SITE_URL}/pricing): 반별 월 요금 (160,000원 / 240,000원 / 320,000원)
 - [자주 묻는 질문](${SITE_URL}/#faq): 비용, 지역, 시작 나이, 성인 초보, 입시 준비에 대한 답변
 - [상담 신청](${SITE_URL}/#contact): 상담 신청 폼과 연락처
 - [개인정보 처리 안내](${SITE_URL}/privacy): 상담 정보의 수집 목적, 보관 기간, 이용자 권리
 - [피아노 이야기 (칼럼)](${SITE_URL}/blog): 피아노 과외 · 연습 · 입시 · 곡 추천 칼럼 모음
+
+## 목적별 레슨
+
+${servicePages}
 
 ## 칼럼 카테고리
 

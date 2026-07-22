@@ -5,6 +5,7 @@ import { getPostBySlug, listRelatedPosts, type PostRow } from "../../../lib/api/
 import { SITE, SITE_URL } from "../../../lib/content";
 import { extractFaq } from "../../../lib/faq";
 import { renderMarkdown } from "../../../lib/markdown";
+import { getServicePageForPost } from "../../../lib/seo-pages";
 
 const FALLBACK_OG =
   "https://d2ol7oe51mr4n9.cloudfront.net/user_34g8tGWyYG4JUcCJYEK7ikRiSGl/3ac1a2a4-c77e-49fc-ac0b-b721b1430517.png";
@@ -17,7 +18,11 @@ export const Route = createFileRoute("/blog/$category/$slug")({
     const related = post?.category_id
       ? (
           await listRelatedPosts({
-            data: { categoryId: post.category_id, excludeId: post.id },
+            data: {
+              categoryId: post.category_id,
+              keywordCluster: post.keyword_cluster,
+              excludeId: post.id,
+            },
           })
         ).posts
       : [];
@@ -148,6 +153,7 @@ function PostPage() {
   }
 
   const html = renderMarkdown(post.body);
+  const servicePage = getServicePageForPost(post.keyword_cluster, post.slug);
 
   return (
     <SubPageShell>
@@ -194,6 +200,27 @@ function PostPage() {
         )}
 
         <div className="prose-ewha mt-12" dangerouslySetInnerHTML={{ __html: html }} />
+
+        {servicePage && (
+          <section
+            className="mt-14 border border-line bg-ebony-2 p-7 md:p-9"
+            aria-labelledby="related-lesson-title"
+          >
+            <h2 id="related-lesson-title" className="font-serif-kr text-2xl font-semibold">
+              {servicePage.primaryKeyword} 안내
+            </h2>
+            <p className="mt-3 max-w-[58ch] leading-relaxed text-mute">
+              이 글의 내용을 실제 수업 목표에 맞춰 적용하고 싶다면 수업 방식, 대상과 진행 과정을
+              먼저 확인해 보세요.
+            </p>
+            <a
+              href={servicePage.path}
+              className="mt-5 inline-block text-brass underline underline-offset-8 transition-colors hover:text-ivory"
+            >
+              {servicePage.primaryKeyword} 자세히 보기
+            </a>
+          </section>
+        )}
 
         <div className="mt-16 flex items-center gap-5 border border-line bg-ebony-2 p-6">
           <img

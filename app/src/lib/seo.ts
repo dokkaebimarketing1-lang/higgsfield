@@ -1,4 +1,5 @@
 import { SITE_URL } from "./content";
+import { normalizeKeyword } from "./keyword-taxonomy";
 
 export function getPrimaryKeyword(tags: string): string {
   return (
@@ -27,6 +28,7 @@ export function getKeywordAlignmentIssues(input: {
   if (!keyword) {
     return [{ field: "tags", message: "발행 글에는 목표 키워드를 첫 태그로 입력해 주세요." }];
   }
+  const normalizedKeyword = normalizeKeyword(keyword);
 
   const checks: { field: KeywordAlignmentField; value: string; label: string }[] = [
     { field: "title", value: input.title, label: "제목(H1)" },
@@ -46,7 +48,7 @@ export function getKeywordAlignmentIssues(input: {
   ];
 
   return checks
-    .filter((check) => !check.value.includes(keyword))
+    .filter((check) => !normalizeKeyword(check.value).includes(normalizedKeyword))
     .map((check) => ({
       field: check.field,
       message: `${check.label}에 목표 키워드 “${keyword}”를 자연스럽게 포함해 주세요.`,

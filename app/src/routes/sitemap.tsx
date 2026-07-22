@@ -7,7 +7,15 @@ import {
   type CategoryRow,
   type PostRow,
 } from "../lib/api/posts.functions";
-import { CATEGORY_SEO, SITE, SITE_URL } from "../lib/content";
+import { CATEGORY_SEO } from "../lib/content";
+import {
+  buildPublicPageHead,
+  PUBLIC_PAGE_BY_PATH,
+  PUBLIC_PAGES,
+  SERVICE_PAGES,
+} from "../lib/seo-pages";
+
+const sitemapPage = PUBLIC_PAGE_BY_PATH.get("/sitemap")!;
 
 export const Route = createFileRoute("/sitemap")({
   loader: async () => {
@@ -17,13 +25,7 @@ export const Route = createFileRoute("/sitemap")({
     ]);
     return { categories, posts };
   },
-  head: () => ({
-    meta: [
-      { title: `사이트맵 | ${SITE.brand}` },
-      { name: "description", content: "이화 피아노 과외 사이트의 전체 페이지와 글 목록입니다." },
-    ],
-    links: [{ rel: "canonical", href: `${SITE_URL}/sitemap` }],
-  }),
+  head: () => buildPublicPageHead(sitemapPage),
   component: SitemapPage,
 });
 
@@ -33,16 +35,9 @@ function SitemapPage() {
     posts: PostRow[];
   };
 
-  const MAIN_PAGES = [
-    { href: "/", label: "홈 | 이화여대 피아노과 1:1 피아노 레슨" },
-    { href: "/about", label: "선생님 소개" },
-    { href: "/blog", label: "피아노 이야기 (칼럼)" },
-    { href: "/#programs", label: "레슨 프로그램" },
-    { href: "/#pricing", label: "레슨 요금 안내" },
-    { href: "/#faq", label: "자주 묻는 질문" },
-    { href: "/#contact", label: "상담 신청" },
-    { href: "/privacy", label: "개인정보 처리 안내" },
-  ];
+  const lessonPages = Object.values(SERVICE_PAGES);
+  const lessonPaths = new Set<string>(lessonPages.map((page) => page.path));
+  const mainPages = PUBLIC_PAGES.filter((page) => !lessonPaths.has(page.path));
 
   return (
     <SubPageShell>
@@ -52,10 +47,21 @@ function SitemapPage() {
 
         <h2 className="mt-14 font-serif-kr text-2xl font-bold">주요 페이지</h2>
         <ul className="mt-5">
-          {MAIN_PAGES.map((p) => (
-            <li key={p.href} className="border-b border-line first:border-t">
-              <a href={p.href} className="block py-4 text-ivory transition-colors hover:text-brass">
+          {mainPages.map((p) => (
+            <li key={p.path} className="border-b border-line first:border-t">
+              <a href={p.path} className="block py-4 text-ivory transition-colors hover:text-brass">
                 {p.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <h2 className="mt-14 font-serif-kr text-2xl font-bold">목적별 레슨 안내</h2>
+        <ul className="mt-5">
+          {lessonPages.map((p) => (
+            <li key={p.path} className="border-b border-line first:border-t">
+              <a href={p.path} className="block py-4 text-ivory transition-colors hover:text-brass">
+                {p.primaryKeyword}
               </a>
             </li>
           ))}

@@ -1,19 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { SubPageShell } from "../components/site/chrome";
-import { SITE, SITE_URL } from "../lib/content";
+import { buildPublicPageHead, PUBLIC_PAGE_BY_PATH } from "../lib/seo-pages";
+
+const privacyPage = PUBLIC_PAGE_BY_PATH.get("/privacy")!;
 
 export const Route = createFileRoute("/privacy")({
-  head: () => ({
-    meta: [
-      { title: `개인정보 처리 안내 | ${SITE.brand}` },
-      {
-        name: "description",
-        content: "이화 피아노 과외 상담 신청 시 처리되는 개인정보와 보유 기간 안내입니다.",
-      },
-    ],
-    links: [{ rel: "canonical", href: `${SITE_URL}/privacy` }],
-  }),
+  head: () => buildPublicPageHead(privacyPage),
   component: PrivacyPage,
 });
 

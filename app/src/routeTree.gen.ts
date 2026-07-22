@@ -14,12 +14,18 @@ import { Route as SitemapRouteImport } from './routes/sitemap'
 import { Route as RssDotxmlRouteImport } from './routes/rss[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog/index'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
+import { Route as LessonsPrivateRouteImport } from './routes/lessons/private'
+import { Route as LessonsHomeVisitRouteImport } from './routes/lessons/home-visit'
+import { Route as LessonsChildrenRouteImport } from './routes/lessons/children'
+import { Route as LessonsAdultRouteImport } from './routes/lessons/adult'
+import { Route as LessonsAdmissionRouteImport } from './routes/lessons/admission'
 import { Route as BlogCategoryIndexRouteImport } from './routes/blog/$category/index'
 import { Route as BlogCategorySlugRouteImport } from './routes/blog/$category/$slug'
 
@@ -46,6 +52,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -78,6 +89,31 @@ const MediaSplatRoute = MediaSplatRouteImport.update({
   path: '/media/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LessonsPrivateRoute = LessonsPrivateRouteImport.update({
+  id: '/lessons/private',
+  path: '/lessons/private',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LessonsHomeVisitRoute = LessonsHomeVisitRouteImport.update({
+  id: '/lessons/home-visit',
+  path: '/lessons/home-visit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LessonsChildrenRoute = LessonsChildrenRouteImport.update({
+  id: '/lessons/children',
+  path: '/lessons/children',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LessonsAdultRoute = LessonsAdultRouteImport.update({
+  id: '/lessons/adult',
+  path: '/lessons/adult',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LessonsAdmissionRoute = LessonsAdmissionRouteImport.update({
+  id: '/lessons/admission',
+  path: '/lessons/admission',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogCategoryIndexRoute = BlogCategoryIndexRouteImport.update({
   id: '/blog/$category/',
   path: '/blog/$category/',
@@ -94,11 +130,17 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/rss.xml': typeof RssDotxmlRoute
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/lessons/admission': typeof LessonsAdmissionRoute
+  '/lessons/adult': typeof LessonsAdultRoute
+  '/lessons/children': typeof LessonsChildrenRoute
+  '/lessons/home-visit': typeof LessonsHomeVisitRoute
+  '/lessons/private': typeof LessonsPrivateRoute
   '/media/$': typeof MediaSplatRoute
   '/blog/': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
@@ -109,11 +151,17 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/rss.xml': typeof RssDotxmlRoute
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/lessons/admission': typeof LessonsAdmissionRoute
+  '/lessons/adult': typeof LessonsAdultRoute
+  '/lessons/children': typeof LessonsChildrenRoute
+  '/lessons/home-visit': typeof LessonsHomeVisitRoute
+  '/lessons/private': typeof LessonsPrivateRoute
   '/media/$': typeof MediaSplatRoute
   '/blog': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
@@ -125,11 +173,17 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/rss.xml': typeof RssDotxmlRoute
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/lessons/admission': typeof LessonsAdmissionRoute
+  '/lessons/adult': typeof LessonsAdultRoute
+  '/lessons/children': typeof LessonsChildrenRoute
+  '/lessons/home-visit': typeof LessonsHomeVisitRoute
+  '/lessons/private': typeof LessonsPrivateRoute
   '/media/$': typeof MediaSplatRoute
   '/blog/': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
@@ -142,11 +196,17 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/llms.txt'
+    | '/pricing'
     | '/privacy'
     | '/robots.txt'
     | '/rss.xml'
     | '/sitemap'
     | '/sitemap.xml'
+    | '/lessons/admission'
+    | '/lessons/adult'
+    | '/lessons/children'
+    | '/lessons/home-visit'
+    | '/lessons/private'
     | '/media/$'
     | '/blog/'
     | '/blog/$category/$slug'
@@ -157,11 +217,17 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/llms.txt'
+    | '/pricing'
     | '/privacy'
     | '/robots.txt'
     | '/rss.xml'
     | '/sitemap'
     | '/sitemap.xml'
+    | '/lessons/admission'
+    | '/lessons/adult'
+    | '/lessons/children'
+    | '/lessons/home-visit'
+    | '/lessons/private'
     | '/media/$'
     | '/blog'
     | '/blog/$category/$slug'
@@ -172,11 +238,17 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/llms.txt'
+    | '/pricing'
     | '/privacy'
     | '/robots.txt'
     | '/rss.xml'
     | '/sitemap'
     | '/sitemap.xml'
+    | '/lessons/admission'
+    | '/lessons/adult'
+    | '/lessons/children'
+    | '/lessons/home-visit'
+    | '/lessons/private'
     | '/media/$'
     | '/blog/'
     | '/blog/$category/$slug'
@@ -188,11 +260,17 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
+  PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   RssDotxmlRoute: typeof RssDotxmlRoute
   SitemapRoute: typeof SitemapRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  LessonsAdmissionRoute: typeof LessonsAdmissionRoute
+  LessonsAdultRoute: typeof LessonsAdultRoute
+  LessonsChildrenRoute: typeof LessonsChildrenRoute
+  LessonsHomeVisitRoute: typeof LessonsHomeVisitRoute
+  LessonsPrivateRoute: typeof LessonsPrivateRoute
   MediaSplatRoute: typeof MediaSplatRoute
   BlogIndexRoute: typeof BlogIndexRoute
   BlogCategorySlugRoute: typeof BlogCategorySlugRoute
@@ -234,6 +312,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/llms.txt': {
@@ -278,6 +363,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MediaSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lessons/private': {
+      id: '/lessons/private'
+      path: '/lessons/private'
+      fullPath: '/lessons/private'
+      preLoaderRoute: typeof LessonsPrivateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lessons/home-visit': {
+      id: '/lessons/home-visit'
+      path: '/lessons/home-visit'
+      fullPath: '/lessons/home-visit'
+      preLoaderRoute: typeof LessonsHomeVisitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lessons/children': {
+      id: '/lessons/children'
+      path: '/lessons/children'
+      fullPath: '/lessons/children'
+      preLoaderRoute: typeof LessonsChildrenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lessons/adult': {
+      id: '/lessons/adult'
+      path: '/lessons/adult'
+      fullPath: '/lessons/adult'
+      preLoaderRoute: typeof LessonsAdultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lessons/admission': {
+      id: '/lessons/admission'
+      path: '/lessons/admission'
+      fullPath: '/lessons/admission'
+      preLoaderRoute: typeof LessonsAdmissionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$category/': {
       id: '/blog/$category/'
       path: '/blog/$category'
@@ -300,11 +420,17 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
+  PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   RssDotxmlRoute: RssDotxmlRoute,
   SitemapRoute: SitemapRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  LessonsAdmissionRoute: LessonsAdmissionRoute,
+  LessonsAdultRoute: LessonsAdultRoute,
+  LessonsChildrenRoute: LessonsChildrenRoute,
+  LessonsHomeVisitRoute: LessonsHomeVisitRoute,
+  LessonsPrivateRoute: LessonsPrivateRoute,
   MediaSplatRoute: MediaSplatRoute,
   BlogIndexRoute: BlogIndexRoute,
   BlogCategorySlugRoute: BlogCategorySlugRoute,

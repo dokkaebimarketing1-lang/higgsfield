@@ -2,14 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { bindings } from "../lib/bindings.server";
 import { buildSitemapXml, type SitemapUrlEntry } from "../lib/seo";
-
-const STATIC_ROUTES: SitemapUrlEntry[] = [
-  { path: "/" },
-  { path: "/about" },
-  { path: "/blog" },
-  { path: "/privacy" },
-  { path: "/sitemap" },
-];
+import { PUBLIC_PAGES } from "../lib/seo-pages";
 
 function sitemapDate(value: string | null | undefined): string | undefined {
   const date = value?.slice(0, 10);
@@ -32,7 +25,10 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
-        const entries: SitemapUrlEntry[] = STATIC_ROUTES.map((entry) => ({ ...entry }));
+        const entries: SitemapUrlEntry[] = PUBLIC_PAGES.map((page) => ({
+          path: page.path,
+          lastmod: page.lastModified,
+        }));
         const { DB } = bindings();
 
         if (DB) {

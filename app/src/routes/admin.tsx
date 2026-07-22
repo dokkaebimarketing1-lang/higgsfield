@@ -15,6 +15,17 @@ import {
   type CategoryRow,
   type PostRow,
 } from "../lib/api/posts.functions";
+import {
+  KEYWORD_CLUSTERS,
+  KEYWORD_CLUSTER_LABELS,
+  KEYWORD_ROLES,
+  KEYWORD_ROLE_LABELS,
+  SEARCH_INTENTS,
+  SEARCH_INTENT_LABELS,
+  type KeywordCluster,
+  type KeywordRole,
+  type SearchIntent,
+} from "../lib/keyword-taxonomy";
 import { getPrimaryKeyword } from "../lib/seo";
 
 type Inquiry = {
@@ -412,6 +423,9 @@ type EditorForm = {
   categoryId: number | null;
   excerpt: string;
   tags: string;
+  keywordRole: KeywordRole;
+  searchIntent: SearchIntent;
+  keywordCluster: KeywordCluster;
   coverImage: string;
   metaTitle: string;
   metaDescription: string;
@@ -425,6 +439,9 @@ const EMPTY_FORM: EditorForm = {
   categoryId: null,
   excerpt: "",
   tags: "",
+  keywordRole: "informational",
+  searchIntent: "informational",
+  keywordCluster: "general",
   coverImage: "",
   metaTitle: "",
   metaDescription: "",
@@ -463,6 +480,9 @@ function EditorTab({
               categoryId: p.category_id,
               excerpt: p.excerpt,
               tags: p.tags,
+              keywordRole: p.keyword_role,
+              searchIntent: p.search_intent,
+              keywordCluster: p.keyword_cluster,
               coverImage: p.cover_image,
               metaTitle: p.meta_title,
               metaDescription: p.meta_description,
@@ -530,6 +550,9 @@ function EditorTab({
         body: form.body,
         categoryId: form.categoryId,
         tags: form.tags,
+        keywordRole: form.keywordRole,
+        searchIntent: form.searchIntent,
+        keywordCluster: form.keywordCluster,
         coverImage: form.coverImage,
         metaTitle: form.metaTitle,
         metaDescription: form.metaDescription,
@@ -590,6 +613,51 @@ function EditorTab({
               </option>
             ))}
           </select>
+        </label>
+        <label className="block">
+          <span className={labelCls}>키워드 역할</span>
+          <select
+            value={form.keywordRole}
+            onChange={(e) => set("keywordRole", e.target.value as KeywordRole)}
+            className={inputCls}
+          >
+            {KEYWORD_ROLES.map((role) => (
+              <option key={role} value={role}>
+                {KEYWORD_ROLE_LABELS[role]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className={labelCls}>검색 의도</span>
+          <select
+            value={form.searchIntent}
+            onChange={(e) => set("searchIntent", e.target.value as SearchIntent)}
+            className={inputCls}
+          >
+            {SEARCH_INTENTS.map((intent) => (
+              <option key={intent} value={intent}>
+                {SEARCH_INTENT_LABELS[intent]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className={labelCls}>토픽 클러스터</span>
+          <select
+            value={form.keywordCluster}
+            onChange={(e) => set("keywordCluster", e.target.value as KeywordCluster)}
+            className={inputCls}
+          >
+            {KEYWORD_CLUSTERS.map((cluster) => (
+              <option key={cluster} value={cluster}>
+                {KEYWORD_CLUSTER_LABELS[cluster]}
+              </option>
+            ))}
+          </select>
+          <span className="mt-2 block text-xs leading-relaxed text-faint">
+            발행 글은 미분류가 아닌 클러스터를 선택해야 합니다.
+          </span>
         </label>
         <label className="block md:col-span-2">
           <span className={labelCls}>요약 (목록·검색결과에 표시, 1~2문장)</span>

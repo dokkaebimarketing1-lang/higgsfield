@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { SubPageShell } from "../components/site/chrome";
-import { SITE, SITE_URL } from "../lib/content";
+import { SITE_URL } from "../lib/content";
+import { buildPublicPageHead, PUBLIC_PAGE_BY_PATH } from "../lib/seo-pages";
+
+const aboutPage = PUBLIC_PAGE_BY_PATH.get("/about")!;
 
 const personLd = {
   "@context": "https://schema.org",
@@ -10,7 +13,7 @@ const personLd = {
   name: "김서연",
   jobTitle: "피아노 레슨 강사",
   description:
-    "이화여자대학교 피아노과 재학생. 유아·초등 취미부터 입시·콩쿠르, 성인 취미까지 지도하는 1:1 피아노 레슨 강사.",
+    "이화여자대학교 피아노과 재학생 김서연은 어린이 취미부터 입시·콩쿠르, 성인 취미까지 지도하는 1:1 피아노 선생님입니다.",
   url: `${SITE_URL}/about`,
   affiliation: { "@type": "CollegeOrUniversity", name: "이화여자대학교" },
   award: "국내 피아노 콩쿠르 입상 및 수상 다수",
@@ -20,15 +23,7 @@ const personLd = {
 
 export const Route = createFileRoute("/about")({
   head: () => ({
-    meta: [
-      { title: `선생님 소개 | ${SITE.brand}` },
-      {
-        name: "description",
-        content:
-          "이화여자대학교 피아노과 재학생 김서연의 소개. 콩쿠르 수상 경력과 1:1 레슨 철학, 수업 방식을 안내합니다.",
-      },
-    ],
-    links: [{ rel: "canonical", href: `${SITE_URL}/about` }],
+    ...buildPublicPageHead(aboutPage),
     scripts: [{ type: "application/ld+json", children: JSON.stringify(personLd) }],
   }),
   component: AboutPage,
@@ -79,12 +74,13 @@ function AboutPage() {
           <div className="md:col-span-6 md:col-start-7">
             <p className="font-latin text-xl italic text-brass md:text-2xl">Adagio</p>
             <h1 className="mt-3 font-serif-kr text-4xl font-bold tracking-tight md:text-5xl">
-              김서연
+              피아노 선생님 김서연
             </h1>
             <p className="mt-3 text-lg text-mute">이화여자대학교 피아노과 재학</p>
             <p className="mt-7 max-w-[58ch] leading-relaxed text-mute">
-              전공 과정에서 익힌 정확한 기초와 음악을 사랑하는 마음을 1:1 레슨에 전하고 있습니다.
-              어린이의 첫 건반부터 성인의 오랜 꿈, 입시생의 목표까지 한 사람의 속도에 맞춥니다.
+              피아노 선생님 김서연은 전공 과정에서 익힌 정확한 기초와 음악을 사랑하는 마음을 1:1
+              레슨에 전하고 있습니다. 어린이의 첫 건반부터 성인의 오랜 꿈, 입시생의 목표까지 한
+              사람의 속도에 맞춥니다.
             </p>
             <div className="mt-10">
               {MILESTONES.map((m) => (
@@ -121,6 +117,14 @@ function AboutPage() {
           <p className="mx-auto mt-3 max-w-[46ch] text-sm leading-relaxed text-mute md:text-base">
             아이의 성향, 목표, 궁금한 점을 편하게 이야기해 주세요. 서울 서대문구·마포구 방문 레슨,
             그 외 지역은 온라인으로 만납니다.
+          </p>
+          <p className="mx-auto mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
+            <a href="/lessons/private" className="text-brass underline underline-offset-4">
+              피아노 개인 레슨 안내
+            </a>
+            <a href="/lessons/home-visit" className="text-brass underline underline-offset-4">
+              피아노 방문 레슨 안내
+            </a>
           </p>
           <a
             href="/#contact"

@@ -4,7 +4,18 @@ import type { D1Database } from "@cloudflare/workers-types";
 
 import { requireAdmin } from "../auth.server";
 import { bindings } from "../bindings.server";
-import { getKeywordAlignmentIssues } from "../seo";
+import { CATEGORY_SEO } from "../content";
+import {
+  KEYWORD_CLUSTERS,
+  KEYWORD_ROLES,
+  SEARCH_INTENTS,
+  normalizeKeyword,
+  type KeywordCluster,
+  type KeywordRole,
+  type SearchIntent,
+} from "../keyword-taxonomy";
+import { getKeywordAlignmentIssues, getPrimaryKeyword } from "../seo";
+import { PUBLIC_PAGES } from "../seo-pages";
 
 /* ── Types ─────────────────────────────────────────────── */
 export type PostRow = {
@@ -17,6 +28,9 @@ export type PostRow = {
   category_slug?: string | null;
   category_name?: string | null;
   tags: string;
+  keyword_role: KeywordRole;
+  search_intent: SearchIntent;
+  keyword_cluster: KeywordCluster;
   cover_image: string;
   meta_title: string;
   meta_description: string;
@@ -38,7 +52,7 @@ export type CategoryRow = {
 
 const LIST_SELECT = `
   SELECT p.id, p.slug, p.title, p.excerpt, p.body, p.category_id, p.tags, p.cover_image,
-         p.meta_title, p.meta_description,
+         p.keyword_role, p.search_intent, p.keyword_cluster, p.meta_title, p.meta_description,
          p.status, p.reading_minutes, p.published_at, p.created_at, p.updated_at,
          c.slug AS category_slug, c.name AS category_name
   FROM posts p LEFT JOIN categories c ON c.id = p.category_id
@@ -61,6 +75,44 @@ async function uniqueSlug(DB: D1Database, base: string, excludeId?: number) {
     slug = `${base}-${i}`;
   }
   return `${base}-${Date.now()}`;
+}
+
+async function assertUniquePublishedKeyword(
+  DB: D1Database,
+  tags: string,
+  excludeId?: number,
+): Promise<void> {
+  const primaryKeyword = getPrimaryKeyword(tags);
+  const normalizedKeyword = normalizeKeyword(primaryKeyword);
+  if (!normalizedKeyword) return;
+
+  const reservedTarget = [
+    ...PUBLIC_PAGES.map((page) => ({ path: page.path, keyword: page.primaryKeyword })),
+    ...Object.entries(CATEGORY_SEO).map(([slug, category]) => ({
+      path: `/blog/${slug}`,
+      keyword: category.primaryKeyword,
+    })),
+  ].find((target) => normalizeKeyword(target.keyword) === normalizedKeyword);
+  if (reservedTarget) {
+    throw new Error(
+      `대표 목표 키워드 “${primaryKeyword}”는 대표 페이지 “${reservedTarget.path}”에서 이미 사용 중입니다. 이 글에는 검색 의도가 더 구체적인 롱테일 키워드를 지정해 주세요.`,
+    );
+  }
+
+  const query = excludeId
+    ? "SELECT id, title, tags FROM posts WHERE status = 'published' AND id != ?"
+    : "SELECT id, title, tags FROM posts WHERE status = 'published'";
+  const statement = excludeId ? DB.prepare(query).bind(excludeId) : DB.prepare(query);
+  const { results } = await statement.all<{ id: number; title: string; tags: string }>();
+  const duplicate = (results ?? []).find(
+    (post) => normalizeKeyword(getPrimaryKeyword(post.tags)) === normalizedKeyword,
+  );
+
+  if (duplicate) {
+    throw new Error(
+      `대표 목표 키워드 “${primaryKeyword}”는 발행 글 “${duplicate.title}”에서 이미 사용 중입니다. 한 키워드에는 하나의 대표 URL만 지정해 주세요.`,
+    );
+  }
 }
 
 /* ── Public queries ────────────────────────────────────── */
@@ -133,15 +185,31 @@ export const getCategoryBySlug = createServerFn({ method: "GET" })
   });
 
 export const listRelatedPosts = createServerFn({ method: "GET" })
-  .validator(z.object({ categoryId: z.number().int(), excludeId: z.number().int() }))
+  .validator(
+    z.object({
+      categoryId: z.number().int(),
+      keywordCluster: z.enum(KEYWORD_CLUSTERS),
+      excludeId: z.number().int(),
+    }),
+  )
   .handler(async ({ data }): Promise<{ posts: PostRow[] }> => {
     const { DB } = bindings();
     if (!DB) return { posts: [] };
     const { results } = await DB.prepare(
-      `${LIST_SELECT} WHERE p.status = 'published' AND p.category_id = ? AND p.id != ?
-       ORDER BY ABS(p.id - ?) ASC, p.published_at DESC LIMIT 3`,
+      `${LIST_SELECT} WHERE p.status = 'published' AND p.id != ?
+       AND (p.keyword_cluster = ? OR p.category_id = ?)
+       ORDER BY CASE WHEN p.keyword_cluster = ? THEN 0 ELSE 1 END,
+                CASE WHEN p.category_id = ? THEN 0 ELSE 1 END,
+                ABS(p.id - ?) ASC, p.published_at DESC LIMIT 3`,
     )
-      .bind(data.categoryId, data.excludeId, data.excludeId)
+      .bind(
+        data.excludeId,
+        data.keywordCluster,
+        data.categoryId,
+        data.keywordCluster,
+        data.categoryId,
+        data.excludeId,
+      )
       .all<PostRow>();
     return { posts: results ?? [] };
   });
@@ -209,6 +277,9 @@ const postInput = z
     body: z.string().min(1, "본문을 입력해 주세요"),
     categoryId: z.number().int().nullable().default(null),
     tags: z.string().trim().max(200).default(""),
+    keywordRole: z.enum(KEYWORD_ROLES).default("informational"),
+    searchIntent: z.enum(SEARCH_INTENTS).default("informational"),
+    keywordCluster: z.enum(KEYWORD_CLUSTERS).default("general"),
     coverImage: z.string().trim().max(500).default(""),
     metaTitle: z.string().trim().max(200).default(""),
     metaDescription: z.string().trim().max(300).default(""),
@@ -216,6 +287,20 @@ const postInput = z
   })
   .superRefine((data, ctx) => {
     if (data.status !== "published") return;
+    if (data.keywordCluster === "general") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["keywordCluster"],
+        message: "발행 글은 미분류가 아닌 키워드 클러스터를 선택해 주세요.",
+      });
+    }
+    if (data.keywordRole === "utility") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["keywordRole"],
+        message: "탐색·정책 역할은 발행 블로그 글에 사용할 수 없습니다.",
+      });
+    }
     for (const issue of getKeywordAlignmentIssues(data)) {
       ctx.addIssue({ code: "custom", path: [issue.field], message: issue.message });
     }
@@ -231,10 +316,14 @@ export const createPost = createServerFn({ method: "POST" })
     const slug = await uniqueSlug(DB, base);
     const reading = estimateReadingMinutes(data.body);
     const publishedAt = data.status === "published" ? new Date().toISOString() : null;
+    if (data.status === "published") {
+      await assertUniquePublishedKeyword(DB, data.tags);
+    }
     const res = await DB.prepare(
       `INSERT INTO posts (slug, title, excerpt, body, category_id, tags, cover_image,
-        meta_title, meta_description, status, reading_minutes, published_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        keyword_role, search_intent, keyword_cluster, meta_title, meta_description, status,
+        reading_minutes, published_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
       .bind(
         slug,
@@ -244,6 +333,9 @@ export const createPost = createServerFn({ method: "POST" })
         data.categoryId,
         data.tags,
         data.coverImage,
+        data.keywordRole,
+        data.searchIntent,
+        data.keywordCluster,
         data.metaTitle,
         data.metaDescription,
         data.status,
@@ -272,10 +364,14 @@ export const updatePost = createServerFn({ method: "POST" })
     const reading = estimateReadingMinutes(data.body);
     const publishedAt =
       data.status === "published" ? (existing.published_at ?? new Date().toISOString()) : null;
+    if (data.status === "published") {
+      await assertUniquePublishedKeyword(DB, data.tags, data.id);
+    }
     await DB.prepare(
       `UPDATE posts SET slug = ?, title = ?, excerpt = ?, body = ?, category_id = ?,
-        tags = ?, cover_image = ?, meta_title = ?, meta_description = ?, status = ?,
-        reading_minutes = ?, published_at = ?, updated_at = datetime('now')
+        tags = ?, cover_image = ?, keyword_role = ?, search_intent = ?, keyword_cluster = ?,
+        meta_title = ?, meta_description = ?, status = ?, reading_minutes = ?, published_at = ?,
+        updated_at = datetime('now')
        WHERE id = ?`,
     )
       .bind(
@@ -286,6 +382,9 @@ export const updatePost = createServerFn({ method: "POST" })
         data.categoryId,
         data.tags,
         data.coverImage,
+        data.keywordRole,
+        data.searchIntent,
+        data.keywordCluster,
         data.metaTitle,
         data.metaDescription,
         data.status,

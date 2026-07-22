@@ -12,6 +12,7 @@ import {
   type PostRow,
 } from "../lib/api/posts.functions";
 import { CATEGORY_SEO, SITE, SITE_URL } from "../lib/content";
+import { SERVICE_PAGES } from "../lib/seo-pages";
 import { useSiteMotion } from "../lib/use-motion";
 
 const HERO_FRAME_COUNT = 101;
@@ -62,6 +63,15 @@ export const Route = createFileRoute("/")({
     return { latest: posts, categories };
   },
   head: () => ({
+    meta: [
+      { title: SITE.title },
+      { name: "description", content: SITE.description },
+      { property: "og:title", content: SITE.title },
+      { property: "og:description", content: SITE.description },
+      { property: "og:url", content: `${SITE_URL}/` },
+      { property: "og:image", content: `${SITE_URL}/assets/hero-still.jpg` },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
     links: [
       { rel: "canonical", href: `${SITE_URL}/` },
       {
@@ -87,6 +97,7 @@ function Index() {
       <HeroSection />
       <AboutSection />
       <ProgramsSection />
+      <LessonPathsSection />
       <ProcessSection />
       <FaqSection />
       <PricingSection />
@@ -94,6 +105,66 @@ function Index() {
       <ContactSection />
       <SiteFooter />
     </main>
+  );
+}
+
+function LessonPathsSection() {
+  const pages = Object.values(SERVICE_PAGES);
+  const spans = [
+    "md:col-span-7",
+    "md:col-span-5",
+    "md:col-span-5",
+    "md:col-span-7",
+    "md:col-span-7",
+    "md:col-span-5",
+  ];
+
+  return (
+    <section className="border-t border-line py-24 md:py-32" aria-labelledby="lesson-paths-title">
+      <div className="mx-auto max-w-6xl px-6 md:px-10">
+        <h2
+          id="lesson-paths-title"
+          data-build
+          className="font-serif-kr text-4xl font-bold tracking-tight md:text-5xl"
+        >
+          목적에 맞는 피아노 레슨
+        </h2>
+        <p className="mt-5 max-w-[62ch] leading-relaxed text-mute">
+          배우는 사람과 목표, 수업 장소에 따라 필요한 레슨 방식이 달라집니다.
+          개인·성인·어린이·방문·입시 수업과 실제 레슨비를 각각 확인해 보세요.
+        </p>
+        <div className="mt-12 grid gap-6 md:grid-cols-12">
+          {pages.map((page, index) => (
+            <article
+              key={page.path}
+              data-settle
+              className={`overflow-hidden border border-line bg-ebony-2 ${spans[index] ?? "md:col-span-6"}`}
+            >
+              <img
+                src={page.image}
+                alt={page.imageAlt}
+                className="aspect-[16/8] w-full object-cover opacity-85"
+                loading="lazy"
+              />
+              <div className="p-7 md:p-9">
+                <h3 className="font-serif-kr text-2xl font-semibold md:text-3xl">
+                  {page.primaryKeyword}
+                </h3>
+                <p className="mt-3 max-w-[58ch] text-sm leading-relaxed text-mute md:text-base">
+                  {page.lede}
+                </p>
+                <a
+                  href={page.path}
+                  className="mt-6 inline-block text-brass underline underline-offset-8 transition-colors hover:text-ivory"
+                >
+                  {page.label} 자세히 보기
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -303,7 +374,9 @@ function ProgramsSection() {
               className="ml-auto h-11 w-11 mix-blend-screen"
             />
             <h3 className="mt-4 font-serif-kr text-3xl font-semibold md:text-4xl">
-              {p.featured.title}
+              <a href="/lessons/children" className="transition-colors hover:text-brass">
+                {p.featured.title}
+              </a>
             </h3>
             <p className="mt-3 text-sm leading-relaxed text-ivory/75 md:text-base">
               {p.featured.body}
@@ -333,7 +406,12 @@ function ProgramsSection() {
                         className="h-9 w-9 mix-blend-screen"
                       />
                       <h3 className="font-serif-kr text-2xl font-semibold md:text-3xl">
-                        {r.title}
+                        <a
+                          href={i === 0 ? "/lessons/admission" : "/lessons/adult"}
+                          className="transition-colors hover:text-brass"
+                        >
+                          {r.title}
+                        </a>
                       </h3>
                     </div>
                     <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-mute md:text-base">
@@ -367,7 +445,12 @@ function ProgramsSection() {
                         className="h-9 w-9 mix-blend-screen"
                       />
                       <h3 className="font-serif-kr text-2xl font-semibold md:text-3xl">
-                        {r.title}
+                        <a
+                          href={i === 0 ? "/lessons/admission" : "/lessons/adult"}
+                          className="transition-colors hover:text-brass"
+                        >
+                          {r.title}
+                        </a>
                       </h3>
                     </div>
                     <p className="mt-3 ml-auto max-w-[52ch] text-sm leading-relaxed text-mute md:text-base">
@@ -526,6 +609,14 @@ function PricingSection() {
           ))}
         </div>
         <p className="mt-10 text-center text-sm text-faint">{p.note}</p>
+        <p className="mt-5 text-center">
+          <a
+            href="/pricing"
+            className="text-brass underline underline-offset-8 transition-colors hover:text-ivory"
+          >
+            피아노 레슨비와 수업별 차이 보기
+          </a>
+        </p>
       </div>
     </section>
   );

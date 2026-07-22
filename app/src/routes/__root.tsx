@@ -18,9 +18,9 @@ import appMetaJson from "../app-meta.json";
 declare const __HF_DESIGN_INSPECTOR__: boolean;
 
 // Built-in defaults for any field that isn't set in app-meta.json.
-const DEFAULT_TITLE = "이화 피아노 과외 | 이화여대 피아노과 1:1 피아노 레슨";
+const DEFAULT_TITLE = "피아노 레슨 | 이화여대 피아노과 1:1 과외";
 const DEFAULT_DESCRIPTION =
-  "이화여자대학교 피아노과 재학생의 1:1 맞춤 피아노 과외. 취미부터 입시까지, 서울 서대문구·마포구.";
+  "피아노 레슨을 이화여자대학교 피아노과 재학생에게 1:1로 배워 보세요. 어린이·성인 취미부터 입시·콩쿠르까지, 서울 서대문구·마포구 방문과 온라인 수업을 안내합니다.";
 
 type AppMeta = {
   og_title?: string | null;

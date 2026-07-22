@@ -8,6 +8,11 @@ import {
   type PostRow,
 } from "../../../lib/api/posts.functions";
 import { CATEGORY_SEO, SITE, SITE_URL } from "../../../lib/content";
+import {
+  CATEGORY_SERVICE_PATHS,
+  SERVICE_PAGE_BY_PATH,
+  type LessonLandingDefinition,
+} from "../../../lib/seo-pages";
 
 export const Route = createFileRoute("/blog/$category/")({
   loader: async ({ params }) => {
@@ -94,6 +99,10 @@ function CategoryPage() {
 
   const seo = CATEGORY_SEO[category.slug];
   const heading = seo?.primaryKeyword ?? category.name;
+  const categoryServicePaths = CATEGORY_SERVICE_PATHS as Record<string, readonly string[]>;
+  const servicePages = (categoryServicePaths[category.slug] ?? [])
+    .map((path) => SERVICE_PAGE_BY_PATH.get(path))
+    .filter((page): page is LessonLandingDefinition => Boolean(page));
 
   return (
     <SubPageShell>
@@ -122,14 +131,32 @@ function CategoryPage() {
               {heading}
             </h1>
             <p className="mt-3 max-w-[56ch] text-sm leading-relaxed text-ivory/80 md:text-base">
-              {category.description}
+              {seo?.intro ?? category.description}
             </p>
           </div>
         </div>
 
         <div className="mt-14">
-          {seo?.intro && (
-            <p className="mb-10 max-w-[62ch] leading-relaxed text-mute">{seo.intro}</p>
+          {servicePages.length > 0 && (
+            <section
+              className="mb-12 border border-line bg-ebony-2 p-6 md:p-8"
+              aria-labelledby="cluster-service-title"
+            >
+              <h2 id="cluster-service-title" className="font-serif-kr text-2xl font-semibold">
+                이 주제와 연결된 레슨 안내
+              </h2>
+              <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3">
+                {servicePages.map((page) => (
+                  <a
+                    key={page.path}
+                    href={page.path}
+                    className="text-brass underline underline-offset-8 transition-colors hover:text-ivory"
+                  >
+                    {page.primaryKeyword}
+                  </a>
+                ))}
+              </div>
+            </section>
           )}
           {posts.length === 0 ? (
             <p className="border border-line p-10 text-center text-mute">
