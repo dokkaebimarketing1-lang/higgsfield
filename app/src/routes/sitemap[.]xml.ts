@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { bindings } from "../lib/bindings.server";
-import { buildSitemapXml, type SitemapUrlEntry } from "../lib/seo";
+import { CATEGORY_SEO } from "../lib/content";
+import { buildSitemapXml, toCanonicalUrl, type SitemapUrlEntry } from "../lib/seo";
 import { PUBLIC_PAGES } from "../lib/seo-pages";
 
 function sitemapDate(value: string | null | undefined): string | undefined {
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/sitemap.xml")({
         const entries: SitemapUrlEntry[] = PUBLIC_PAGES.map((page) => ({
           path: page.path,
           lastmod: page.lastModified,
+          images: [page.image],
         }));
         const { DB } = bindings();
 
@@ -40,21 +42,31 @@ export const Route = createFileRoute("/sitemap.xml")({
              ORDER BY c.sort_order ASC`,
           ).all<{ slug: string; updated_at: string | null }>();
           for (const c of categories ?? []) {
+            const categoryImage = CATEGORY_SEO[c.slug]
+              ? toCanonicalUrl(`/assets/cat-${c.slug}.jpg`)
+              : undefined;
             entries.push({
               path: `/blog/${c.slug}`,
               lastmod: sitemapDate(c.updated_at),
+              images: categoryImage ? [categoryImage] : undefined,
             });
           }
           const { results: posts } = await DB.prepare(
-            `SELECT p.slug, c.slug AS category_slug, p.updated_at
+            `SELECT p.slug, c.slug AS category_slug, p.updated_at, p.cover_image
              FROM posts p LEFT JOIN categories c ON c.id = p.category_id
              WHERE p.status = 'published' AND c.slug IS NOT NULL
              ORDER BY p.published_at DESC`,
-          ).all<{ slug: string; category_slug: string; updated_at: string }>();
+          ).all<{
+            slug: string;
+            category_slug: string;
+            updated_at: string;
+            cover_image: string | null;
+          }>();
           for (const p of posts ?? []) {
             entries.push({
               path: `/blog/${p.category_slug}/${p.slug}`,
               lastmod: sitemapDate(p.updated_at),
+              images: p.cover_image ? [toCanonicalUrl(p.cover_image)] : undefined,
             });
           }
 

@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { applySeoResponseHeaders } from "./lib/seo-response.server";
 import { applySecurityHeaders } from "./lib/security-headers.server";
 import { withBindings } from "./lib/bindings.server";
 
@@ -47,18 +48,24 @@ export default {
         const url = new URL(request.url);
         if (url.pathname !== "/" && url.pathname.endsWith("/")) {
           url.pathname = url.pathname.slice(0, -1);
-          return Response.redirect(url.toString(), 301);
+          return applySecurityHeaders(Response.redirect(url.toString(), 301));
         }
         const handler = await getServerEntry();
         const response = await handler.fetch(request, env, ctx);
-        return applySecurityHeaders(await normalizeCatastrophicSsrResponse(response));
+        return applySeoResponseHeaders(
+          applySecurityHeaders(await normalizeCatastrophicSsrResponse(response)),
+          request,
+        );
       } catch (error) {
         console.error(error);
-        return applySecurityHeaders(
-          new Response(renderErrorPage(), {
-            status: 500,
-            headers: { "content-type": "text/html; charset=utf-8" },
-          }),
+        return applySeoResponseHeaders(
+          applySecurityHeaders(
+            new Response(renderErrorPage(), {
+              status: 500,
+              headers: { "content-type": "text/html; charset=utf-8" },
+            }),
+          ),
+          request,
         );
       }
     });

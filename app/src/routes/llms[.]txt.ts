@@ -1,9 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { bindings } from "../lib/bindings.server";
 import { SITE, SITE_URL } from "../lib/content";
 import { SERVICE_PAGES } from "../lib/seo-pages";
 
-// AI 검색 엔진을 위한 사이트 설명 파일 (/llms.txt)
+function markdownText(value: string): string {
+  return value
+    .replace(/[\r\n]+/g, " ")
+    .replaceAll("[", "(")
+    .replaceAll("]", ")")
+    .trim();
+}
+
+// AI 도구가 읽을 수 있는 보조 사이트 인벤토리입니다. Google 검색 노출 요건은 아닙니다.
 export const Route = createFileRoute("/llms.txt")({
   server: {
     handlers: {
@@ -11,6 +20,31 @@ export const Route = createFileRoute("/llms.txt")({
         const servicePages = Object.values(SERVICE_PAGES)
           .map((page) => `- [${page.primaryKeyword}](${SITE_URL}${page.path}): ${page.description}`)
           .join("\n");
+        const { DB } = bindings();
+        let articleSection = "";
+        if (DB) {
+          const { results } = await DB.prepare(
+            `SELECT p.title, p.slug, p.excerpt, p.updated_at, c.slug AS category_slug
+             FROM posts p
+             JOIN categories c ON c.id = p.category_id
+             WHERE p.status = 'published'
+             ORDER BY p.updated_at DESC, p.id DESC
+             LIMIT 50`,
+          ).all<{
+            title: string;
+            slug: string;
+            excerpt: string;
+            updated_at: string;
+            category_slug: string;
+          }>();
+          const articles = (results ?? [])
+            .map(
+              (post) =>
+                `- [${markdownText(post.title)}](${SITE_URL}/blog/${post.category_slug}/${post.slug}) (${post.updated_at.slice(0, 10)}): ${markdownText(post.excerpt)}`,
+            )
+            .join("\n");
+          if (articles) articleSection = `\n## 발행된 피아노 칼럼\n\n${articles}\n`;
+        }
         const body = `# ${SITE.brand}
 
 > 이화여자대학교 피아노과 재학생 김서연이 운영하는 1:1 피아노 레슨 사이트입니다.
@@ -40,6 +74,7 @@ ${servicePages}
 - [곡 추천](${SITE_URL}/blog/repertoire): 초보 추천곡, 쉬운 곡, 중급 곡, 뉴에이지, 콩쿠르 곡
 - [학부모 안내](${SITE_URL}/blog/parents): 시작 나이, 연습 대응법, 피아노 구입, 부모 역할
 - [지역 레슨](${SITE_URL}/blog/local): 서울 지역별 피아노 과외 안내
+${articleSection}
 
 ## 연락 · 지역
 

@@ -71,17 +71,27 @@ export function escapeXml(value: string): string {
 export type SitemapUrlEntry = {
   path: string;
   lastmod?: string;
+  images?: readonly string[];
 };
 
 export function buildSitemapXml(entries: SitemapUrlEntry[]): string {
+  const hasImages = entries.some((entry) => entry.images && entry.images.length > 0);
+  const urlset = hasImages
+    ? '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'
+    : '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    urlset,
     ...entries.map((entry) =>
       [
         "  <url>",
         `    <loc>${escapeXml(toCanonicalUrl(entry.path))}</loc>`,
         entry.lastmod ? `    <lastmod>${escapeXml(entry.lastmod)}</lastmod>` : null,
+        ...(entry.images ?? []).map(
+          (image) =>
+            `    <image:image><image:loc>${escapeXml(toCanonicalUrl(image))}</image:loc></image:image>`,
+        ),
         "  </url>",
       ]
         .filter(Boolean)
@@ -89,4 +99,32 @@ export function buildSitemapXml(entries: SitemapUrlEntry[]): string {
     ),
     "</urlset>",
   ].join("\n");
+}
+
+export function toIsoDate(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+  const normalized = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value)
+    ? `${value.replace(" ", "T")}Z`
+    : value;
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+}
+
+export function extractExternalLinks(markdown: string): string[] {
+  const links: string[] = [];
+  const seen = new Set<string>();
+  const linkPattern = /\[[^\]]+\]\((https?:\/\/[^\s)]+)\)/g;
+  let match: RegExpExecArray | null;
+  while ((match = linkPattern.exec(markdown)) !== null) {
+    try {
+      const url = new URL(match[1]).href;
+      if (!seen.has(url)) {
+        seen.add(url);
+        links.push(url);
+      }
+    } catch {
+      // Ignore malformed external links instead of publishing invalid citation URLs.
+    }
+  }
+  return links;
 }

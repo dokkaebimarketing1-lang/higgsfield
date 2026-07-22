@@ -27,11 +27,30 @@ export const Route = createFileRoute("/blog/")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          name: blogPage.primaryKeyword,
-          url: `${SITE_URL}/blog`,
-          isPartOf: { "@id": `${SITE_URL}/#website` },
-          inLanguage: "ko",
+          "@graph": [
+            {
+              "@type": "CollectionPage",
+              name: blogPage.primaryKeyword,
+              description: blogPage.description,
+              url: `${SITE_URL}/blog`,
+              image: blogPage.image,
+              primaryImageOfPage: blogPage.image,
+              isPartOf: { "@id": `${SITE_URL}/#website` },
+              inLanguage: "ko",
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "피아노 이야기",
+                  item: `${SITE_URL}/blog`,
+                },
+              ],
+            },
+          ],
         }),
       },
     ],

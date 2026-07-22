@@ -14,10 +14,13 @@ import {
 import {
   buildSitemapXml,
   escapeXml,
+  extractExternalLinks,
   getKeywordAlignmentIssues,
   getPrimaryKeyword,
   toCanonicalUrl,
+  toIsoDate,
 } from "../src/lib/seo";
+import { applySeoResponseHeaders } from "../src/lib/seo-response.server";
 
 describe("SEO helpers", () => {
   test("uses the first non-empty tag as the primary target keyword", () => {
@@ -41,14 +44,57 @@ describe("SEO helpers", () => {
   test("builds canonical sitemap XML without ignored priority hints", () => {
     const xml = buildSitemapXml([
       { path: "/" },
-      { path: "/blog?topic=연습&level=초보", lastmod: "2026-07-22" },
+      {
+        path: "/blog?topic=연습&level=초보",
+        lastmod: "2026-07-22",
+        images: ["/assets/piano-practice.jpg?size=large&format=jpg"],
+      },
     ]);
 
     expect(xml).toContain("<loc>https://ewha-piano.higgsfield.app/</loc>");
     expect(xml).toContain("topic=%EC%97%B0%EC%8A%B5&amp;level=%EC%B4%88%EB%B3%B4");
     expect(xml).toContain("<lastmod>2026-07-22</lastmod>");
+    expect(xml).toContain('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"');
+    expect(xml).toContain(
+      "<image:loc>https://ewha-piano.higgsfield.app/assets/piano-practice.jpg?size=large&amp;format=jpg</image:loc>",
+    );
     expect(xml).not.toContain("<priority>");
     expect(xml).not.toContain("<changefreq>");
+  });
+
+  test("normalizes article dates and extracts unique valid citation links", () => {
+    expect(toIsoDate("2026-07-23 09:30:00")).toBe("2026-07-23T09:30:00.000Z");
+    expect(toIsoDate("not-a-date")).toBeUndefined();
+    expect(
+      extractExternalLinks(
+        "[공식 입학처](https://admission.ewha.ac.kr/)와 [같은 링크](https://admission.ewha.ac.kr/) 및 [내부](/about)",
+      ),
+    ).toEqual(["https://admission.ewha.ac.kr/"]);
+  });
+
+  test("noindexes preview HTML and error responses without blocking canonical HTML", () => {
+    const htmlHeaders = { "content-type": "text/html; charset=utf-8" };
+    const canonical = applySeoResponseHeaders(
+      new Response("ok", { headers: htmlHeaders }),
+      new Request("https://ewha-piano.higgsfield.app/"),
+    );
+    const preview = applySeoResponseHeaders(
+      new Response("ok", { headers: htmlHeaders }),
+      new Request("https://preview.higgsfield-dev.app/"),
+    );
+    const missing = applySeoResponseHeaders(
+      new Response("missing", { status: 404, headers: htmlHeaders }),
+      new Request("https://ewha-piano.higgsfield.app/missing"),
+    );
+    const serverError = applySeoResponseHeaders(
+      new Response("error", { status: 500, headers: htmlHeaders }),
+      new Request("https://ewha-piano.higgsfield.app/error"),
+    );
+
+    expect(canonical.headers.get("x-robots-tag")).toBeNull();
+    expect(preview.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    expect(missing.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    expect(serverError.headers.get("x-robots-tag")).toBe("noindex, nofollow");
   });
 
   test("keeps category target keywords unique and prominent", () => {

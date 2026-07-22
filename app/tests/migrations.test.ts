@@ -22,9 +22,15 @@ function applyMigration(db: Database, name: string) {
 
 function databaseBeforeKeywordMigration() {
   const db = new Database(":memory:");
-  for (const name of migrationNames.filter((name) => name !== "0011_keyword_clusters.sql")) {
+  for (const name of migrationNames.filter((name) => name < "0011_keyword_clusters.sql")) {
     applyMigration(db, name);
   }
+  return db;
+}
+
+function databaseAfterAllMigrations() {
+  const db = new Database(":memory:");
+  for (const name of migrationNames) applyMigration(db, name);
   return db;
 }
 
@@ -130,6 +136,41 @@ describe("keyword cluster migration", () => {
         )
         .get()?.count,
     ).toBe(0);
+    db.close();
+  });
+});
+
+describe("Webflow SEO hardening migration", () => {
+  test("removes unsupported numeric claims and strengthens contextual links", () => {
+    const db = databaseAfterAllMigrations();
+    const posts = db
+      .query<
+        { slug: string; title: string; excerpt: string; body: string; updated_at: string },
+        []
+      >(
+        `SELECT slug, title, excerpt, body, updated_at FROM posts
+         WHERE slug IN (
+           'piano-tutoring-cost', 'online-piano-lesson', 'music-college-entrance',
+           'ewha-piano-exam', 'hanon-practice', 'metronome-use',
+           'competition-prep', 'stage-fright'
+         )`,
+      )
+      .all();
+    const bySlug = new Map(posts.map((post) => [post.slug, post]));
+
+    expect(bySlug.get("piano-tutoring-cost")?.body).not.toContain("월 12만 원에서 40만 원");
+    expect(bySlug.get("piano-tutoring-cost")?.body).toContain("/pricing");
+    expect(bySlug.get("online-piano-lesson")?.excerpt).not.toContain("80~90%");
+    expect(bySlug.get("music-college-entrance")?.body).toContain("https://admission.ewha.ac.kr/");
+    expect(bySlug.get("ewha-piano-exam")?.body).toContain("https://admission.ewha.ac.kr/");
+    const now = Date.now();
+    for (const post of posts) {
+      expect(Date.parse(post.updated_at)).toBeLessThanOrEqual(now);
+    }
+    for (const slug of ["hanon-practice", "metronome-use", "competition-prep", "stage-fright"]) {
+      expect(bySlug.get(slug)?.body).toMatch(/\/blog\/(practice|exam)/);
+      expect(bySlug.get(slug)?.body).toMatch(/\/lessons\/(private|admission)/);
+    }
     db.close();
   });
 });

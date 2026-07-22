@@ -21,12 +21,36 @@ export function SiteNav() {
             </a>
           ))}
         </nav>
-        <a
-          href="/#contact"
-          className="text-sm font-medium text-ivory underline decoration-brass decoration-2 underline-offset-8 transition-colors hover:text-brass"
-        >
-          상담 신청하기
-        </a>
+        <div className="flex items-center gap-4">
+          <details className="group relative md:hidden">
+            <summary className="cursor-pointer list-none text-sm text-mute transition-colors hover:text-ivory [&::-webkit-details-marker]:hidden">
+              메뉴
+            </summary>
+            <nav className="absolute right-0 top-9 z-50 min-w-48 border border-line bg-ebony-2 p-2 shadow-2xl">
+              {SITE.nav.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="block px-4 py-3 text-sm text-mute transition-colors hover:bg-ebony-3 hover:text-ivory"
+                >
+                  {item.label}
+                </a>
+              ))}
+              <a
+                href="/sitemap"
+                className="block border-t border-line px-4 py-3 text-sm text-mute transition-colors hover:bg-ebony-3 hover:text-ivory"
+              >
+                전체 사이트맵
+              </a>
+            </nav>
+          </details>
+          <a
+            href="/#contact"
+            className="text-sm font-medium whitespace-nowrap text-ivory underline decoration-brass decoration-2 underline-offset-8 transition-colors hover:text-brass"
+          >
+            상담 신청
+          </a>
+        </div>
       </div>
     </header>
   );
@@ -51,6 +75,9 @@ export function SiteFooter() {
               <span className="font-serif-kr text-xl font-semibold">{SITE.brand}</span>
             </div>
             <p className="mt-4 text-sm text-mute">{SITE.footer.line}</p>
+            <p className="mt-2 max-w-md text-xs leading-relaxed text-faint">
+              본 사이트는 이화여자대학교 공식 사이트가 아닌 개인 피아노 레슨 안내 사이트입니다.
+            </p>
           </div>
           <nav className="flex flex-col gap-3">
             {SITE.nav.map((item) => (
@@ -80,7 +107,7 @@ export function SiteFooter() {
             <a href="/privacy" className="transition-colors hover:text-mute">
               개인정보 처리 안내
             </a>
-            <a href="/admin" className="transition-colors hover:text-mute">
+            <a href="/admin" rel="nofollow" className="transition-colors hover:text-mute">
               {SITE.footer.admin}
             </a>
           </span>

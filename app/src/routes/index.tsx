@@ -30,6 +30,7 @@ const jsonLd = {
       serviceType: "1:1 피아노 레슨",
       image:
         "https://d2ol7oe51mr4n9.cloudfront.net/user_34g8tGWyYG4JUcCJYEK7ikRiSGl/3ac1a2a4-c77e-49fc-ac0b-b721b1430517.png",
+      logo: `${SITE_URL}/assets/icons/icon-512.png`,
       areaServed: ["서울특별시", "서울특별시 서대문구", "서울특별시 마포구"],
       priceRange: "₩₩",
       founder: { "@id": `${SITE_URL}/about#person` },
@@ -68,9 +69,14 @@ export const Route = createFileRoute("/")({
       { name: "description", content: SITE.description },
       { property: "og:title", content: SITE.title },
       { property: "og:description", content: SITE.description },
+      { property: "og:type", content: "website" },
       { property: "og:url", content: `${SITE_URL}/` },
       { property: "og:image", content: `${SITE_URL}/assets/hero-still.jpg` },
+      { property: "og:image:alt", content: "그랜드 피아노 건반 위를 연주하는 손" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: SITE.title },
+      { name: "twitter:description", content: SITE.description },
+      { name: "twitter:image", content: `${SITE_URL}/assets/hero-still.jpg` },
     ],
     links: [
       { rel: "canonical", href: `${SITE_URL}/` },

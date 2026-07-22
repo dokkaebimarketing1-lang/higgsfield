@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { SubPageShell } from "../../../components/site/chrome";
 import { getPostBySlug, listRelatedPosts, type PostRow } from "../../../lib/api/posts.functions";
 import { SITE, SITE_URL } from "../../../lib/content";
 import { extractFaq } from "../../../lib/faq";
 import { renderMarkdown } from "../../../lib/markdown";
+import { extractExternalLinks, toCanonicalUrl, toIsoDate } from "../../../lib/seo";
 import { getServicePageForPost } from "../../../lib/seo-pages";
 
 const FALLBACK_OG =
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/blog/$category/$slug")({
     const { post } = await getPostBySlug({
       data: { category: params.category, slug: params.slug },
     });
+    if (!post) throw notFound();
     const related = post?.category_id
       ? (
           await listRelatedPosts({
@@ -39,20 +41,33 @@ export const Route = createFileRoute("/blog/$category/$slug")({
     const title = post.meta_title || `${post.title} | ${SITE.brand}`;
     const description = post.meta_description || post.excerpt || SITE.description;
     const url = `${SITE_URL}/blog/${post.category_slug}/${post.slug}`;
-    const image = post.cover_image ? `${SITE_URL}${post.cover_image}` : FALLBACK_OG;
+    const image = post.cover_image ? toCanonicalUrl(post.cover_image) : FALLBACK_OG;
     const faqItems = extractFaq(post.body);
+    const citations = extractExternalLinks(post.body);
+    const datePublished = toIsoDate(post.published_at);
+    const rawModified = toIsoDate(post.updated_at);
+    const dateModified =
+      datePublished && rawModified && rawModified < datePublished
+        ? datePublished
+        : (rawModified ?? datePublished);
     return {
       meta: [
         { title },
         { name: "description", content: description },
+        { name: "author", content: "김서연" },
+        { name: "robots", content: "index, follow, max-image-preview:large" },
         { property: "og:type", content: "article" },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
+        { property: "og:url", content: url },
         { property: "og:image", content: image },
-        ...(post.published_at
-          ? [{ property: "article:published_time", content: post.published_at }]
-          : []),
-        { property: "article:modified_time", content: post.updated_at },
+        { property: "og:image:alt", content: post.title },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: image },
+        ...(datePublished ? [{ property: "article:published_time", content: datePublished }] : []),
+        ...(dateModified ? [{ property: "article:modified_time", content: dateModified }] : []),
       ],
       links: [{ rel: "canonical", href: url }],
       scripts: [
@@ -68,14 +83,16 @@ export const Route = createFileRoute("/blog/$category/$slug")({
                 description,
                 ...(post.excerpt ? { abstract: post.excerpt } : {}),
                 url,
+                mainEntityOfPage: url,
                 image,
                 inLanguage: "ko",
-                datePublished: post.published_at,
-                dateModified: post.updated_at,
+                ...(datePublished ? { datePublished } : {}),
+                ...(dateModified ? { dateModified } : {}),
                 author: { "@id": `${SITE_URL}/about#person` },
                 publisher: { "@id": `${SITE_URL}/#business` },
                 isPartOf: { "@id": `${SITE_URL}/#website` },
                 ...(post.category_name ? { articleSection: post.category_name } : {}),
+                ...(citations.length > 0 ? { citation: citations } : {}),
                 ...(post.tags
                   ? {
                       keywords: post.tags
@@ -177,9 +194,13 @@ function PostPage() {
         </h1>
         <p className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-faint">
           <span>{post.category_name}</span>
-          <span>{post.published_at?.slice(0, 10)} 발행</span>
+          {post.published_at && (
+            <time dateTime={toIsoDate(post.published_at)}>
+              {post.published_at.slice(0, 10)} 발행
+            </time>
+          )}
           {post.updated_at && post.updated_at.slice(0, 10) !== post.published_at?.slice(0, 10) && (
-            <span>{post.updated_at.slice(0, 10)} 수정</span>
+            <time dateTime={toIsoDate(post.updated_at)}>{post.updated_at.slice(0, 10)} 수정</time>
           )}
           <span>{post.reading_minutes}분 읽기</span>
         </p>
@@ -195,6 +216,8 @@ function PostPage() {
           <img
             src={post.cover_image}
             alt={post.title}
+            width={1600}
+            height={900}
             className="mt-10 aspect-[16/9] w-full object-cover"
           />
         )}
@@ -226,6 +249,8 @@ function PostPage() {
           <img
             src="/assets/portrait.jpg"
             alt="피아노 앞에 앉은 피아노 연주자"
+            width={64}
+            height={64}
             className="h-16 w-16 shrink-0 rounded-full object-cover"
             loading="lazy"
           />

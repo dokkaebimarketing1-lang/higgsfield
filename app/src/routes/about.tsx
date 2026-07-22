@@ -7,7 +7,6 @@ import { buildPublicPageHead, PUBLIC_PAGE_BY_PATH } from "../lib/seo-pages";
 const aboutPage = PUBLIC_PAGE_BY_PATH.get("/about")!;
 
 const personLd = {
-  "@context": "https://schema.org",
   "@type": "Person",
   "@id": `${SITE_URL}/about#person`,
   name: "김서연",
@@ -15,16 +14,32 @@ const personLd = {
   description:
     "이화여자대학교 피아노과 재학생 김서연은 어린이 취미부터 입시·콩쿠르, 성인 취미까지 지도하는 1:1 피아노 선생님입니다.",
   url: `${SITE_URL}/about`,
+  image: `${SITE_URL}/assets/portrait.jpg`,
+  mainEntityOfPage: `${SITE_URL}/about`,
   affiliation: { "@type": "CollegeOrUniversity", name: "이화여자대학교" },
   award: "국내 피아노 콩쿠르 입상 및 수상 다수",
   knowsAbout: ["피아노", "피아노 교육", "음대 입시", "콩쿠르 지도", "클래식 음악"],
   worksFor: { "@id": `${SITE_URL}/#business` },
 };
 
+const aboutLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    personLd,
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
+        { "@type": "ListItem", position: 2, name: "피아노 선생님", item: `${SITE_URL}/about` },
+      ],
+    },
+  ],
+};
+
 export const Route = createFileRoute("/about")({
   head: () => ({
     ...buildPublicPageHead(aboutPage),
-    scripts: [{ type: "application/ld+json", children: JSON.stringify(personLd) }],
+    scripts: [{ type: "application/ld+json", children: JSON.stringify(aboutLd) }],
   }),
   component: AboutPage,
 });

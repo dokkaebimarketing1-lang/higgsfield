@@ -75,7 +75,7 @@ function buildHead(meta: AppMeta) {
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title },
       { name: "description", content: description },
-      { name: "author", content: "이화 피아노 과외" },
+      { name: "author", content: "김서연" },
       { name: "robots", content: "index, follow, max-image-preview:large" },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
@@ -106,6 +106,12 @@ function buildHead(meta: AppMeta) {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600;700&display=swap",
       },
+      {
+        rel: "alternate",
+        type: "application/rss+xml",
+        title: "이화 피아노 과외 피아노 이야기",
+        href: "/rss.xml",
+      },
       ...(favicon ? [{ rel: "icon", href: favicon }] : []),
       {
         rel: "icon",
@@ -121,17 +127,36 @@ function buildHead(meta: AppMeta) {
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-ebony px-6 text-center text-ivory">
+    <main className="flex min-h-dvh flex-col items-center justify-center bg-ebony px-6 text-center text-ivory">
       <p className="font-latin text-7xl italic text-brass">404</p>
       <p className="mt-6 font-serif-kr text-2xl font-semibold">페이지를 찾을 수 없습니다</p>
-      <p className="mt-3 text-sm text-mute">주소가 변경되었거나 없는 페이지입니다.</p>
-      <a
-        href="/"
-        className="mt-10 border border-line px-7 py-3 font-serif-kr text-lg text-ivory transition-colors hover:border-brass hover:text-brass"
-      >
-        홈으로 돌아가기
+      <p className="mt-3 max-w-md text-sm leading-relaxed text-mute">
+        주소가 변경되었거나 없는 페이지입니다. 아래 주요 페이지에서 원하는 정보를 다시 찾아보세요.
+      </p>
+      <nav className="mt-10 flex flex-wrap justify-center gap-3" aria-label="404 도움말">
+        <a
+          href="/"
+          className="border border-line px-6 py-3 font-serif-kr text-base text-ivory transition-colors hover:border-brass hover:text-brass"
+        >
+          홈
+        </a>
+        <a
+          href="/blog"
+          className="border border-line px-6 py-3 font-serif-kr text-base text-ivory transition-colors hover:border-brass hover:text-brass"
+        >
+          피아노 이야기
+        </a>
+        <a
+          href="/sitemap"
+          className="border border-line px-6 py-3 font-serif-kr text-base text-ivory transition-colors hover:border-brass hover:text-brass"
+        >
+          전체 사이트맵
+        </a>
+      </nav>
+      <a href="/#contact" className="mt-7 text-sm text-brass underline underline-offset-4">
+        잘못된 주소 알려주기
       </a>
-    </div>
+    </main>
   );
 }
 

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { bindings } from "../lib/bindings.server";
-import { SITE } from "../lib/content";
+import { SITE, SITE_URL } from "../lib/content";
 
 function escapeXml(s: string): string {
   return s
@@ -15,8 +15,7 @@ function escapeXml(s: string): string {
 export const Route = createFileRoute("/rss.xml")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
-        const origin = new URL(request.url).origin;
+      GET: async () => {
         const { DB } = bindings();
         let items = "";
         if (DB) {
@@ -34,7 +33,7 @@ export const Route = createFileRoute("/rss.xml")({
           }>();
           items = (results ?? [])
             .map((p) => {
-              const link = `${origin}/blog/${p.category_slug}/${p.slug}`;
+              const link = `${SITE_URL}/blog/${p.category_slug}/${p.slug}`;
               return [
                 "  <item>",
                 `    <title>${escapeXml(p.title)}</title>`,
@@ -57,7 +56,7 @@ export const Route = createFileRoute("/rss.xml")({
           '<rss version="2.0">',
           "<channel>",
           `  <title>${escapeXml(SITE.brand)} | 피아노 이야기</title>`,
-          `  <link>${origin}/blog</link>`,
+          `  <link>${SITE_URL}/blog</link>`,
           `  <description>${escapeXml(SITE.description)}</description>`,
           "  <language>ko</language>",
           items,

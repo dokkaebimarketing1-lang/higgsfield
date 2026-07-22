@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { SubPageShell } from "../../../components/site/chrome";
 import {
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/blog/$category/")({
       getCategoryBySlug({ data: { slug: params.category } }),
       listPublishedPosts({ data: { category: params.category, limit: 100 } }),
     ]);
+    if (!category) throw notFound();
     return { category, posts };
   },
   head: ({ loaderData }) => {
@@ -32,14 +33,23 @@ export const Route = createFileRoute("/blog/$category/")({
       category?.description ||
       `${name} 카테고리의 피아노 칼럼 모음. 이화여대 피아노과 선생님의 레슨 노하우.`;
     const url = `${SITE_URL}/blog/${category?.slug ?? ""}`;
+    const image = `${SITE_URL}/assets/cat-${category?.slug ?? "lesson-guide"}.jpg`;
+    const title = seo ? `${seo.pageTitle} | ${SITE.brand}` : `${name} | ${SITE.brand}`;
     return {
       meta: [
-        {
-          title: seo
-            ? `${seo.pageTitle} | ${SITE.brand}`
-            : `${name} | 피아노 이야기 | ${SITE.brand}`,
-        },
+        { title },
         { name: "description", content: description },
+        { name: "robots", content: "index, follow, max-image-preview:large" },
+        { property: "og:type", content: "website" },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:image", content: image },
+        { property: "og:image:alt", content: `${heading} 대표 이미지` },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: image },
       ],
       links: [{ rel: "canonical", href: url }],
       scripts: [
@@ -53,6 +63,8 @@ export const Route = createFileRoute("/blog/$category/")({
                 name: heading,
                 description,
                 url,
+                image,
+                primaryImageOfPage: image,
                 isPartOf: { "@id": `${SITE_URL}/#website` },
                 inLanguage: "ko",
               },
