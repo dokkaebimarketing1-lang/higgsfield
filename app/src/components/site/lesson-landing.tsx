@@ -8,6 +8,7 @@ import { SubPageShell } from "./chrome";
 
 export function LessonLanding({ page }: { page: LessonLandingDefinition }) {
   const rootRef = useRef<HTMLElement | null>(null);
+  const isPricingPage = page.path === "/pricing";
 
   useSiteMotion(rootRef);
 
@@ -44,7 +45,7 @@ export function LessonLanding({ page }: { page: LessonLandingDefinition }) {
                 href="/#contact"
                 className="mt-9 inline-flex min-h-12 items-center justify-center bg-brass px-7 py-3 font-serif-kr text-lg font-semibold whitespace-nowrap text-ebony transition-colors hover:bg-[#cdb07a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ivory active:translate-y-px"
               >
-                상담 신청하기
+                {page.primaryKeyword} 상담 신청하기
               </a>
             </div>
 
@@ -109,49 +110,112 @@ export function LessonLanding({ page }: { page: LessonLandingDefinition }) {
           </section>
         ))}
 
-        <section className="border-b border-line py-20 md:py-28" aria-labelledby="lesson-pricing">
-          <div className="mx-auto max-w-6xl px-6 md:px-10">
-            <div className="max-w-2xl">
-              <h2
-                id="lesson-pricing"
-                data-settle
-                className="font-serif-kr text-3xl font-bold tracking-tight md:text-4xl"
-              >
-                피아노 레슨비와 과정
-              </h2>
-              <p className="mt-5 text-base leading-relaxed text-mute">{SITE.pricing.note}</p>
-            </div>
-            <div className="mt-12 grid gap-5 md:grid-cols-[1fr_1.15fr_1fr] md:items-start">
-              {SITE.pricing.tiers.map((tier) => (
-                <article
-                  key={tier.name}
+        {isPricingPage ? (
+          <section className="border-b border-line py-20 md:py-28" aria-labelledby="lesson-pricing">
+            <div className="mx-auto max-w-6xl px-6 md:px-10">
+              <div className="max-w-2xl">
+                <h2
+                  id="lesson-pricing"
                   data-settle
-                  className={`border p-7 md:p-8 ${
-                    tier.featured
-                      ? "border-brass bg-ebony-3 md:-translate-y-4"
-                      : "border-line bg-ebony-2"
-                  }`}
+                  className="font-serif-kr text-3xl font-bold tracking-tight md:text-4xl"
                 >
-                  <h3 className="font-serif-kr text-2xl font-semibold">{tier.name}</h3>
-                  <p className="mt-6 flex items-baseline gap-1">
-                    <span className="text-sm text-faint">{tier.per}</span>
-                    <span className="font-serif-kr text-4xl font-bold tracking-tight">
-                      {tier.price}
-                    </span>
-                    <span className="text-base text-mute">{tier.unit}</span>
+                  피아노 레슨비와 과정
+                </h2>
+                <p className="mt-5 text-base leading-relaxed text-mute">{SITE.pricing.note}</p>
+              </div>
+              <div className="mt-12 grid gap-5 md:grid-cols-[1fr_1.15fr_1fr] md:items-start">
+                {SITE.pricing.tiers.map((tier) => (
+                  <article
+                    key={tier.name}
+                    data-settle
+                    className={`border p-7 md:p-8 ${
+                      tier.featured
+                        ? "border-brass bg-ebony-3 md:-translate-y-4"
+                        : "border-line bg-ebony-2"
+                    }`}
+                  >
+                    <h3 className="font-serif-kr text-2xl font-semibold">{tier.name}</h3>
+                    <p className="mt-6 flex items-baseline gap-1">
+                      <span className="text-sm text-faint">{tier.per}</span>
+                      <span className="font-serif-kr text-4xl font-bold tracking-tight">
+                        {tier.price}
+                      </span>
+                      <span className="text-base text-mute">{tier.unit}</span>
+                    </p>
+                    <ul className="mt-7 space-y-3">
+                      {tier.lines.map((line) => (
+                        <li key={line} className="flex gap-3 text-base leading-relaxed text-mute">
+                          <span
+                            className="mt-[0.7em] h-px w-4 shrink-0 bg-brass"
+                            aria-hidden="true"
+                          />
+                          <span>{line}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section className="border-b border-line py-20 md:py-24" aria-labelledby="lesson-plan">
+            <div className="mx-auto max-w-6xl px-6 md:px-10">
+              <div className="border border-brass/35 bg-ebony-2 p-8 md:flex md:items-end md:justify-between md:gap-10 md:p-10">
+                <div className="max-w-2xl">
+                  <h2
+                    id="lesson-plan"
+                    data-settle
+                    className="break-keep font-serif-kr text-2xl font-bold leading-tight tracking-tight md:text-4xl"
+                  >
+                    수업 시간과 과정 확인
+                  </h2>
+                  <p className="mt-5 text-base leading-relaxed text-mute">
+                    {page.primaryKeyword}은 목표와 집중 시간에 따라 45분 또는 60분으로 진행합니다.
+                    구체적인 월 비용과 과정별 포함 항목은 요금 안내에서 한곳에 비교할 수 있습니다.
                   </p>
-                  <ul className="mt-7 space-y-3">
-                    {tier.lines.map((line) => (
-                      <li key={line} className="flex gap-3 text-base leading-relaxed text-mute">
-                        <span
-                          className="mt-[0.7em] h-px w-4 shrink-0 bg-brass"
-                          aria-hidden="true"
-                        />
-                        <span>{line}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </article>
+                </div>
+                <a
+                  href="/pricing"
+                  className="mt-7 inline-flex shrink-0 text-base font-medium text-brass underline underline-offset-8 transition-colors hover:text-ivory focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass md:mt-0"
+                >
+                  피아노 레슨비와 포함 항목 확인하기
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="border-b border-line py-20 md:py-24">
+          <div className="mx-auto max-w-6xl px-6 md:px-10">
+            <h2
+              data-settle
+              className="break-keep font-serif-kr text-2xl font-bold leading-tight tracking-tight md:text-4xl"
+            >
+              다른 피아노 레슨 방식 비교
+            </h2>
+            <div className="mt-10 grid gap-6 md:grid-cols-2">
+              {page.relatedServices.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  data-settle
+                  className="group border border-line bg-ebony-2 p-7 transition-colors hover:border-brass/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass md:p-9"
+                >
+                  <h3 className="font-serif-kr text-xl font-semibold text-ivory transition-colors group-hover:text-brass md:text-2xl">
+                    {item.label}
+                  </h3>
+                  <p className="mt-4 text-base leading-relaxed text-mute">{item.description}</p>
+                  <span className="mt-7 inline-flex items-center gap-3 text-sm font-medium text-brass">
+                    수업 안내 보기
+                    <span
+                      className="transition-transform group-hover:translate-x-1"
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                  </span>
+                </a>
               ))}
             </div>
           </div>

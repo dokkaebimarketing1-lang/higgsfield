@@ -559,6 +559,8 @@ function FaqSection() {
 /* ── Pricing ────────────────────────────────────────────── */
 function PricingSection() {
   const p = SITE.pricing;
+  const starter = p.tiers[0];
+
   return (
     <section id="pricing" className="py-24 md:py-36">
       <div className="mx-auto max-w-6xl px-6 md:px-10">
@@ -566,63 +568,45 @@ function PricingSection() {
           data-build
           className="text-center font-serif-kr text-4xl font-bold tracking-tight md:text-5xl"
         >
-          {p.headline}
+          피아노 레슨 과정과 시작 비용
         </h2>
-        <div className="mt-16 grid gap-6 md:grid-cols-3">
-          {p.tiers.map((t) => (
-            <article
-              key={t.name}
-              data-settle
-              className={`relative flex flex-col bg-ebony-2 p-8 md:p-10 ${
-                t.featured ? "ring-1 ring-brass" : "border border-line"
-              }`}
-            >
-              {t.featured && t.badge && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brass px-3 py-1 text-xs font-semibold tracking-wide text-ebony">
-                  {t.badge}
-                </span>
-              )}
-              <h3 className="text-center font-serif-kr text-2xl font-semibold">{t.name}</h3>
-              <p className="mt-8 text-center">
-                <span className="align-top text-sm text-mute">{t.per}</span>{" "}
-                <span
-                  data-count={t.price.replace(",", "")}
-                  className="font-serif-kr text-5xl font-bold tracking-tight"
-                >
-                  {t.price}
-                </span>
-                <span className="text-lg text-mute">{t.unit}</span>
-              </p>
-              <div className="my-8 h-px bg-line" />
-              <ul className="space-y-0">
-                {t.lines.map((line) => (
-                  <li
-                    key={line}
-                    className="flex items-center gap-3 border-b border-line py-3 text-sm text-mute last:border-0 md:text-base"
-                  >
-                    <span className="h-1 w-1 shrink-0 bg-brass" />
-                    {line}
-                  </li>
-                ))}
-              </ul>
+        <div
+          data-settle
+          className="mx-auto mt-14 grid max-w-4xl gap-8 border border-brass/40 bg-ebony-2 p-8 md:grid-cols-[0.8fr_1.2fr] md:items-center md:p-12"
+        >
+          <div className="text-center md:text-left">
+            <p className="text-sm text-faint">{starter.per}</p>
+            <p className="mt-2 flex items-baseline justify-center gap-1 md:justify-start">
+              <span className="font-serif-kr text-5xl font-bold tracking-tight">
+                {starter.price}
+              </span>
+              <span className="text-lg text-mute">{starter.unit}부터</span>
+            </p>
+          </div>
+          <div>
+            <p className="font-serif-kr text-xl leading-relaxed text-ivory md:text-2xl">
+              피아노 레슨은 월 4회, 45분 또는 60분 과정으로 진행합니다.
+            </p>
+            <p className="mt-4 text-base leading-relaxed text-mute">
+              취미·정규·입시 과정의 정확한 월 비용과 포함 항목은 전용 요금 페이지에서 한눈에 비교할
+              수 있습니다. {p.note}
+            </p>
+            <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3">
+              <a
+                href="/pricing"
+                className="font-serif-kr text-lg text-brass underline underline-offset-8 transition-colors hover:text-ivory"
+              >
+                피아노 레슨비와 과정별 포함 항목 확인하기
+              </a>
               <a
                 href="#contact"
-                className="mt-auto pt-8 text-center font-serif-kr text-lg text-brass underline underline-offset-8 transition-colors hover:text-ivory"
+                className="font-serif-kr text-lg text-ivory underline underline-offset-8 transition-colors hover:text-brass"
               >
-                상담 신청하기
+                피아노 레슨 상담 신청하기
               </a>
-            </article>
-          ))}
+            </div>
+          </div>
         </div>
-        <p className="mt-10 text-center text-sm text-faint">{p.note}</p>
-        <p className="mt-5 text-center">
-          <a
-            href="/pricing"
-            className="text-brass underline underline-offset-8 transition-colors hover:text-ivory"
-          >
-            피아노 레슨비와 수업별 차이 보기
-          </a>
-        </p>
       </div>
     </section>
   );

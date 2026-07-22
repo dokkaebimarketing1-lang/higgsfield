@@ -34,10 +34,12 @@ export type RelatedInformation = {
 
 export type LessonLandingDefinition = PublicPageDefinition & {
   role: "expansion";
+  supportingKeywords: readonly string[];
   imageAlt: string;
   lede: string;
   sections: readonly LessonSection[];
   faq: readonly LessonFaq[];
+  relatedServices: readonly RelatedInformation[];
   related: readonly RelatedInformation[];
   structuredData: string;
 };
@@ -131,6 +133,7 @@ export const SERVICE_PAGES = {
     path: "/lessons/private",
     label: "피아노 개인 레슨",
     primaryKeyword: "피아노 개인 레슨",
+    supportingKeywords: ["피아노 과외", "1:1 피아노 레슨"],
     role: "expansion",
     intent: "commercial",
     cluster: "lesson",
@@ -140,11 +143,11 @@ export const SERVICE_PAGES = {
     lastModified: SEO_UPDATED_AT,
     image: absoluteAsset("/assets/hero-detail.jpg"),
     imageAlt: "피아노 개인 레슨에서 건반을 연주하는 손",
-    lede: "피아노 개인 레슨은 현재 수준과 목표, 생활 리듬에 맞춰 수업 순서와 연습 계획을 조정하는 1:1 수업입니다.",
+    lede: "피아노 개인 레슨은 현재 수준과 목표, 생활 리듬에 맞춰 수업 순서와 연습 계획을 조정하는 1:1 피아노 레슨입니다.",
     sections: [
       {
         heading: "피아노 개인 레슨은 무엇이 다른가요?",
-        lead: "개인 레슨의 핵심은 정해진 진도를 따라가는 것이 아니라, 학생이 이해한 지점에서 다음 단계로 넘어가는 데 있습니다.",
+        lead: "피아노 과외의 핵심은 정해진 진도를 따라가는 것이 아니라, 학생이 이해한 지점에서 다음 단계로 넘어가는 데 있습니다.",
         paragraphs: [
           "같은 교재를 사용하더라도 손 모양, 악보 읽기, 리듬, 표현 중 먼저 보완해야 할 부분은 사람마다 다릅니다. 수업에서는 연주를 직접 듣고 그날 가장 필요한 한두 가지를 선명하게 짚습니다. 한 번에 많은 과제를 주기보다 다음 레슨까지 반복할 수 있는 분량으로 나누어 안내합니다.",
           "어린이는 집중 시간과 학교 일정, 성인은 퇴근 후 확보할 수 있는 연습 시간, 입시 준비생은 시험 일정과 레퍼토리를 기준으로 계획이 달라집니다. 목표가 바뀌거나 연습이 막힐 때는 진도를 고정하지 않고 교재와 과제의 순서를 다시 조정합니다.",
@@ -190,6 +193,18 @@ export const SERVICE_PAGES = {
         a: "사용 중인 교재와 치고 싶은 곡이 있다면 알려 주세요. 기존 교재가 없어도 괜찮으며, 첫 상담과 진단 뒤 필요한 준비를 안내합니다.",
       },
     ],
+    relatedServices: [
+      {
+        href: "/lessons/adult",
+        label: "성인 피아노 레슨",
+        description: "왕초보와 다시 시작하는 성인을 위한 수업 방식과 연습 계획을 확인합니다.",
+      },
+      {
+        href: "/lessons/children",
+        label: "어린이 피아노 레슨",
+        description: "유아와 초등학생의 집중 시간에 맞춘 1:1 수업을 확인합니다.",
+      },
+    ],
     related: [
       {
         href: "/blog/lesson-guide/choosing-piano-tutor",
@@ -207,6 +222,7 @@ export const SERVICE_PAGES = {
     path: "/lessons/adult",
     label: "성인 피아노 레슨",
     primaryKeyword: "성인 피아노 레슨",
+    supportingKeywords: ["성인 피아노", "성인 취미 피아노", "직장인 피아노"],
     role: "expansion",
     intent: "commercial",
     cluster: "adult",
@@ -216,7 +232,7 @@ export const SERVICE_PAGES = {
     lastModified: SEO_UPDATED_AT,
     image: absoluteAsset("/assets/program-adult.jpg"),
     imageAlt: "성인 피아노 레슨을 위해 그랜드 피아노 앞에 앉은 연주자",
-    lede: "성인 피아노 레슨은 왕초보와 다시 시작하는 취미 학습자가 원하는 곡과 가능한 연습 시간에 맞추는 1:1 수업입니다.",
+    lede: "성인 피아노 레슨은 왕초보와 다시 시작하는 성인 취미 피아노 학습자가 원하는 곡과 가능한 연습 시간에 맞추는 1:1 수업입니다.",
     sections: [
       {
         heading: "성인 피아노 레슨은 어디서 시작하나요?",
@@ -233,7 +249,7 @@ export const SERVICE_PAGES = {
       },
       {
         heading: "바쁜 일정에도 연습을 이어가는 방법은 무엇인가요?",
-        lead: "성인 수업은 긴 연습 시간을 전제로 하지 않고, 실제로 확보할 수 있는 시간 안에서 우선순위를 정하는 것이 중요합니다.",
+        lead: "직장인 피아노 수업은 긴 연습 시간을 전제로 하지 않고, 실제로 확보할 수 있는 시간 안에서 우선순위를 정하는 것이 중요합니다.",
         paragraphs: [
           "매일 곡 전체를 처음부터 끝까지 치기보다, 손이 멈추는 구간을 짧게 나누어 반복합니다. 한 손 연습, 느린 속도, 리듬 분리처럼 목적이 다른 방법을 섞으면 짧은 시간에도 문제를 분명하게 확인할 수 있습니다. 레슨에서는 다음 주까지 할 일을 많은 양이 아니라 실행 가능한 순서로 정리합니다.",
           "업무나 일정 때문에 한 주 연습이 부족했다면 수업을 미루기보다 막힌 원인을 함께 찾는 편이 도움이 됩니다. 이전 과제를 그대로 반복할지, 곡의 일부를 줄일지, 기초 연습으로 전환할지 선택할 수 있습니다. 꾸준함은 완벽한 주간 계획보다 다시 시작하기 쉬운 구조에서 만들어집니다.",
@@ -266,6 +282,18 @@ export const SERVICE_PAGES = {
         a: "반드시 어쿠스틱 피아노일 필요는 없지만 수업 사이에 연습할 건반은 필요합니다. 현재 사용하는 악기를 알려 주시면 수업 가능 여부를 안내합니다.",
       },
     ],
+    relatedServices: [
+      {
+        href: "/lessons/private",
+        label: "피아노 개인 레슨",
+        description: "1:1 수업의 진단, 피드백, 주간 연습 설계 방식을 확인합니다.",
+      },
+      {
+        href: "/pricing",
+        label: "피아노 레슨비",
+        description: "45분·60분 과정의 월 비용과 포함 항목을 한곳에서 비교합니다.",
+      },
+    ],
     related: [
       {
         href: "/blog/lesson-guide/adult-piano-tutoring",
@@ -281,21 +309,22 @@ export const SERVICE_PAGES = {
   }),
   children: defineServicePage({
     path: "/lessons/children",
-    label: "어린이 피아노",
-    primaryKeyword: "어린이 피아노",
+    label: "어린이 피아노 레슨",
+    primaryKeyword: "어린이 피아노 레슨",
+    supportingKeywords: ["어린이 피아노", "유아 피아노", "초등학생 피아노"],
     role: "expansion",
     intent: "commercial",
     cluster: "children",
-    title: "어린이 피아노 1:1 레슨 | 이화 피아노 과외",
+    title: "어린이 피아노 레슨 | 이화 피아노 과외",
     description:
-      "어린이 피아노 1:1 레슨은 바른 자세, 악보 읽기, 연습 습관을 아이의 집중 시간에 맞춰 배웁니다. 수업 방식과 비용을 확인하세요.",
+      "어린이 피아노 레슨은 유아·초등학생의 집중 시간에 맞춰 바른 자세, 악보 읽기, 연습 습관을 배웁니다. 수업 방식과 비용을 확인하세요.",
     lastModified: SEO_UPDATED_AT,
     image: absoluteAsset("/assets/program-child.jpg"),
     imageAlt: "어린이 피아노 레슨에서 작은 손으로 건반을 연주하는 모습",
-    lede: "어린이 피아노 레슨은 바른 자세, 악보 읽기, 리듬과 연습 습관을 아이의 집중 시간에 맞춰 연결하는 1:1 수업입니다.",
+    lede: "어린이 피아노 레슨은 유아 피아노의 첫 건반부터 초등학생 피아노의 악보 읽기와 연습 습관까지 집중 시간에 맞춰 연결하는 1:1 수업입니다.",
     sections: [
       {
-        heading: "어린이 피아노는 무엇부터 배우나요?",
+        heading: "유아·초등학생 어린이 피아노는 무엇부터 배우나요?",
         lead: "처음에는 많은 곡을 빠르게 끝내기보다 몸의 긴장을 줄이고, 악보와 건반의 관계를 이해하는 데 집중합니다.",
         paragraphs: [
           "앉는 위치, 팔과 손목의 높이, 손가락 번호를 확인한 뒤 짧은 리듬과 음형을 연주합니다. 악보는 음 이름만 외우기보다 위아래 움직임과 박자를 함께 읽도록 돕습니다. 아이가 설명을 듣는 방식이 시각적 표현에 가까운지, 소리를 따라 하는 데 익숙한지도 살펴 수업 방법을 바꿉니다.",
@@ -342,6 +371,18 @@ export const SERVICE_PAGES = {
         a: "서울 서대문구와 마포구는 일정과 위치를 협의해 방문 레슨을 진행할 수 있습니다. 그 외 지역은 온라인 수업 가능 여부를 확인합니다.",
       },
     ],
+    relatedServices: [
+      {
+        href: "/lessons/home-visit",
+        label: "피아노 방문 레슨",
+        description: "서대문구·마포구 가정에서 진행하는 수업과 준비 사항을 확인합니다.",
+      },
+      {
+        href: "/pricing",
+        label: "어린이 피아노 레슨비",
+        description: "45분·60분 과정의 월 비용과 무료 첫 상담을 확인합니다.",
+      },
+    ],
     related: [
       {
         href: "/blog/parents/piano-start-age",
@@ -359,10 +400,11 @@ export const SERVICE_PAGES = {
     path: "/lessons/home-visit",
     label: "피아노 방문 레슨",
     primaryKeyword: "피아노 방문 레슨",
+    supportingKeywords: ["방문 피아노", "서대문구 피아노 레슨", "마포구 피아노 레슨"],
     role: "expansion",
     intent: "local",
     cluster: "home-visit",
-    title: "피아노 방문 레슨 | 이화 피아노 과외",
+    title: "서울 피아노 방문 레슨 | 서대문구·마포구 1:1 과외",
     description:
       "피아노 방문 레슨을 서울 서대문구·마포구에서 협의해 진행합니다. 익숙한 집의 악기로 받는 1:1 수업 방식과 준비 사항을 확인하세요.",
     lastModified: SEO_UPDATED_AT,
@@ -392,8 +434,8 @@ export const SERVICE_PAGES = {
         ],
       },
       {
-        heading: "방문 지역과 시간을 어떻게 확인하나요?",
-        lead: "방문 가능 여부는 서울 서대문구와 마포구 안에서도 정확한 위치, 이동 시간, 원하는 요일을 함께 확인해 결정합니다.",
+        heading: "서대문구·마포구 피아노 방문 레슨 지역은 어디인가요?",
+        lead: "서대문구 피아노 레슨과 마포구 피아노 레슨 가능 여부는 정확한 위치, 이동 시간, 원하는 요일을 함께 확인해 결정합니다.",
         paragraphs: [
           "레슨은 월요일부터 토요일까지 운영하며 구체적인 시간은 협의합니다. 상담 신청에 동 단위의 지역, 가능한 요일과 시간대, 학생의 목표를 남겨 주세요. 개인정보 보호를 위해 상세 주소는 초기 문의에 적을 필요가 없으며, 수업 일정이 정해진 뒤 필요한 범위에서 확인합니다.",
           "방문 일정이 맞지 않거나 지역이 멀다면 온라인 화상 수업을 대안으로 안내할 수 있습니다. 온라인 수업은 이동 없이 같은 선생님과 진행할 수 있지만, 기기 배치와 연결 환경을 미리 확인해야 합니다. 두 방식의 장단점을 생활 동선과 학습 목표에 맞춰 비교해 주세요.",
@@ -418,6 +460,18 @@ export const SERVICE_PAGES = {
         a: "일정 변경과 수업 방식 전환은 미리 협의가 필요합니다. 가능한 시간과 기기 환경을 확인한 뒤 진행 여부를 안내합니다.",
       },
     ],
+    relatedServices: [
+      {
+        href: "/lessons/private",
+        label: "피아노 개인 레슨",
+        description: "방문과 온라인을 포함한 1:1 수업의 진단과 피드백 방식을 확인합니다.",
+      },
+      {
+        href: "/pricing",
+        label: "피아노 방문 레슨비 확인",
+        description: "45분·60분 과정의 월 비용과 포함 항목을 확인합니다.",
+      },
+    ],
     related: [
       {
         href: "/blog/parents/home-lesson-prep",
@@ -435,6 +489,7 @@ export const SERVICE_PAGES = {
     path: "/lessons/admission",
     label: "피아노 입시 레슨",
     primaryKeyword: "피아노 입시 레슨",
+    supportingKeywords: ["피아노 입시", "음대 입시", "피아노 콩쿠르"],
     role: "expansion",
     intent: "commercial",
     cluster: "admission",
@@ -494,6 +549,18 @@ export const SERVICE_PAGES = {
         a: "합격이나 수상을 보장하지 않습니다. 확인된 전형 조건과 현재 연주를 바탕으로 준비 방향을 세우고, 수업에서 개선할 부분을 구체적으로 지도합니다.",
       },
     ],
+    relatedServices: [
+      {
+        href: "/pricing",
+        label: "피아노 입시 레슨비",
+        description: "입시·콩쿠르 과정의 월 비용, 수업 시간, 포함 항목을 확인합니다.",
+      },
+      {
+        href: "/lessons/private",
+        label: "피아노 개인 레슨",
+        description: "현재 연주 수준을 진단하고 주간 연습을 설계하는 1:1 수업을 확인합니다.",
+      },
+    ],
     related: [
       {
         href: "/blog/exam/music-college-entrance",
@@ -511,6 +578,12 @@ export const SERVICE_PAGES = {
     path: "/pricing",
     label: "피아노 레슨비",
     primaryKeyword: "피아노 레슨비",
+    supportingKeywords: [
+      "피아노 레슨 비용",
+      "피아노 개인 레슨 비용",
+      "피아노 과외 비용",
+      "성인 피아노 학원 가격",
+    ],
     role: "expansion",
     intent: "commercial",
     cluster: "pricing",
@@ -523,8 +596,8 @@ export const SERVICE_PAGES = {
     lede: "피아노 레슨비는 월 4회 기준 160,000원부터 320,000원까지이며, 수업 시간과 목표에 따라 세 과정으로 안내합니다.",
     sections: [
       {
-        heading: "피아노 레슨비에는 무엇이 포함되나요?",
-        lead: "각 과정의 월 비용과 수업 시간, 안내 항목을 공개해 상담 전에 필요한 범위를 비교할 수 있습니다.",
+        heading: "피아노 개인 레슨 비용에는 무엇이 포함되나요?",
+        lead: "피아노 레슨 비용과 수업 시간, 안내 항목을 공개해 상담 전에 필요한 범위를 비교할 수 있습니다.",
         paragraphs: [
           "취미 스타터는 주 1회 45분 수업으로 기초 교재 안내와 온라인 질문 답변을 포함합니다. 정규 집중은 주 1회 60분 수업으로 맞춤 커리큘럼과 월 1회 연주 영상 피드백을 제공합니다. 입시·콩쿠르 과정은 주 1회 60분 수업으로 입시 전략 상담과 모의 연주 평가를 포함합니다.",
           "표시된 금액은 월 단위 과정 안내입니다. 현재 수준과 목표를 확인하지 않은 채 더 비싼 과정을 권하지 않습니다. 취미로 시작하는지, 한 곡 완성이 목표인지, 시험과 무대를 준비하는지에 따라 필요한 수업 시간과 피드백 범위를 상담에서 함께 정합니다.",
@@ -568,6 +641,22 @@ export const SERVICE_PAGES = {
       {
         q: "방문 레슨과 온라인 레슨의 비용은 같은가요?",
         a: "이 페이지에는 과정별 기본 월 비용을 안내합니다. 정확한 위치와 수업 방식에 따른 적용 여부는 상담에서 확인해 안내합니다.",
+      },
+      {
+        q: "성인 피아노 학원 가격과 1:1 레슨비는 어떻게 비교하나요?",
+        a: "학원 가격은 그룹 여부, 시설, 수업 시간과 운영 방식에 따라 달라질 수 있습니다. 이 페이지의 1:1 월 비용과 수업 시간, 피드백 범위를 같은 기준으로 놓고 비교해 주세요.",
+      },
+    ],
+    relatedServices: [
+      {
+        href: "/lessons/private",
+        label: "피아노 개인 레슨",
+        description: "1:1 수업의 진단, 피드백, 주간 연습 설계 방식을 확인합니다.",
+      },
+      {
+        href: "/lessons/admission",
+        label: "피아노 입시 레슨",
+        description: "입시·콩쿠르 과정이 일반 취미 수업과 다른 준비 범위를 확인합니다.",
       },
     ],
     related: [
@@ -706,12 +795,17 @@ export function getServicePageForPost(
 }
 
 export const CATEGORY_SERVICE_PATHS = {
-  "lesson-guide": [SERVICE_PAGES.private.path, SERVICE_PAGES.pricing.path],
-  practice: [SERVICE_PAGES.private.path, SERVICE_PAGES.adult.path],
+  "lesson-guide": [
+    SERVICE_PAGES.private.path,
+    SERVICE_PAGES.pricing.path,
+    SERVICE_PAGES.adult.path,
+    SERVICE_PAGES.children.path,
+  ],
+  practice: [SERVICE_PAGES.private.path, SERVICE_PAGES.children.path],
   exam: [SERVICE_PAGES.admission.path],
-  repertoire: [SERVICE_PAGES.adult.path],
+  repertoire: [SERVICE_PAGES.adult.path, SERVICE_PAGES.admission.path],
   parents: [SERVICE_PAGES.children.path, SERVICE_PAGES.homeVisit.path],
-  local: [SERVICE_PAGES.homeVisit.path],
+  local: [SERVICE_PAGES.homeVisit.path, SERVICE_PAGES.private.path],
 } as const;
 
 export function buildPublicPageHead(page: PublicPageDefinition) {

@@ -157,6 +157,33 @@ describe("SEO helpers", () => {
   test("keeps service landing copy, canonical and schema aligned", () => {
     for (const page of Object.values(SERVICE_PAGES)) {
       expect(page.lede).toContain(page.primaryKeyword);
+      const visibleCopy = [
+        page.primaryKeyword,
+        page.lede,
+        page.imageAlt,
+        ...page.sections.flatMap((section) => [
+          section.heading,
+          section.lead,
+          ...section.paragraphs,
+          ...(section.points ?? []),
+        ]),
+        ...page.faq.flatMap((item) => [item.q, item.a]),
+        ...page.relatedServices.flatMap((item) => [item.label, item.description]),
+        ...page.related.flatMap((item) => [item.label, item.description]),
+      ].join(" ");
+
+      for (const keyword of page.supportingKeywords) {
+        expect(visibleCopy).toContain(keyword);
+      }
+
+      expect(new Set(page.supportingKeywords.map(normalizeKeyword)).size).toBe(
+        page.supportingKeywords.length,
+      );
+      for (const related of page.relatedServices) {
+        expect(SERVICE_PAGE_BY_PATH.has(related.href)).toBe(true);
+        expect(related.href).not.toBe(page.path);
+      }
+
       const head = buildPublicPageHead(page);
       expect(head.links).toContainEqual({ rel: "canonical", href: `${SITE_URL}${page.path}` });
 
@@ -191,8 +218,22 @@ describe("SEO helpers", () => {
     expect(home).toBeDefined();
     expect(home?.title).toBe(SITE.title);
     expect(home?.description).toBe(SITE.description);
+    expect(SITE.hero.headline).toContain("피아노 레슨");
+    expect(SITE.hero.sub).toContain("피아노 개인 레슨");
+    expect(SITE.hero.primary).toContain("피아노 레슨");
     expect(appMeta.og_title).toBe(SITE.title);
     expect(appMeta.og_description).toBe(SITE.description);
+  });
+
+  test("keeps detailed pricing ownership on the pricing landing", () => {
+    const homepagePriceFaq = SITE.faq.items.find(
+      (item) => item.q === "피아노 과외 비용은 얼마인가요?",
+    );
+
+    expect(homepagePriceFaq?.a).toContain("피아노 레슨비 페이지");
+    expect(homepagePriceFaq?.a).not.toContain("240,000원");
+    expect(homepagePriceFaq?.a).not.toContain("320,000원");
+    expect(SERVICE_PAGES.pricing.faq.map((item) => item.a).join(" ")).toContain("320,000원");
   });
 
   test("has no visible em dash in the managed SEO registry", () => {

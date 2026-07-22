@@ -35,6 +35,14 @@ function databaseAfterAllMigrations() {
   return db;
 }
 
+function databaseBeforeKeywordContentLinksMigration() {
+  const db = new Database(":memory:");
+  for (const name of migrationNames.filter((name) => name < "0013_keyword_content_links.sql")) {
+    applyMigration(db, name);
+  }
+  return db;
+}
+
 const retargetedSlugs = [
   "piano-start-age",
   "elementary-piano-tutoring",
@@ -179,6 +187,116 @@ describe("Webflow SEO hardening migration", () => {
       expect(bySlug.get(slug)?.body).toMatch(/\/blog\/(practice|exam)/);
       expect(bySlug.get(slug)?.body).toMatch(/\/lessons\/(private|admission)/);
     }
+    db.close();
+  });
+});
+
+describe("keyword content links migration", () => {
+  const serviceLinks = {
+    "adult-piano-tutoring": "[성인 피아노 레슨 안내](/lessons/adult)",
+    "buying-first-piano": "[어린이 피아노 레슨](/lessons/children)",
+    "child-hates-practice": "[어린이 피아노 레슨 상담](/lessons/children)",
+    "elementary-piano-tutoring": "[초등학생 피아노 레슨 안내](/lessons/children)",
+    "piano-start-age": "[유아·어린이 피아노 레슨 안내](/lessons/children)",
+    "practice-parent-role": "[어린이 피아노 레슨 상담](/lessons/children)",
+    "home-lesson-prep": "[피아노 방문 레슨 상담](/lessons/home-visit)",
+    "seodaemun-piano": "[서대문구 피아노 방문 레슨](/lessons/home-visit)",
+    "mapo-piano": "[마포구 피아노 방문 레슨](/lessons/home-visit)",
+    "ewha-area-lesson": "[이대·서대문구 피아노 방문 레슨](/lessons/home-visit)",
+    "seoul-piano-tutoring": "[서울 피아노 방문 레슨](/lessons/home-visit)",
+    "academy-vs-tutoring": "[피아노 개인 레슨 비교 상담](/lessons/private)",
+    "choosing-piano-tutor": "[피아노 개인 레슨 상담](/lessons/private)",
+    "tutoring-time-guide": "[피아노 개인 레슨 시간 상담](/lessons/private)",
+    "sight-reading": "[피아노 개인 레슨 상담](/lessons/private)",
+    "new-age-piano": "[성인 피아노 레슨](/lessons/adult)",
+  } as const;
+
+  test("replaces 16 generic consultation anchors with descriptive service links", () => {
+    const db = databaseAfterAllMigrations();
+    const slugs = Object.keys(serviceLinks);
+    const placeholders = slugs.map(() => "?").join(", ");
+    const posts = db
+      .query<{ slug: string; body: string }, string[]>(
+        `SELECT slug, body FROM posts WHERE slug IN (${placeholders}) ORDER BY slug`,
+      )
+      .all(...slugs);
+
+    expect(posts).toHaveLength(slugs.length);
+    for (const post of posts) {
+      expect(post.body, post.slug).toContain(serviceLinks[post.slug as keyof typeof serviceLinks]);
+    }
+    db.close();
+  });
+
+  test("separates pricing comparison intent, adds contextual inlinks, and is idempotent", () => {
+    const db = databaseAfterAllMigrations();
+    const cost = db
+      .query<
+        {
+          excerpt: string;
+          meta_description: string;
+          body: string;
+          search_intent: string;
+        },
+        []
+      >(
+        `SELECT excerpt, meta_description, body, search_intent
+         FROM posts WHERE slug = 'piano-tutoring-cost'`,
+      )
+      .get();
+
+    expect(cost?.search_intent).toBe("comparison");
+    expect(cost?.excerpt).toContain("최신 레슨비 확인 경로");
+    expect(cost?.meta_description).toContain("비교 기준");
+    expect(cost?.body).toContain("[피아노 레슨비와 과정별 포함 항목](/pricing)");
+    expect(cost?.body).not.toContain("취미 스타터");
+    expect(cost?.body).not.toContain("월 160,000원");
+    expect(cost?.body.match(/\/pricing/g)).toHaveLength(1);
+
+    const competitionPrep = db
+      .query<{ body: string }, []>("SELECT body FROM posts WHERE slug = 'competition-prep'")
+      .get();
+    const practiceMethod = db
+      .query<{ body: string }, []>("SELECT body FROM posts WHERE slug = 'piano-practice-method'")
+      .get();
+    expect(competitionPrep?.body).toContain(
+      "[콩쿠르 곡 선택 기준](/blog/repertoire/competition-pieces)",
+    );
+    expect(practiceMethod?.body).toContain(
+      "[피아노 독학 8주 연습 순서](/blog/practice/piano-self-study)",
+    );
+
+    db.exec("UPDATE posts SET updated_at = '2000-01-01 00:00:00'");
+    const before = db
+      .query<{ slug: string; body: string; updated_at: string }, []>(
+        "SELECT slug, body, updated_at FROM posts ORDER BY slug",
+      )
+      .all();
+    applyMigration(db, "0013_keyword_content_links.sql");
+    const after = db
+      .query<{ slug: string; body: string; updated_at: string }, []>(
+        "SELECT slug, body, updated_at FROM posts ORDER BY slug",
+      )
+      .all();
+    expect(after).toEqual(before);
+    db.close();
+  });
+
+  test("does not overwrite an administrator-edited consultation anchor", () => {
+    const db = databaseBeforeKeywordContentLinksMigration();
+    db.query(
+      `UPDATE posts
+       SET body = replace(body, '[상담 신청](/#contact)', '[관리자 상담](/#contact)')
+       WHERE slug = 'choosing-piano-tutor'`,
+    ).run();
+
+    applyMigration(db, "0013_keyword_content_links.sql");
+
+    const post = db
+      .query<{ body: string }, []>("SELECT body FROM posts WHERE slug = 'choosing-piano-tutor'")
+      .get();
+    expect(post?.body).toContain("[관리자 상담](/#contact)");
+    expect(post?.body).not.toContain("/lessons/private");
     db.close();
   });
 });
