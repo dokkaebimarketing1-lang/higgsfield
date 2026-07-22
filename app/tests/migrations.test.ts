@@ -142,6 +142,13 @@ describe("keyword cluster migration", () => {
 
 describe("Webflow SEO hardening migration", () => {
   test("removes unsupported numeric claims and strengthens contextual links", () => {
+    const migrationSql = readFileSync(
+      join(migrationsDir, "0012_webflow_seo_hardening.sql"),
+      "utf8",
+    );
+    expect(migrationSql).not.toMatch(/\bLIKE\b/i);
+    expect(migrationSql).toContain("instr(body");
+
     const db = databaseAfterAllMigrations();
     const posts = db
       .query<
