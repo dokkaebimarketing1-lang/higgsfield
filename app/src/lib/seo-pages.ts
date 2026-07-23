@@ -805,7 +805,7 @@ export const CATEGORY_SERVICE_PATHS = {
   exam: [SERVICE_PAGES.admission.path],
   repertoire: [SERVICE_PAGES.adult.path, SERVICE_PAGES.admission.path],
   parents: [SERVICE_PAGES.children.path, SERVICE_PAGES.homeVisit.path],
-  local: [SERVICE_PAGES.homeVisit.path, SERVICE_PAGES.private.path],
+  local: [SERVICE_PAGES.homeVisit.path],
 } as const;
 
 export function buildPublicPageHead(page: PublicPageDefinition) {

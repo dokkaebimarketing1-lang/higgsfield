@@ -1,7 +1,14 @@
 import { describe, expect, test } from "bun:test";
 
 import appMeta from "../src/app-meta.json";
-import { CATEGORY_SEO, SITE, SITE_URL } from "../src/lib/content";
+import {
+  BLOG_CATEGORY_SLUGS,
+  BLOG_POST_KEYWORD_ROLES,
+  CATEGORY_SEO,
+  SITE,
+  SITE_URL,
+  getBlogCategoryTaxonomyIssues,
+} from "../src/lib/content";
 import { normalizeKeyword } from "../src/lib/keyword-taxonomy";
 import {
   CATEGORY_SERVICE_PATHS,
@@ -108,6 +115,46 @@ describe("SEO helpers", () => {
       expect(category.metaDescription).toContain(category.primaryKeyword);
       expect(category.intro).toContain(category.primaryKeyword);
     }
+  });
+
+  test("keeps the CMS category taxonomy fixed and rejects cross-category drift", () => {
+    expect(BLOG_CATEGORY_SLUGS).toHaveLength(6);
+    expect(BLOG_POST_KEYWORD_ROLES).toEqual(["informational", "long-tail"]);
+    expect(Object.keys(CATEGORY_SEO)).toEqual([...BLOG_CATEGORY_SLUGS]);
+
+    for (const slug of BLOG_CATEGORY_SLUGS) {
+      const category = CATEGORY_SEO[slug];
+      expect(category.name.length).toBeGreaterThan(0);
+      expect(category.description.length).toBeGreaterThan(0);
+      expect(category.audience.length).toBeGreaterThan(0);
+      expect(category.editorialRule.length).toBeGreaterThan(0);
+      expect(category.exclusionRule.length).toBeGreaterThan(0);
+      expect(
+        getBlogCategoryTaxonomyIssues({
+          categorySlug: slug,
+          keywordRole: category.defaultKeywordRole,
+          searchIntent: category.defaultSearchIntent,
+          keywordCluster: category.defaultKeywordCluster,
+        }),
+      ).toEqual([]);
+    }
+
+    expect(
+      getBlogCategoryTaxonomyIssues({
+        categorySlug: "local",
+        keywordRole: "informational",
+        searchIntent: "comparison",
+        keywordCluster: "lesson",
+      }),
+    ).toHaveLength(3);
+    expect(
+      getBlogCategoryTaxonomyIssues({
+        categorySlug: "custom-category",
+        keywordRole: "informational",
+        searchIntent: "informational",
+        keywordCluster: "practice",
+      }),
+    ).toEqual(["CMS에서 확정한 6개 카테고리 중 하나를 선택해 주세요."]);
   });
 
   test("blocks published copy that drops its primary target keyword", () => {

@@ -1,64 +1,203 @@
+import type { KeywordCluster, KeywordRole, SearchIntent } from "./keyword-taxonomy";
+
 // 이화 피아노 과외 — 모든 노출 카피를 한곳에서 관리합니다.
 export const SITE_URL = "https://ewha-piano.higgsfield.app";
 
 // 카테고리 허브는 개별 글과 검색 의도를 겹치지 않게 넓은 주제 키워드를 담당합니다.
+export const BLOG_CATEGORY_SLUGS = [
+  "lesson-guide",
+  "practice",
+  "exam",
+  "repertoire",
+  "parents",
+  "local",
+] as const;
+
+export type BlogCategorySlug = (typeof BLOG_CATEGORY_SLUGS)[number];
+
+export const BLOG_POST_KEYWORD_ROLES = [
+  "informational",
+  "long-tail",
+] as const satisfies readonly KeywordRole[];
+
 export type CategorySeo = {
+  name: string;
+  description: string;
   primaryKeyword: string;
   pageTitle: string;
   metaDescription: string;
   intro: string;
+  audience: string;
+  editorialRule: string;
+  exclusionRule: string;
+  defaultKeywordRole: (typeof BLOG_POST_KEYWORD_ROLES)[number];
+  allowedKeywordRoles: readonly (typeof BLOG_POST_KEYWORD_ROLES)[number][];
+  defaultSearchIntent: SearchIntent;
+  allowedSearchIntents: readonly SearchIntent[];
+  defaultKeywordCluster: Exclude<KeywordCluster, "general">;
+  allowedKeywordClusters: readonly Exclude<KeywordCluster, "general">[];
 };
 
 export const CATEGORY_SEO: Record<string, CategorySeo> = {
   "lesson-guide": {
+    name: "레슨 선택·비용",
+    description: "비용, 수업 방식, 선생님과 대상별 레슨 선택 기준",
     primaryKeyword: "피아노 과외 가이드",
     pageTitle: "피아노 과외 가이드 | 비용·선생님·수업 비교",
     metaDescription:
       "피아노 과외 가이드. 비용, 선생님 고르는 법, 학원과 과외 비교, 수업 시간과 횟수까지 시작 전에 필요한 정보를 레슨 현장의 시선으로 정리합니다.",
     intro:
       "피아노 과외 가이드는 처음 알아보는 분들이 가장 많이 묻는 질문부터 답합니다. 비용, 선생님 선택, 학원과의 비교, 시간과 횟수까지 레슨을 하는 사람이 솔직하게 정리했습니다.",
+    audience: "레슨 신청 전에 비용, 방식, 선생님을 비교하는 학습자와 보호자",
+    editorialRule:
+      "비용·수업 방식·선생님 선택·대상별 레슨 비교처럼 상담 직전의 판단 기준을 다룹니다.",
+    exclusionRule:
+      "연습 기술만 다루는 글과 특정 지역을 찾는 글은 각각 연습·독학, 서울 지역 레슨으로 분류합니다.",
+    defaultKeywordRole: "informational",
+    allowedKeywordRoles: BLOG_POST_KEYWORD_ROLES,
+    defaultSearchIntent: "comparison",
+    allowedSearchIntents: ["commercial", "comparison", "informational"],
+    defaultKeywordCluster: "lesson",
+    allowedKeywordClusters: ["lesson", "pricing", "adult", "children"],
   },
   practice: {
+    name: "연습·독학",
+    description: "연습 순서, 악보 읽기, 리듬, 테크닉과 독학 습관",
     primaryKeyword: "피아노 연습",
     pageTitle: "피아노 연습 | 연습법·악보·메트로놈 가이드",
     metaDescription:
       "피아노 연습 방법을 찾는 분을 위한 가이드입니다. 효율적인 연습 구조, 하농 활용법, 악보 읽는 법, 메트로놈 사용과 습관 만들기를 단계별로 안내합니다.",
     intro:
       "피아노 연습은 오래 앉아 있는 것보다 무엇을 어떤 순서로 반복하는지가 중요합니다. 워밍업, 구간 연습, 악보 읽기, 메트로놈 활용과 매일 이어지는 습관까지 실제 레슨에서 쓰는 방법을 공개합니다.",
+    audience: "혼자 연습하는 초보자와 아이의 연습 습관을 돕는 보호자",
+    editorialRule:
+      "악보 읽기, 리듬, 테크닉, 연습 루틴과 독학처럼 바로 실행할 수 있는 방법을 다룹니다.",
+    exclusionRule:
+      "레슨 상품 비교나 곡 추천 목록은 각각 레슨 선택·비용, 연주곡·레퍼토리로 분류합니다.",
+    defaultKeywordRole: "informational",
+    allowedKeywordRoles: BLOG_POST_KEYWORD_ROLES,
+    defaultSearchIntent: "informational",
+    allowedSearchIntents: ["informational"],
+    defaultKeywordCluster: "practice",
+    allowedKeywordClusters: ["practice", "children"],
   },
   exam: {
+    name: "입시·콩쿠르",
+    description: "음대 입시, 콩쿠르, 실기와 무대 준비 전략",
     primaryKeyword: "피아노 입시",
     pageTitle: "피아노 입시·콩쿠르 가이드 | 준비 시기·곡 선택",
     metaDescription:
       "피아노 입시 준비 시기, 콩쿠르 첫 도전, 입시곡 선택과 무대 떨림 극복을 정리했습니다. 이화여대 피아노과 입시를 경험한 재학생이 현실적인 기준을 전합니다.",
     intro:
       "피아노 입시는 준비 시기와 곡 선택, 실전 무대 경험을 함께 설계해야 합니다. 이화여대 피아노과 입시를 경험한 재학생이 콩쿠르와 실기 준비 기준을 단계별로 정리합니다.",
+    audience: "음대 입시와 콩쿠르를 준비하는 학생 및 보호자",
+    editorialRule:
+      "모집요강 확인, 준비 시기, 실기 계획, 무대 대응처럼 입시·콩쿠르 실행 전략을 다룹니다.",
+    exclusionRule:
+      "감상용·취미용 곡 추천과 일반 연습법은 각각 연주곡·레퍼토리, 연습·독학으로 분류합니다.",
+    defaultKeywordRole: "informational",
+    allowedKeywordRoles: BLOG_POST_KEYWORD_ROLES,
+    defaultSearchIntent: "informational",
+    allowedSearchIntents: ["informational"],
+    defaultKeywordCluster: "admission",
+    allowedKeywordClusters: ["admission"],
   },
   repertoire: {
+    name: "연주곡·레퍼토리",
+    description: "수준, 목적과 장르별 피아노 연주곡 선택 가이드",
     primaryKeyword: "피아노 연주곡",
     pageTitle: "피아노 연주곡 추천 | 초보·성인·중급·콩쿠르",
     metaDescription:
       "피아노 연주곡을 찾는 분을 위해 초보 입문곡, 성인 취미 쉬운 곡, 체르니 이후 중급 곡, 뉴에이지와 콩쿠르 레퍼토리를 수준별로 골랐습니다.",
     intro:
       "피아노 연주곡은 현재 읽기와 손가락 수준보다 조금 어려운 곡을 고를 때 가장 꾸준히 완성할 수 있습니다. 입문 로드맵, 성인 취미곡, 중급곡, 뉴에이지와 콩쿠르 곡까지 수준별로 골랐습니다.",
+    audience: "현재 수준과 목적에 맞는 다음 연주곡을 찾는 학습자",
+    editorialRule: "초보·성인·중급·콩쿠르 등 수준과 목적에 맞춘 곡 추천 및 선택 기준을 다룹니다.",
+    exclusionRule:
+      "곡을 연습하는 기술과 입시 일정 운영은 각각 연습·독학, 입시·콩쿠르로 분류합니다.",
+    defaultKeywordRole: "informational",
+    allowedKeywordRoles: BLOG_POST_KEYWORD_ROLES,
+    defaultSearchIntent: "informational",
+    allowedSearchIntents: ["informational"],
+    defaultKeywordCluster: "repertoire",
+    allowedKeywordClusters: ["repertoire", "admission"],
   },
   parents: {
+    name: "아이·학부모",
+    description: "아이의 시작 시기, 악기, 연습 환경과 부모 역할",
     primaryKeyword: "아이 피아노",
     pageTitle: "아이 피아노 학부모 가이드 | 시작·연습·악기 선택",
     metaDescription:
       "아이 피아노 시작 나이, 연습을 싫어할 때의 대응, 첫 피아노 구입, 방문 레슨 준비와 부모의 역할을 학부모가 확인하기 쉽게 안내합니다.",
     intro:
       "아이 피아노 교육에서 부모의 역할은 연습 감독보다 환경을 만드는 일에 가깝습니다. 시작 시기, 연습 갈등을 줄이는 법, 악기 구입과 방문 레슨 준비까지 자주 묻는 질문에 답합니다.",
+    audience: "유아·초등 피아노 교육을 시작하거나 이어 가는 보호자",
+    editorialRule: "시작 나이, 첫 악기, 연습 갈등, 부모 역할과 가정 수업 환경을 다룹니다.",
+    exclusionRule:
+      "모든 연령에 공통인 연습 기술과 레슨 상품 비교는 각각 연습·독학, 레슨 선택·비용으로 분류합니다.",
+    defaultKeywordRole: "informational",
+    allowedKeywordRoles: BLOG_POST_KEYWORD_ROLES,
+    defaultSearchIntent: "informational",
+    allowedSearchIntents: ["informational", "comparison"],
+    defaultKeywordCluster: "children",
+    allowedKeywordClusters: ["children", "home-visit"],
   },
   local: {
+    name: "서울 지역 레슨",
+    description: "서대문구, 마포구와 이대 인근 방문 레슨 지역 안내",
     primaryKeyword: "서울 피아노 레슨",
-    pageTitle: "서울 피아노 레슨 | 서대문·마포 방문·온라인 수업",
+    pageTitle: "서울 피아노 레슨 | 서대문·마포 방문 수업",
     metaDescription:
-      "서울 피아노 레슨을 찾는 분에게 서대문구·마포구 방문 수업과 서울 전역 온라인 수업, 이대 인근 이화여대 피아노과 재학생의 1:1 수업을 소개합니다.",
+      "서울 피아노 레슨을 찾는 분에게 서대문구·마포구 방문 수업과 이대 인근 이화여대 피아노과 재학생의 1:1 수업 지역을 안내합니다.",
     intro:
-      "서울 피아노 레슨은 서대문구·마포구 방문과 서울 전역 온라인 방식으로 진행합니다. 지역별 이동 범위와 수업 형태, 신청 전에 확인할 내용을 한곳에서 안내합니다.",
+      "서울 피아노 레슨은 서대문구·마포구와 이대 인근 방문 방식으로 진행합니다. 지역별 이동 범위와 신청 전에 확인할 내용을 한곳에서 안내합니다.",
+    audience: "서울 서대문구·마포구와 이대 인근에서 방문 레슨을 찾는 학습자",
+    editorialRule: "구·동·생활권처럼 명확한 서울 지역명이 검색어의 중심인 방문 레슨 글만 다룹니다.",
+    exclusionRule: "지역 제한이 없는 온라인·화상 레슨 비교는 레슨 선택·비용으로 분류합니다.",
+    defaultKeywordRole: "long-tail",
+    allowedKeywordRoles: ["long-tail"],
+    defaultSearchIntent: "local",
+    allowedSearchIntents: ["local"],
+    defaultKeywordCluster: "local",
+    allowedKeywordClusters: ["local"],
   },
 };
+
+export function isBlogCategorySlug(value: string): value is BlogCategorySlug {
+  return (BLOG_CATEGORY_SLUGS as readonly string[]).includes(value);
+}
+
+export function getBlogCategoryTaxonomyIssues(input: {
+  categorySlug: string;
+  keywordRole: KeywordRole;
+  searchIntent: SearchIntent;
+  keywordCluster: KeywordCluster;
+}): string[] {
+  if (!isBlogCategorySlug(input.categorySlug)) {
+    return ["CMS에서 확정한 6개 카테고리 중 하나를 선택해 주세요."];
+  }
+
+  const category = CATEGORY_SEO[input.categorySlug];
+  const issues: string[] = [];
+  if (!(category.allowedKeywordRoles as readonly KeywordRole[]).includes(input.keywordRole)) {
+    issues.push(
+      `${category.name} 카테고리는 ${category.allowedKeywordRoles.join(" 또는 ")} 키워드 역할만 사용할 수 있습니다.`,
+    );
+  }
+  if (!(category.allowedSearchIntents as readonly SearchIntent[]).includes(input.searchIntent)) {
+    issues.push(
+      `${category.name} 카테고리의 검색 의도는 ${category.allowedSearchIntents.join(", ")} 중에서 선택해 주세요.`,
+    );
+  }
+  if (
+    !(category.allowedKeywordClusters as readonly KeywordCluster[]).includes(input.keywordCluster)
+  ) {
+    issues.push(
+      `${category.name} 카테고리의 토픽 클러스터는 ${category.allowedKeywordClusters.join(", ")} 중에서 선택해 주세요.`,
+    );
+  }
+  return issues;
+}
 
 export const SITE = {
   brand: "이화 피아노 과외",

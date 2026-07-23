@@ -16,17 +16,20 @@ import {
   type PostRow,
 } from "../lib/api/posts.functions";
 import {
-  KEYWORD_CLUSTERS,
   KEYWORD_CLUSTER_LABELS,
-  KEYWORD_ROLES,
   KEYWORD_ROLE_LABELS,
-  SEARCH_INTENTS,
   SEARCH_INTENT_LABELS,
   type KeywordCluster,
   type KeywordRole,
   type SearchIntent,
 } from "../lib/keyword-taxonomy";
 import { getPrimaryKeyword } from "../lib/seo";
+import {
+  BLOG_CATEGORY_SLUGS,
+  BLOG_POST_KEYWORD_ROLES,
+  CATEGORY_SEO,
+  type BlogCategorySlug,
+} from "../lib/content";
 
 type Inquiry = {
   id: number;
@@ -581,6 +584,16 @@ function EditorTab({
     "w-full border border-line bg-ebony px-4 py-3 text-ivory outline-none transition-colors placeholder:text-faint focus:border-brass";
   const labelCls = "mb-2 block text-sm text-mute";
   const primaryKeyword = getPrimaryKeyword(form.tags);
+  const canonicalCategories = BLOG_CATEGORY_SLUGS.map((slug) =>
+    categories.find((category) => category.slug === slug),
+  ).filter((category): category is CategoryRow => Boolean(category));
+  const selectedCategory = categories.find((category) => category.id === form.categoryId);
+  const selectedCategorySeo = selectedCategory
+    ? CATEGORY_SEO[selectedCategory.slug as BlogCategorySlug]
+    : undefined;
+  const availableKeywordRoles = selectedCategorySeo?.allowedKeywordRoles ?? BLOG_POST_KEYWORD_ROLES;
+  const availableSearchIntents = selectedCategorySeo?.allowedSearchIntents ?? ["informational"];
+  const availableKeywordClusters = selectedCategorySeo?.allowedKeywordClusters ?? ["general"];
 
   return (
     <div>
@@ -607,17 +620,57 @@ function EditorTab({
           <span className={labelCls}>카테고리</span>
           <select
             value={form.categoryId ?? ""}
-            onChange={(e) => set("categoryId", e.target.value ? Number(e.target.value) : null)}
+            onChange={(e) => {
+              const categoryId = e.target.value ? Number(e.target.value) : null;
+              const category = categories.find((item) => item.id === categoryId);
+              const policy = category ? CATEGORY_SEO[category.slug as BlogCategorySlug] : undefined;
+              setForm((current) => ({
+                ...current,
+                categoryId,
+                keywordRole: policy
+                  ? (policy.allowedKeywordRoles as readonly KeywordRole[]).includes(
+                      current.keywordRole,
+                    )
+                    ? current.keywordRole
+                    : policy.defaultKeywordRole
+                  : "informational",
+                searchIntent: policy
+                  ? (policy.allowedSearchIntents as readonly SearchIntent[]).includes(
+                      current.searchIntent,
+                    )
+                    ? current.searchIntent
+                    : policy.defaultSearchIntent
+                  : "informational",
+                keywordCluster: policy
+                  ? (policy.allowedKeywordClusters as readonly KeywordCluster[]).includes(
+                      current.keywordCluster,
+                    )
+                    ? current.keywordCluster
+                    : policy.defaultKeywordCluster
+                  : "general",
+              }));
+            }}
             className={inputCls}
           >
             <option value="">미분류</option>
-            {categories.map((c) => (
+            {canonicalCategories.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name}
+                {CATEGORY_SEO[c.slug as BlogCategorySlug].name} ·{" "}
+                {CATEGORY_SEO[c.slug as BlogCategorySlug].primaryKeyword}
               </option>
             ))}
           </select>
         </label>
+        {selectedCategorySeo && (
+          <div className="border border-line bg-ebony-2 p-4 text-sm leading-relaxed md:col-span-2">
+            <p className="font-semibold text-ivory">
+              대표 키워드: {selectedCategorySeo.primaryKeyword}
+            </p>
+            <p className="mt-1 text-mute">대상: {selectedCategorySeo.audience}</p>
+            <p className="mt-1 text-mute">포함: {selectedCategorySeo.editorialRule}</p>
+            <p className="mt-1 text-faint">제외: {selectedCategorySeo.exclusionRule}</p>
+          </div>
+        )}
         <label className="block">
           <span className={labelCls}>키워드 역할</span>
           <select
@@ -625,7 +678,7 @@ function EditorTab({
             onChange={(e) => set("keywordRole", e.target.value as KeywordRole)}
             className={inputCls}
           >
-            {KEYWORD_ROLES.map((role) => (
+            {availableKeywordRoles.map((role) => (
               <option key={role} value={role}>
                 {KEYWORD_ROLE_LABELS[role]}
               </option>
@@ -639,7 +692,7 @@ function EditorTab({
             onChange={(e) => set("searchIntent", e.target.value as SearchIntent)}
             className={inputCls}
           >
-            {SEARCH_INTENTS.map((intent) => (
+            {availableSearchIntents.map((intent) => (
               <option key={intent} value={intent}>
                 {SEARCH_INTENT_LABELS[intent]}
               </option>
@@ -653,14 +706,14 @@ function EditorTab({
             onChange={(e) => set("keywordCluster", e.target.value as KeywordCluster)}
             className={inputCls}
           >
-            {KEYWORD_CLUSTERS.map((cluster) => (
+            {availableKeywordClusters.map((cluster) => (
               <option key={cluster} value={cluster}>
                 {KEYWORD_CLUSTER_LABELS[cluster]}
               </option>
             ))}
           </select>
           <span className="mt-2 block text-xs leading-relaxed text-faint">
-            발행 글은 미분류가 아닌 클러스터를 선택해야 합니다.
+            카테고리를 먼저 선택하면 허용된 클러스터만 표시됩니다.
           </span>
         </label>
         <label className="block md:col-span-2">

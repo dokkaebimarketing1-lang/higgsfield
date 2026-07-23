@@ -6,7 +6,11 @@ import { fileURLToPath } from "node:url";
 
 import { getPrimaryKeyword } from "../src/lib/seo";
 import { normalizeKeyword } from "../src/lib/keyword-taxonomy";
-import { CATEGORY_SEO } from "../src/lib/content";
+import {
+  BLOG_CATEGORY_SLUGS,
+  CATEGORY_SEO,
+  getBlogCategoryTaxonomyIssues,
+} from "../src/lib/content";
 import { PUBLIC_PAGES } from "../src/lib/seo-pages";
 import { getBlogPublicationIssues } from "../src/lib/blog-quality";
 
@@ -349,6 +353,80 @@ describe("blog publication quality migration", () => {
     expect(selfStudy?.cover_image).toBe("/assets/cat-practice.jpg");
     expect(selfStudy?.cover_alt).toBe(selfStudy?.title);
     expect(posts.filter((post) => !post.meta_title.trim())).toHaveLength(24);
+    db.close();
+  });
+});
+
+describe("CMS category taxonomy migration", () => {
+  test("keeps all 32 posts inside the fixed taxonomy and preserves the moved URL", () => {
+    const db = databaseAfterAllMigrations();
+    const categories = db
+      .query<{ slug: string; name: string; description: string }, []>(
+        "SELECT slug, name, description FROM categories ORDER BY sort_order",
+      )
+      .all();
+    expect(categories.map((category) => category.slug)).toEqual([...BLOG_CATEGORY_SLUGS]);
+    for (const category of categories) {
+      const policy = CATEGORY_SEO[category.slug as keyof typeof CATEGORY_SEO];
+      expect(category.name).toBe(policy.name);
+      expect(category.description).toBe(policy.description);
+    }
+
+    const posts = db
+      .query<
+        {
+          slug: string;
+          category_slug: string;
+          keyword_role: "informational" | "long-tail";
+          search_intent: "commercial" | "comparison" | "informational" | "local" | "navigational";
+          keyword_cluster:
+            | "general"
+            | "lesson"
+            | "pricing"
+            | "adult"
+            | "children"
+            | "home-visit"
+            | "admission"
+            | "practice"
+            | "repertoire"
+            | "local";
+        },
+        []
+      >(
+        `SELECT p.slug, c.slug AS category_slug, p.keyword_role, p.search_intent, p.keyword_cluster
+         FROM posts p INNER JOIN categories c ON c.id = p.category_id
+         WHERE p.status = 'published' ORDER BY p.slug`,
+      )
+      .all();
+    expect(posts).toHaveLength(32);
+    for (const post of posts) {
+      expect(
+        getBlogCategoryTaxonomyIssues({
+          categorySlug: post.category_slug,
+          keywordRole: post.keyword_role,
+          searchIntent: post.search_intent,
+          keywordCluster: post.keyword_cluster,
+        }),
+        post.slug,
+      ).toEqual([]);
+    }
+
+    expect(posts.find((post) => post.slug === "online-piano-lesson")?.category_slug).toBe(
+      "lesson-guide",
+    );
+    const redirect = db
+      .query<{ category_slug: string; post_slug: string }, []>(
+        `SELECT c.slug AS category_slug, p.slug AS post_slug
+         FROM post_redirects r
+         INNER JOIN posts p ON p.id = r.post_id
+         INNER JOIN categories c ON c.id = p.category_id
+         WHERE r.old_category_slug = 'local' AND r.old_post_slug = 'online-piano-lesson'`,
+      )
+      .get();
+    expect(redirect).toEqual({
+      category_slug: "lesson-guide",
+      post_slug: "online-piano-lesson",
+    });
     db.close();
   });
 });

@@ -57,7 +57,12 @@ describe("post redirect migration", () => {
     ).run("old-category", "old-post", post!.id);
     db.query("DELETE FROM posts WHERE id = ?").run(post!.id);
     expect(
-      db.query<{ count: number }, []>("SELECT COUNT(*) AS count FROM post_redirects").get()?.count,
+      db
+        .query<{ count: number }, []>(
+          `SELECT COUNT(*) AS count FROM post_redirects
+           WHERE old_category_slug = 'old-category' AND old_post_slug = 'old-post'`,
+        )
+        .get()?.count,
     ).toBe(0);
 
     expect(() =>

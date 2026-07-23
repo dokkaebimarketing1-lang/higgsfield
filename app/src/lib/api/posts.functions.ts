@@ -10,7 +10,13 @@ import {
   PUBLIC_POST_WITH_CATEGORY_SQL,
   preserveFirstPublishedAt,
 } from "../blog-publication-policy";
-import { CATEGORY_SEO } from "../content";
+import {
+  BLOG_CATEGORY_SLUGS,
+  BLOG_POST_KEYWORD_ROLES,
+  CATEGORY_SEO,
+  getBlogCategoryTaxonomyIssues,
+  isBlogCategorySlug,
+} from "../content";
 import {
   KEYWORD_CLUSTERS,
   KEYWORD_ROLES,
@@ -132,15 +138,45 @@ async function assertUniquePublishedKeyword(
   }
 }
 
+async function assertBlogCategorySelection(
+  DB: D1Database,
+  input: {
+    categoryId: number | null;
+    keywordRole: KeywordRole;
+    searchIntent: SearchIntent;
+    keywordCluster: KeywordCluster;
+  },
+): Promise<string | null> {
+  if (input.categoryId === null) return null;
+  const category = await DB.prepare("SELECT slug FROM categories WHERE id = ? LIMIT 1")
+    .bind(input.categoryId)
+    .first<{ slug: string }>();
+  if (!category || !isBlogCategorySlug(category.slug)) {
+    throw new Error("CMS에서 확정한 6개 카테고리 중 하나를 선택해 주세요.");
+  }
+
+  const issues = getBlogCategoryTaxonomyIssues({
+    categorySlug: category.slug,
+    keywordRole: input.keywordRole,
+    searchIntent: input.searchIntent,
+    keywordCluster: input.keywordCluster,
+  });
+  if (issues.length > 0) throw new Error(issues.join(" "));
+  return category.slug;
+}
+
 /* ── Public queries ────────────────────────────────────── */
 export const listCategories = createServerFn({ method: "GET" }).handler(
   async (): Promise<{ categories: CategoryRow[] }> => {
     const DB = publicDatabase();
     if (!DB) return { categories: [] };
+    const placeholders = BLOG_CATEGORY_SLUGS.map(() => "?").join(", ");
     const { results } = await DB.prepare(
       `SELECT c.*, (SELECT COUNT(*) FROM posts p WHERE p.category_id = c.id AND ${PUBLIC_POST_STATE_SQL}) AS post_count
-       FROM categories c ORDER BY c.sort_order ASC`,
-    ).all<CategoryRow>();
+       FROM categories c WHERE c.slug IN (${placeholders}) ORDER BY c.sort_order ASC`,
+    )
+      .bind(...BLOG_CATEGORY_SLUGS)
+      .all<CategoryRow>();
     return { categories: results ?? [] };
   },
 );
@@ -159,6 +195,7 @@ export const listPublishedPosts = createServerFn({ method: "GET" })
     if (!DB) return { posts: [] };
     const limit = data?.limit ?? 50;
     if (data?.category) {
+      if (!isBlogCategorySlug(data.category)) return { posts: [] };
       const { results } = await DB.prepare(
         `${LIST_SELECT} WHERE ${PUBLIC_POST_WITH_CATEGORY_SQL} AND c.slug = ?
          ORDER BY p.published_at DESC LIMIT ?`,
@@ -180,6 +217,7 @@ export const getPostBySlug = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<{ post: PostRow | null }> => {
     const DB = publicDatabase();
     if (!DB) return { post: null };
+    if (!isBlogCategorySlug(data.category)) return { post: null };
     const post = await DB.prepare(
       `${LIST_SELECT} WHERE ${PUBLIC_POST_WITH_CATEGORY_SQL} AND p.slug = ? AND c.slug = ? LIMIT 1`,
     )
@@ -193,6 +231,7 @@ export const getCategoryBySlug = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<{ category: CategoryRow | null }> => {
     const DB = publicDatabase();
     if (!DB) return { category: null };
+    if (!isBlogCategorySlug(data.slug)) return { category: null };
     const category = await DB.prepare(
       "SELECT id, slug, name, description, sort_order FROM categories WHERE slug = ? LIMIT 1",
     )
@@ -315,11 +354,12 @@ const postInput = z
         message: "발행 글은 미분류가 아닌 키워드 클러스터를 선택해 주세요.",
       });
     }
-    if (data.keywordRole === "utility") {
+    if (!(BLOG_POST_KEYWORD_ROLES as readonly KeywordRole[]).includes(data.keywordRole)) {
       ctx.addIssue({
         code: "custom",
         path: ["keywordRole"],
-        message: "탐색·정책 역할은 발행 블로그 글에 사용할 수 없습니다.",
+        message:
+          "발행 블로그 글은 정보 키워드 또는 대상·지역 롱테일 역할만 사용할 수 있습니다. 메인·전환형 확장 키워드는 고정 서비스 페이지에서 운영합니다.",
       });
     }
     for (const issue of getKeywordAlignmentIssues(data)) {
@@ -337,6 +377,7 @@ export const createPost = createServerFn({ method: "POST" })
     const slug = await uniqueSlug(DB, base);
     const reading = estimateReadingMinutes(data.body);
     const publishedAt = data.status === "published" ? new Date().toISOString() : null;
+    await assertBlogCategorySelection(DB, data);
     if (data.status === "published") {
       await assertUniquePublishedKeyword(DB, data.tags);
     }
@@ -388,6 +429,7 @@ export const updatePost = createServerFn({ method: "POST" })
     if (!existing) throw new Error("글을 찾을 수 없습니다.");
     const slug = data.slug ? await uniqueSlug(DB, data.slug, data.id) : existing.slug;
     const reading = estimateReadingMinutes(data.body);
+    const nextCategorySlug = await assertBlogCategorySelection(DB, data);
     // Keep the original publication date when a post is temporarily returned to draft.
     const publishedAt = preserveFirstPublishedAt(
       existing.published_at,
@@ -425,16 +467,6 @@ export const updatePost = createServerFn({ method: "POST" })
     );
 
     const statements = [updateStatement];
-    let nextCategorySlug: string | null = null;
-    if (data.categoryId !== null) {
-      nextCategorySlug =
-        (
-          await DB.prepare("SELECT slug FROM categories WHERE id = ? LIMIT 1")
-            .bind(data.categoryId)
-            .first<{ slug: string }>()
-        )?.slug ?? null;
-    }
-
     if (nextCategorySlug) {
       statements.push(
         DB.prepare(
