@@ -1,0 +1,175 @@
+import { BLOG_CATEGORY_SLUGS, SITE_URL } from "../src/lib/content";
+import { PUBLIC_PAGES } from "../src/lib/seo-pages";
+
+type QueryResult<T> = {
+  row_count: number;
+  rows: T[];
+};
+
+type HealthRow = {
+  published_count: number;
+  draft_count: number;
+  category_count: number;
+  public_category_count: number;
+  invalid_public_count: number;
+  evidence_count: number;
+};
+
+type DraftRow = {
+  path: string;
+};
+
+const websiteId = process.env.HIGGSFIELD_WEBSITE_ID?.trim();
+const siteUrl = (process.env.SITE_URL?.trim() || SITE_URL).replace(/\/$/, "");
+const verificationId = process.env.GITHUB_SHA?.slice(0, 12) || Date.now().toString();
+
+if (!websiteId) throw new Error("HIGGSFIELD_WEBSITE_ID가 설정되지 않았습니다.");
+if (!siteUrl.startsWith("https://")) throw new Error("SITE_URL은 HTTPS 주소여야 합니다.");
+
+function parseCliJson<T>(stdout: string): T {
+  const start = stdout.indexOf("{");
+  const end = stdout.lastIndexOf("}");
+  if (start < 0 || end < start) throw new Error("Higgsfield CLI JSON 응답을 찾지 못했습니다.");
+  return JSON.parse(stdout.slice(start, end + 1)) as T;
+}
+
+async function queryDatabase<T>(sql: string): Promise<QueryResult<T>> {
+  const normalizedSql = sql.replace(/\s+/g, " ").trim();
+  const processResult = Bun.spawn(
+    [
+      "higgsfield",
+      "website",
+      "db",
+      "query",
+      websiteId,
+      "--sql",
+      normalizedSql,
+      "--json",
+      "--no-color",
+    ],
+    { stdout: "pipe", stderr: "pipe" },
+  );
+  const [exitCode, stdout, stderr] = await Promise.all([
+    processResult.exited,
+    new Response(processResult.stdout).text(),
+    new Response(processResult.stderr).text(),
+  ]);
+  if (exitCode !== 0) {
+    throw new Error(`운영 DB 조회 실패: ${stderr.trim() || `exit ${exitCode}`}`);
+  }
+  return parseCliJson<QueryResult<T>>(stdout);
+}
+
+async function fetchStatus(pathOrUrl: string, expected: number): Promise<Response> {
+  const url = pathOrUrl.startsWith("http") ? pathOrUrl : `${siteUrl}${pathOrUrl}`;
+  let lastStatus = 0;
+  for (let attempt = 1; attempt <= 8; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        redirect: "manual",
+        signal: AbortSignal.timeout(15_000),
+        headers: { "User-Agent": "ewha-piano-release-verifier/1.0" },
+      });
+      lastStatus = response.status;
+      if (response.status === expected) return response;
+    } catch {
+      lastStatus = 0;
+    }
+    await Bun.sleep(attempt * 1_000);
+  }
+  throw new Error(
+    `${url} 응답이 ${expected}가 아닙니다. 마지막 상태: ${lastStatus || "연결 실패"}`,
+  );
+}
+
+const healthResult = await queryDatabase<HealthRow>(`
+  SELECT
+    (SELECT COUNT(*) FROM posts WHERE status = 'published') AS published_count,
+    (SELECT COUNT(*) FROM posts WHERE status = 'draft') AS draft_count,
+    (SELECT COUNT(*) FROM categories) AS category_count,
+    (SELECT COUNT(DISTINCT category_id) FROM posts WHERE status = 'published') AS public_category_count,
+    (SELECT COUNT(*) FROM posts WHERE status = 'published' AND published_at IS NULL) AS invalid_public_count,
+    (SELECT COUNT(*) FROM post_keyword_evidence) AS evidence_count
+`);
+const health = healthResult.rows[0];
+if (!health || healthResult.row_count !== 1)
+  throw new Error("운영 DB 상태 행을 확인하지 못했습니다.");
+if (health.published_count < 1) throw new Error("운영 DB에 공개 글이 없습니다.");
+if (health.invalid_public_count !== 0) {
+  throw new Error(`published_at이 없는 공개 글이 ${health.invalid_public_count}건 있습니다.`);
+}
+if (health.category_count !== BLOG_CATEGORY_SLUGS.length) {
+  throw new Error(
+    `CMS 카테고리 수가 ${health.category_count}개입니다. 기대값: ${BLOG_CATEGORY_SLUGS.length}`,
+  );
+}
+
+const draftResult = await queryDatabase<DraftRow>(`
+  SELECT '/blog/' || c.slug || '/' || p.slug AS path
+  FROM posts p INNER JOIN categories c ON c.id = p.category_id
+  WHERE p.status = 'draft'
+  ORDER BY p.id
+`);
+const draftPaths = draftResult.rows.map((row) => row.path);
+
+const cacheBuster = `verify=${encodeURIComponent(verificationId)}`;
+const [home, blog, sitemapResponse, robotsResponse, rssResponse, llmsResponse] = await Promise.all([
+  fetchStatus(`/?${cacheBuster}`, 200),
+  fetchStatus(`/blog?${cacheBuster}`, 200),
+  fetchStatus(`/sitemap.xml?${cacheBuster}`, 200),
+  fetchStatus(`/robots.txt?${cacheBuster}`, 200),
+  fetchStatus(`/rss.xml?${cacheBuster}`, 200),
+  fetchStatus(`/llms.txt?${cacheBuster}`, 200),
+]);
+void home;
+void blog;
+
+const [sitemap, robots, rss, llms] = await Promise.all([
+  sitemapResponse.text(),
+  robotsResponse.text(),
+  rssResponse.text(),
+  llmsResponse.text(),
+]);
+const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+const uniqueSitemapUrls = new Set(sitemapUrls);
+const expectedSitemapUrls =
+  PUBLIC_PAGES.length + health.public_category_count + health.published_count;
+
+if (sitemapUrls.length !== expectedSitemapUrls) {
+  throw new Error(
+    `사이트맵 URL이 ${sitemapUrls.length}개입니다. DB·정적 페이지 기준 기대값: ${expectedSitemapUrls}`,
+  );
+}
+if (uniqueSitemapUrls.size !== sitemapUrls.length)
+  throw new Error("사이트맵에 중복 URL이 있습니다.");
+if (![...uniqueSitemapUrls].every((url) => url.startsWith(`${siteUrl}/`) || url === siteUrl)) {
+  throw new Error("사이트맵에 다른 호스트 또는 HTTP URL이 포함되어 있습니다.");
+}
+if (!robots.includes(`${siteUrl}/sitemap.xml`)) {
+  throw new Error("robots.txt에 정식 사이트맵 주소가 없습니다.");
+}
+
+for (const path of draftPaths) {
+  if (sitemap.includes(path) || rss.includes(path) || llms.includes(path)) {
+    throw new Error(`비공개 초안이 검색 피드에 노출되었습니다: ${path}`);
+  }
+}
+
+await Promise.all([
+  ...sitemapUrls.map((url) => fetchStatus(url, 200)),
+  ...draftPaths.map((path) => fetchStatus(`${path}?${cacheBuster}`, 404)),
+]);
+
+console.log(
+  JSON.stringify({
+    site: siteUrl,
+    publishedPosts: health.published_count,
+    draftPosts: health.draft_count,
+    keywordEvidence: health.evidence_count,
+    categories: health.category_count,
+    sitemapUrls: sitemapUrls.length,
+    checkedPublicUrls: sitemapUrls.length,
+    blockedDraftUrls: draftPaths.length,
+    endpoints: ["home", "blog", "sitemap", "robots", "rss", "llms"],
+  }),
+);

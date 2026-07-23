@@ -14,7 +14,10 @@
     "test": "bun test tests",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:migrations": "bun run scripts/verify-migrations.ts",
+    "verify:live": "bun run scripts/verify-live.ts",
+    "verify:ci": "bun run lint && bun test && bun run typecheck && bun run verify:migrations && bun run build"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
