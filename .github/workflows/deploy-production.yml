@@ -68,15 +68,15 @@ jobs:
 
       - name: Restore Higgsfield credentials
         env:
-          HIGGSFIELD_CREDENTIALS_JSON: ${{ secrets.HIGGSFIELD_CREDENTIALS_JSON }}
-          HIGGSFIELD_CONFIG_JSON: ${{ secrets.HIGGSFIELD_CONFIG_JSON }}
+          HIGGSFIELD_CREDENTIALS_B64: ${{ secrets.HIGGSFIELD_CREDENTIALS_B64 }}
+          HIGGSFIELD_CONFIG_B64: ${{ secrets.HIGGSFIELD_CONFIG_B64 }}
         run: |
-          test -n "$HIGGSFIELD_CREDENTIALS_JSON"
-          test -n "$HIGGSFIELD_CONFIG_JSON"
+          test -n "$HIGGSFIELD_CREDENTIALS_B64"
+          test -n "$HIGGSFIELD_CONFIG_B64"
           install -d -m 700 "$HOME/.config/higgsfield"
           umask 077
-          printf '%s' "$HIGGSFIELD_CREDENTIALS_JSON" > "$HOME/.config/higgsfield/credentials.json"
-          printf '%s' "$HIGGSFIELD_CONFIG_JSON" > "$HOME/.config/higgsfield/config.json"
+          printf '%s' "$HIGGSFIELD_CREDENTIALS_B64" | base64 --decode > "$HOME/.config/higgsfield/credentials.json"
+          printf '%s' "$HIGGSFIELD_CONFIG_B64" | base64 --decode > "$HOME/.config/higgsfield/config.json"
 
       - name: Synchronize the Higgsfield deployment mirror
         id: sync

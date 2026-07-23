@@ -30,16 +30,17 @@ GitHub main
 
 다음 값은 GitHub `production` 환경에서만 관리한다.
 
-| 종류     | 이름                          | 용도                                       |
-| -------- | ----------------------------- | ------------------------------------------ |
-| Secret   | `HIGGSFIELD_CREDENTIALS_JSON` | Higgsfield CLI OAuth 자격 증명과 갱신 토큰 |
-| Secret   | `HIGGSFIELD_CONFIG_JSON`      | Higgsfield CLI 워크스페이스 설정           |
-| Variable | `HIGGSFIELD_WEBSITE_ID`       | 배포할 피아노 사이트 식별자                |
-| Variable | `SITE_URL`                    | 운영 URL                                   |
+| 종류     | 이름                         | 용도                                       |
+| -------- | ---------------------------- | ------------------------------------------ |
+| Secret   | `HIGGSFIELD_CREDENTIALS_B64` | Higgsfield CLI OAuth 자격 증명 파일 Base64 |
+| Secret   | `HIGGSFIELD_CONFIG_B64`      | Higgsfield CLI 설정 파일 Base64            |
+| Variable | `HIGGSFIELD_WEBSITE_ID`      | 배포할 피아노 사이트 식별자                |
+| Variable | `SITE_URL`                   | 운영 URL                                   |
 
-토큰 값을 워크플로, 커밋, 로그에 직접 입력하지 않는다. 인증이 폐기되면 로컬에서
-`higgsfield auth login`을 다시 실행한 뒤 자격 증명 파일을 표준 입력으로 GitHub
-환경 Secret에 갱신한다.
+토큰 값을 워크플로, 커밋, 로그에 직접 입력하지 않는다. JSON은 운영체제별 문자 인코딩
+차이를 피하도록 원문 바이트를 Base64로 저장한다. 인증이 폐기되면 로컬에서
+`higgsfield auth login`을 다시 실행한 뒤 두 파일의 Base64를 GitHub 환경 Secret에
+갱신한다.
 
 ## 마이그레이션 원칙
 
