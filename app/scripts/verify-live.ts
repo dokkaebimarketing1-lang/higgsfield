@@ -495,6 +495,30 @@ async function fetchStatus(pathOrUrl: string, expected: number): Promise<Respons
   );
 }
 
+async function fetchAndVerifyHtmlPage(expectation: HtmlPageExpectation): Promise<void> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 8; attempt += 1) {
+    const response = await fetchStatus(
+      `${expectation.path}?verify=${encodeURIComponent(`${verificationId}-${attempt}`)}`,
+      200,
+    );
+    const html = await response.text();
+    try {
+      verifyHtmlPage(expectation, response, html);
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+    await Bun.sleep(attempt * 1_000);
+  }
+
+  throw new Error(
+    `${expectation.path} 운영 HTML이 배포 전파 재확인 후에도 일치하지 않습니다: ${
+      lastError instanceof Error ? lastError.message : String(lastError)
+    }`,
+  );
+}
+
 const healthResult = await queryDatabase<HealthRow>(`
   SELECT
     (SELECT COUNT(*) FROM posts WHERE status = 'published') AS published_count,
@@ -569,25 +593,20 @@ const publicPostHtmlPages: readonly HtmlPageExpectation[] = publicPostResult.row
 const verifiedHtmlPages = [...coreHtmlPages, ...publicPostHtmlPages];
 
 const cacheBuster = `verify=${encodeURIComponent(verificationId)}`;
-const [coreHtmlResponses, sitemapResponse, robotsResponse, rssResponse, llmsResponse] =
-  await Promise.all([
-    Promise.all(verifiedHtmlPages.map((page) => fetchStatus(`${page.path}?${cacheBuster}`, 200))),
-    fetchStatus(`/sitemap.xml?${cacheBuster}`, 200),
-    fetchStatus(`/robots.txt?${cacheBuster}`, 200),
-    fetchStatus(`/rss.xml?${cacheBuster}`, 200),
-    fetchStatus(`/llms.txt?${cacheBuster}`, 200),
-  ]);
+const [, sitemapResponse, robotsResponse, rssResponse, llmsResponse] = await Promise.all([
+  Promise.all(verifiedHtmlPages.map((page) => fetchAndVerifyHtmlPage(page))),
+  fetchStatus(`/sitemap.xml?${cacheBuster}`, 200),
+  fetchStatus(`/robots.txt?${cacheBuster}`, 200),
+  fetchStatus(`/rss.xml?${cacheBuster}`, 200),
+  fetchStatus(`/llms.txt?${cacheBuster}`, 200),
+]);
 
-const [coreHtmlBodies, sitemap, robots, rss, llms] = await Promise.all([
-  Promise.all(coreHtmlResponses.map((response) => response.text())),
+const [sitemap, robots, rss, llms] = await Promise.all([
   sitemapResponse.text(),
   robotsResponse.text(),
   rssResponse.text(),
   llmsResponse.text(),
 ]);
-for (const [index, expectation] of verifiedHtmlPages.entries()) {
-  verifyHtmlPage(expectation, coreHtmlResponses[index], coreHtmlBodies[index]);
-}
 const [
   nationalCsvResponse,
   seoulRecordsResponse,
