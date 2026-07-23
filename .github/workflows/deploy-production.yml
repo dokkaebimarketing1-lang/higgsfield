@@ -85,7 +85,18 @@ jobs:
       - name: Deploy live site
         id: deploy
         run: |
-          deploy_json="$(higgsfield website deploy "$HIGGSFIELD_WEBSITE_ID" --json --no-color)"
+          deploy_json=""
+          for attempt in 1 2 3 4 5; do
+            if deploy_json="$(higgsfield website deploy "$HIGGSFIELD_WEBSITE_ID" --json --no-color)"; then
+              break
+            fi
+            if [ "$attempt" -eq 5 ]; then
+              echo "Higgsfield deployment failed after 5 attempts." >&2
+              exit 1
+            fi
+            echo "Higgsfield deployment attempt $attempt failed; retrying." >&2
+            sleep $((attempt * 5))
+          done
           deploy_status="$(jq -er '.status // .production.status' <<<"$deploy_json")"
           deploy_url="$(jq -er '.url // .production.url' <<<"$deploy_json")"
           test "$deploy_status" = "deployed"

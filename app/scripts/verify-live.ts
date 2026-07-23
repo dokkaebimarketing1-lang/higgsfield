@@ -717,29 +717,44 @@ function parseCliJson<T>(stdout: string): T {
 
 async function queryDatabase<T>(sql: string): Promise<QueryResult<T>> {
   const normalizedSql = sql.replace(/\s+/g, " ").trim();
-  const processResult = Bun.spawn(
-    [
-      "higgsfield",
-      "website",
-      "db",
-      "query",
-      websiteId,
-      "--sql",
-      normalizedSql,
-      "--json",
-      "--no-color",
-    ],
-    { stdout: "pipe", stderr: "pipe" },
-  );
-  const [exitCode, stdout, stderr] = await Promise.all([
-    processResult.exited,
-    new Response(processResult.stdout).text(),
-    new Response(processResult.stderr).text(),
-  ]);
-  if (exitCode !== 0) {
-    throw new Error(`운영 DB 조회 실패: ${stderr.trim() || `exit ${exitCode}`}`);
+  const maxAttempts = 5;
+  let lastFailure = "";
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const processResult = Bun.spawn(
+        [
+          "higgsfield",
+          "website",
+          "db",
+          "query",
+          websiteId,
+          "--sql",
+          normalizedSql,
+          "--json",
+          "--no-color",
+        ],
+        { stdout: "pipe", stderr: "pipe" },
+      );
+      const [exitCode, stdout, stderr] = await Promise.all([
+        processResult.exited,
+        new Response(processResult.stdout).text(),
+        new Response(processResult.stderr).text(),
+      ]);
+      if (exitCode === 0) {
+        return parseCliJson<QueryResult<T>>(stdout);
+      }
+      lastFailure = stderr.trim() || `exit ${exitCode}`;
+    } catch (error) {
+      lastFailure = error instanceof Error ? error.message : String(error);
+    }
+
+    if (attempt < maxAttempts) {
+      await Bun.sleep(attempt * 5_000);
+    }
   }
-  return parseCliJson<QueryResult<T>>(stdout);
+
+  throw new Error(`운영 DB 조회 실패: ${lastFailure || "응답 없음"}`);
 }
 
 async function fetchStatus(pathOrUrl: string, expected: number): Promise<Response> {

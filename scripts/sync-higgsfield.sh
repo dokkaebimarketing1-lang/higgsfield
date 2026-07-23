@@ -16,7 +16,27 @@ if [[ "$source_sha" != "$GITHUB_SHA" ]]; then
   exit 1
 fi
 
-access_json="$(higgsfield website repo-access "$HIGGSFIELD_WEBSITE_ID" --json --no-color)"
+fetch_repo_access() {
+  local attempt
+  local result
+  local max_attempts=5
+
+  for ((attempt = 1; attempt <= max_attempts; attempt += 1)); do
+    if result="$(higgsfield website repo-access "$HIGGSFIELD_WEBSITE_ID" --json --no-color)"; then
+      printf '%s' "$result"
+      return 0
+    fi
+    if ((attempt < max_attempts)); then
+      echo "Higgsfield repo access attempt $attempt failed; retrying." >&2
+      sleep $((attempt * 5))
+    fi
+  done
+
+  echo "Higgsfield repo access failed after $max_attempts attempts." >&2
+  return 1
+}
+
+access_json="$(fetch_repo_access)"
 repo_url="$(jq -er '.repo_url' <<<"$access_json")"
 repo_branch="$(jq -er '.branch' <<<"$access_json")"
 repo_token="$(jq -er '.token' <<<"$access_json")"
