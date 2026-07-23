@@ -80,8 +80,8 @@
       "title": "2025 대한민국 음악 사교육비 학교급별 CSV",
       "contentUrl": "/data/research/national-music-private-education-2025.csv",
       "encodingFormat": "text/csv; charset=utf-8",
-      "bytes": 509,
-      "sha256": "48cb7301e692bb5299412e4e83148afd25517dd0dfcc68c6d2dbbcfb413f534a",
+      "bytes": 504,
+      "sha256": "fd0c2641b601b556c27e18f963ee6531e6398440bc8b5c25ada0aed000e92167",
       "rowCount": 4,
       "fieldCount": 7
     }

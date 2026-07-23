@@ -1053,7 +1053,7 @@ def write_json(path: Path, value: Any) -> None:
 def write_csv(path: Path, rows: Iterable[dict[str, Any]], fieldnames: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8-sig", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -1139,11 +1139,13 @@ def main() -> None:
         columns=record_columns,
         index=False,
         encoding="utf-8-sig",
+        lineterminator="\n",
     )
     summary.to_csv(
         seoul_summary_csv,
         index=False,
         encoding="utf-8-sig",
+        lineterminator="\n",
     )
     write_csv(
         national_csv,

@@ -1279,8 +1279,8 @@
       "title": "2026 서울 피아노 등록 교습비 공개 레코드 CSV",
       "contentUrl": "/data/research/seoul-piano-fee-records-2026-01-01.csv",
       "encodingFormat": "text/csv; charset=utf-8",
-      "bytes": 1738563,
-      "sha256": "39a33430225d442d1ab3b337a95ac0247c201d8186c8fe77934feb6e9a92a6e1",
+      "bytes": 1724887,
+      "sha256": "1f5ef91116ef9bdd7783ea9db4bb7570c5ae79393307763e003977481017b732",
       "rowCount": 13675,
       "fieldCount": 14
     },
@@ -1288,8 +1288,8 @@
       "title": "2026 서울 피아노 등록 교습비 지역별 요약 CSV",
       "contentUrl": "/data/research/seoul-piano-fee-summary-2026-01-01.csv",
       "encodingFormat": "text/csv; charset=utf-8",
-      "bytes": 6975,
-      "sha256": "76145323b0852a82f0996805b711d9d6138afeea001568157025866fae38549b",
+      "bytes": 6922,
+      "sha256": "0a84b2e3ded6f5f6305d3d70f1b697feba9ce5634ecd3bdb764c3f41e9e7e113",
       "rowCount": 52,
       "fieldCount": 21
     }

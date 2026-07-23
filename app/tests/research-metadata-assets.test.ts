@@ -123,6 +123,7 @@ describe("research metadata assets", () => {
         expect(csvName).toBeTruthy();
         const csvBytes = readFileSync(publicAsset(csvName!));
         const csvText = csvBytes.toString("utf8");
+        expect(csvText).not.toContain("\r\n");
         const header = csvText
           .split(/\r?\n/, 1)[0]
           .replace(/^\uFEFF/, "")
