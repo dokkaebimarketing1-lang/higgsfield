@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { getPrimaryKeyword } from "../src/lib/seo";
+import { getKeywordAlignmentIssues, getPrimaryKeyword } from "../src/lib/seo";
 import { normalizeKeyword } from "../src/lib/keyword-taxonomy";
 import {
   BLOG_CATEGORY_SLUGS,
@@ -427,6 +427,214 @@ describe("CMS category taxonomy migration", () => {
       category_slug: "lesson-guide",
       post_slug: "online-piano-lesson",
     });
+    db.close();
+  });
+});
+
+describe("search-volume editorial draft migration", () => {
+  const expectedDrafts = [
+    {
+      slug: "adult-piano-academy-price",
+      category: "lesson-guide",
+      keyword: "성인 피아노 학원 가격",
+      total: 960,
+      sourceRow: 132,
+    },
+    {
+      slug: "piano-chords-basics",
+      category: "practice",
+      keyword: "피아노 코드",
+      total: 4230,
+      sourceRow: 38,
+    },
+    {
+      slug: "arts-high-school-admission",
+      category: "exam",
+      keyword: "예고 입시",
+      total: 780,
+      sourceRow: 159,
+    },
+    {
+      slug: "classical-piano-guide",
+      category: "repertoire",
+      keyword: "클래식 피아노",
+      total: 710,
+      sourceRow: 172,
+    },
+    {
+      slug: "preschool-piano-book",
+      category: "parents",
+      keyword: "유아 피아노 교재",
+      total: 250,
+      sourceRow: 458,
+    },
+    {
+      slug: "hongdae-piano-guide",
+      category: "local",
+      keyword: "홍대 피아노",
+      total: 55,
+      sourceRow: 1667,
+    },
+  ] as const;
+
+  test("creates one release-ready but unpublished draft per CMS category", () => {
+    const db = databaseAfterAllMigrations();
+    const drafts = db
+      .query<
+        {
+          slug: string;
+          title: string;
+          excerpt: string;
+          body: string;
+          category_id: number;
+          category_slug: string;
+          tags: string;
+          cover_image: string;
+          cover_alt: string;
+          meta_title: string;
+          meta_description: string;
+          keyword_role: "informational" | "long-tail";
+          search_intent: "commercial" | "comparison" | "informational" | "local";
+          keyword_cluster:
+            | "lesson"
+            | "pricing"
+            | "adult"
+            | "children"
+            | "home-visit"
+            | "admission"
+            | "practice"
+            | "repertoire"
+            | "local";
+          status: "draft";
+          published_at: null;
+        },
+        []
+      >(
+        `SELECT p.*, c.slug AS category_slug
+         FROM posts p INNER JOIN categories c ON c.id = p.category_id
+         WHERE p.slug IN (${expectedDrafts.map(() => "?").join(", ")})
+         ORDER BY c.sort_order`,
+      )
+      .all(...expectedDrafts.map((draft) => draft.slug));
+
+    expect(drafts).toHaveLength(expectedDrafts.length);
+    expect(drafts.map((draft) => draft.category_slug)).toEqual([...BLOG_CATEGORY_SLUGS]);
+
+    const occupiedPublicKeywords = new Set([
+      ...PUBLIC_PAGES.map((page) => normalizeKeyword(page.primaryKeyword)),
+      ...Object.values(CATEGORY_SEO).map((category) => normalizeKeyword(category.primaryKeyword)),
+      ...db
+        .query<{ tags: string }, []>("SELECT tags FROM posts WHERE status = 'published'")
+        .all()
+        .map((post) => normalizeKeyword(getPrimaryKeyword(post.tags))),
+    ]);
+    const draftKeywords = drafts.map((draft) => normalizeKeyword(getPrimaryKeyword(draft.tags)));
+    expect(new Set(draftKeywords).size).toBe(expectedDrafts.length);
+
+    for (const draft of drafts) {
+      const expected = expectedDrafts.find((item) => item.slug === draft.slug);
+      expect(expected).toBeDefined();
+      expect(draft.status).toBe("draft");
+      expect(draft.published_at).toBeNull();
+      expect(getPrimaryKeyword(draft.tags)).toBe(expected?.keyword);
+      expect(draft.body).toContain(expected?.keyword ?? "");
+      expect(occupiedPublicKeywords.has(normalizeKeyword(expected?.keyword ?? ""))).toBeFalse();
+      expect(
+        getKeywordAlignmentIssues({
+          tags: draft.tags,
+          title: draft.title,
+          excerpt: draft.excerpt,
+          metaTitle: draft.meta_title,
+          metaDescription: draft.meta_description,
+        }),
+        draft.slug,
+      ).toEqual([]);
+      expect(
+        getBlogPublicationIssues({
+          title: draft.title,
+          excerpt: draft.excerpt,
+          body: draft.body,
+          categoryId: draft.category_id,
+          tags: draft.tags,
+          coverImage: draft.cover_image,
+          coverAlt: draft.cover_alt,
+          metaTitle: draft.meta_title,
+          metaDescription: draft.meta_description,
+          status: "published",
+        }),
+        draft.slug,
+      ).toEqual([]);
+      expect(
+        getBlogCategoryTaxonomyIssues({
+          categorySlug: draft.category_slug,
+          keywordRole: draft.keyword_role,
+          searchIntent: draft.search_intent,
+          keywordCluster: draft.keyword_cluster,
+        }),
+        draft.slug,
+      ).toEqual([]);
+    }
+    db.close();
+  });
+
+  test("stores auditable workbook evidence and remains idempotent", () => {
+    const db = databaseAfterAllMigrations();
+    const evidence = db
+      .query<
+        {
+          slug: string;
+          source_file: string;
+          source_sheet: string;
+          source_row: number;
+          total_monthly_searches: number;
+          naver_monthly_searches: number;
+          naver_mobile_searches: number;
+          naver_pc_searches: number;
+          google_monthly_searches: number;
+          selection_note: string;
+          researched_at: string;
+        },
+        []
+      >(
+        `SELECT p.slug, e.*
+         FROM post_keyword_evidence e INNER JOIN posts p ON p.id = e.post_id
+         ORDER BY p.slug`,
+      )
+      .all();
+
+    expect(evidence).toHaveLength(expectedDrafts.length);
+    for (const item of evidence) {
+      const expected = expectedDrafts.find((draft) => draft.slug === item.slug);
+      expect(item.source_file).toBe("피아노_키워드_최종완전판.xlsx");
+      expect(item.source_sheet).toBe("전체 키워드");
+      expect(item.source_row).toBe(expected?.sourceRow);
+      expect(item.total_monthly_searches).toBe(expected?.total);
+      expect(item.naver_monthly_searches).toBe(item.naver_mobile_searches + item.naver_pc_searches);
+      expect(item.total_monthly_searches).toBe(
+        item.naver_monthly_searches + item.google_monthly_searches,
+      );
+      expect(item.selection_note.trim().length).toBeGreaterThan(20);
+      expect(item.researched_at).toBe("2026-07-23");
+    }
+
+    const before = db
+      .query<{ slug: string; updated_at: string }, []>(
+        `SELECT slug, updated_at FROM posts
+         WHERE slug IN (${expectedDrafts.map(() => "?").join(", ")}) ORDER BY slug`,
+      )
+      .all(...expectedDrafts.map((draft) => draft.slug));
+    applyMigration(db, "0016_search_volume_drafts.sql");
+    const after = db
+      .query<{ slug: string; updated_at: string }, []>(
+        `SELECT slug, updated_at FROM posts
+         WHERE slug IN (${expectedDrafts.map(() => "?").join(", ")}) ORDER BY slug`,
+      )
+      .all(...expectedDrafts.map((draft) => draft.slug));
+    expect(after).toEqual(before);
+    expect(
+      db.query<{ count: number }, []>("SELECT COUNT(*) AS count FROM post_keyword_evidence").get()
+        ?.count,
+    ).toBe(expectedDrafts.length);
     db.close();
   });
 });
