@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { SubPageShell } from "../../../components/site/chrome";
+import { ResearchReferencePanel } from "../../../components/site/research-reference-panel";
 import {
   getCategoryBySlug,
   listPublishedPosts,
@@ -8,6 +9,7 @@ import {
   type PostRow,
 } from "../../../lib/api/posts.functions";
 import { CATEGORY_SEO, SITE, SITE_URL } from "../../../lib/content";
+import { getCategoryResearchReferenceIds } from "../../../lib/research-links";
 import {
   CATEGORY_SERVICE_PATHS,
   SERVICE_PAGE_BY_PATH,
@@ -125,6 +127,7 @@ function CategoryPage() {
   const servicePages = (categoryServicePaths[category.slug] ?? [])
     .map((path) => SERVICE_PAGE_BY_PATH.get(path))
     .filter((page): page is LessonLandingDefinition => Boolean(page));
+  const researchReferenceIds = getCategoryResearchReferenceIds(category.slug);
 
   return (
     <SubPageShell>
@@ -179,6 +182,13 @@ function CategoryPage() {
                 ))}
               </div>
             </section>
+          )}
+          {researchReferenceIds.length > 0 && (
+            <ResearchReferencePanel
+              references={researchReferenceIds}
+              heading={`${heading} 글을 읽을 때 참고할 공식 데이터`}
+              className="mb-12"
+            />
           )}
           {posts.length === 0 ? (
             <p className="border border-line p-10 text-center text-mute">

@@ -1,13 +1,15 @@
 import { SITE, SITE_URL } from "./content";
 import type { KeywordCluster, KeywordRole, SearchIntent } from "./keyword-taxonomy";
 
+export type PublicKeywordCluster = KeywordCluster | "research";
+
 export type PublicPageDefinition = {
   path: string;
   label: string;
   primaryKeyword: string;
   role: KeywordRole;
   intent: SearchIntent;
-  cluster: KeywordCluster;
+  cluster: PublicKeywordCluster;
   title: string;
   description: string;
   lastModified: string;
@@ -719,7 +721,7 @@ const STATIC_PUBLIC_PAGES = [
     primaryKeyword: "피아노 통계",
     role: "informational",
     intent: "informational",
-    cluster: "general",
+    cluster: "research",
     title: "피아노 통계 자료실 | 공식 데이터·가공 CSV",
     description:
       "피아노 통계 자료실에서 교육부·국가데이터처와 서울특별시교육청 원자료, 직접 식별정보와 행 위치를 제거한 가공 CSV, 방법론과 한계를 함께 확인할 수 있습니다.",
@@ -732,7 +734,7 @@ const STATIC_PUBLIC_PAGES = [
     primaryKeyword: "음악 사교육비 통계",
     role: "informational",
     intent: "informational",
-    cluster: "general",
+    cluster: "research",
     title: "음악 사교육비 통계 2025 | 교육부·국가데이터처",
     description:
       "음악 사교육비 통계 2025 공식 조사에서 전국·초등·중등·고등 총액을 확인하고 원문 PDF와 가공 CSV, 조사 한계를 함께 내려받을 수 있습니다.",
@@ -745,7 +747,7 @@ const STATIC_PUBLIC_PAGES = [
     primaryKeyword: "서울 피아노 학원비",
     role: "informational",
     intent: "comparison",
-    cluster: "pricing",
+    cluster: "research",
     title: "서울 피아노 학원비 2026 | 학원·교습소 등록 교습비",
     description:
       "서울 피아노 학원비를 2026년 서울특별시교육청 등록 교습비 원자료로 분석했습니다. 학원·교습소를 분리해 중앙값, 사분위수, 표본 수와 가공 CSV를 제공합니다.",
@@ -758,7 +760,7 @@ const STATIC_PUBLIC_PAGES = [
     primaryKeyword: "피아노 데이터 방법론",
     role: "informational",
     intent: "informational",
-    cluster: "general",
+    cluster: "research",
     title: "피아노 데이터 방법론 | 필터·통계·수정 이력",
     description:
       "피아노 데이터 방법론에서 공식 원자료 수집, 피아노 행 필터, 직접 식별정보 제거, 중앙값·사분위수 계산, 한계와 수정 이력을 공개합니다.",
@@ -872,10 +874,12 @@ export function buildPublicPageHead(page: PublicPageDefinition) {
       { property: "og:description", content: page.description },
       { property: "og:url", content: canonical },
       { property: "og:image", content: page.image },
+      { property: "og:image:alt", content: `${page.label} 대표 이미지` },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: page.title },
       { name: "twitter:description", content: page.description },
       { name: "twitter:image", content: page.image },
+      { name: "twitter:image:alt", content: `${page.label} 대표 이미지` },
     ],
     links: [{ rel: "canonical", href: canonical }],
   };

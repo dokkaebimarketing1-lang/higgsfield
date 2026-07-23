@@ -1,10 +1,41 @@
 {
   "datasetId": "korea-music-private-education-spending-2025",
+  "datasetVersion": "1.0.0",
   "name": "2025 대한민국 음악 사교육비 공식 통계 정리",
   "description": "교육부와 국가데이터처의 2025년 초중고 사교육비 조사 중 음악 과목의 사교육비 총액을 학교급별로 전사한 데이터다. 피아노 단독 통계나 레슨 가격 통계가 아니다.",
   "referenceYear": 2025,
+  "sourcePublishedAt": "2026-03-12",
   "publishedAt": "2026-03-12",
+  "datasetPublishedAt": "2026-07-23",
+  "modifiedAt": "2026-07-23",
   "retrievedAt": "2026-07-23",
+  "publisher": {
+    "name": "이화 피아노 과외",
+    "url": "https://ewha-piano.higgsfield.app",
+    "role": "파생 데이터셋 발행 및 유지관리"
+  },
+  "officialSource": {
+    "publisher": ["교육부", "국가데이터처"],
+    "title": "2025년 초중고 사교육비 조사 결과",
+    "sourcePublishedAt": "2026-03-12",
+    "sourcePage": "https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=105597&lev=0&m=020402",
+    "downloadUrl": "https://www.moe.go.kr/boardCnts/fileDown.do?m=020402&s=moe&fileSeq=7562a697bdba006065fa92054b1d634e"
+  },
+  "sourceLicense": {
+    "scope": "공식 원자료",
+    "provider": "교육부·국가데이터처",
+    "status": "공식 제공기관의 게시 페이지 및 이용조건 적용",
+    "termsUrls": [
+      "https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=105597&lev=0&m=020402"
+    ],
+    "notice": "원자료의 저작권과 이용조건은 공식 제공기관의 최신 안내를 따른다. 이 메타데이터는 원자료에 대한 추가 권리나 별도 라이선스를 부여하지 않는다."
+  },
+  "derivedReuse": {
+    "scope": "이 사이트가 만든 가공 CSV와 설명",
+    "attribution": "이화 피아노 과외, 「2025 대한민국 음악 사교육비 공식 통계 정리」 v1.0.0, https://ewha-piano.higgsfield.app/research/2025-music-private-education-statistics, 접속일 표기",
+    "notice": "인용·재사용 시 데이터셋명, 버전, URL, 접속일과 공식 원자료 출처 및 가공 사실을 함께 표시한다. 재사용 가능 범위는 원자료 제공기관의 이용조건을 먼저 확인해야 하며, 이 안내는 그 범위를 확대하지 않는다.",
+    "privacyCondition": "공개 가공본을 개인 또는 시설의 직접 식별정보와 결합해 재식별을 시도하지 않는다."
+  },
   "unit": "억원",
   "table": "학교급(학년) 및 특성별 사교육비 총액",
   "printedPages": "22-23",
@@ -42,5 +73,17 @@
       "musicPrivateEducationSpendingKrw": 290100000000
     }
   ],
-  "limitation": "음악 전체 과목의 학생 단위 명목 지출 추정치이며 피아노만 분리하지 않는다. 표본조사이므로 상대표준오차와 반올림에 유의해야 한다."
+  "limitation": "음악 전체 과목의 학생 단위 명목 지출 추정치이며 피아노만 분리하지 않는다. 표본조사이므로 상대표준오차와 반올림에 유의해야 한다.",
+  "dataDictionaryPath": "/data/research/national-music-private-education-schema.json",
+  "distributions": [
+    {
+      "title": "2025 대한민국 음악 사교육비 학교급별 CSV",
+      "contentUrl": "/data/research/national-music-private-education-2025.csv",
+      "encodingFormat": "text/csv; charset=utf-8",
+      "bytes": 509,
+      "sha256": "48cb7301e692bb5299412e4e83148afd25517dd0dfcc68c6d2dbbcfb413f534a",
+      "rowCount": 4,
+      "fieldCount": 7
+    }
+  ]
 }

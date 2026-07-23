@@ -2,13 +2,16 @@ import { useRef } from "react";
 
 import { StructuredData } from "../StructuredData";
 import { SITE } from "../../lib/content";
+import { getServiceResearchReferenceIds } from "../../lib/research-links";
 import type { LessonLandingDefinition } from "../../lib/seo-pages";
 import { useSiteMotion } from "../../lib/use-motion";
 import { SubPageShell } from "./chrome";
+import { ResearchReferencePanel } from "./research-reference-panel";
 
 export function LessonLanding({ page }: { page: LessonLandingDefinition }) {
   const rootRef = useRef<HTMLElement | null>(null);
   const isPricingPage = page.path === "/pricing";
+  const researchReferenceIds = getServiceResearchReferenceIds(page.path);
 
   useSiteMotion(rootRef);
 
@@ -182,6 +185,17 @@ export function LessonLanding({ page }: { page: LessonLandingDefinition }) {
                   피아노 레슨비와 포함 항목 확인하기
                 </a>
               </div>
+            </div>
+          </section>
+        )}
+
+        {researchReferenceIds.length > 0 && (
+          <section className="border-b border-line py-20 md:py-24">
+            <div className="mx-auto max-w-6xl px-6 md:px-10">
+              <ResearchReferencePanel
+                references={researchReferenceIds}
+                heading={`${page.primaryKeyword} 비교 전에 확인할 행정 데이터`}
+              />
             </div>
           </section>
         )}

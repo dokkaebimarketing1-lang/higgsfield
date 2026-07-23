@@ -75,7 +75,6 @@ function buildHead(meta: AppMeta) {
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title },
       { name: "description", content: description },
-      { name: "author", content: "김서연" },
       { name: "robots", content: "index, follow, max-image-preview:large" },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

@@ -1,4 +1,4 @@
-import { BLOG_CATEGORY_SLUGS, SITE_URL } from "../src/lib/content";
+import { BLOG_CATEGORY_SLUGS, SITE, SITE_URL } from "../src/lib/content";
 import { RESEARCH_DOWNLOADS } from "../src/lib/research-data";
 import { PUBLIC_PAGES } from "../src/lib/seo-pages";
 
@@ -20,12 +20,263 @@ type DraftRow = {
   path: string;
 };
 
+type HtmlPageExpectation = {
+  path: string;
+  h1: string;
+  schemaTypes: readonly string[];
+  markers?: readonly ("data-research-authorship" | "data-research-citation")[];
+  methodologyLink?: boolean;
+  officialSourceHosts?: readonly string[];
+  requiredText?: readonly string[];
+};
+
 const websiteId = process.env.HIGGSFIELD_WEBSITE_ID?.trim();
 const siteUrl = (process.env.SITE_URL?.trim() || SITE_URL).replace(/\/$/, "");
 const verificationId = process.env.GITHUB_SHA?.slice(0, 12) || Date.now().toString();
 
 if (!websiteId) throw new Error("HIGGSFIELD_WEBSITE_ID가 설정되지 않았습니다.");
 if (!siteUrl.startsWith("https://")) throw new Error("SITE_URL은 HTTPS 주소여야 합니다.");
+
+const requiredResearchPaths = [
+  "/research",
+  "/research/2025-music-private-education-statistics",
+  "/research/2026-seoul-piano-academy-fees",
+  "/research/methodology",
+] as const;
+
+const coreHtmlPages: readonly HtmlPageExpectation[] = [
+  {
+    path: "/",
+    h1: SITE.hero.headline,
+    schemaTypes: ["LocalBusiness", "WebSite", "FAQPage"],
+  },
+  {
+    path: "/about",
+    h1: "피아노 선생님 김서연",
+    schemaTypes: ["Person", "FAQPage", "BreadcrumbList"],
+  },
+  {
+    path: "/research",
+    h1: "피아노 통계 자료실",
+    schemaTypes: ["CollectionPage", "DataCatalog", "BreadcrumbList"],
+    markers: ["data-research-authorship"],
+    methodologyLink: true,
+    officialSourceHosts: ["www.moe.go.kr", "www.data.go.kr"],
+    requiredText: [
+      "교육부·국가데이터처 2025년 초중고 사교육비 조사",
+      "원자료 공표일: 2026-03-12",
+      "서울특별시교육청 2026년 1월 1일 기준 학원·교습소 현황",
+      "원자료 기준일: 2026-01-01",
+    ],
+  },
+  {
+    path: "/research/2025-music-private-education-statistics",
+    h1: "2025 음악 사교육비 통계",
+    schemaTypes: ["Dataset", "FAQPage", "BreadcrumbList"],
+    markers: ["data-research-authorship", "data-research-citation"],
+    methodologyLink: true,
+    officialSourceHosts: ["www.moe.go.kr", "kosis.kr"],
+  },
+  {
+    path: "/research/2026-seoul-piano-academy-fees",
+    h1: "2026 서울 피아노 학원비·교습소 등록 교습비",
+    schemaTypes: ["Dataset", "FAQPage", "BreadcrumbList"],
+    markers: ["data-research-authorship", "data-research-citation"],
+    methodologyLink: true,
+    officialSourceHosts: ["www.data.go.kr", "buseo.sen.go.kr"],
+  },
+  {
+    path: "/research/methodology",
+    h1: "피아노 데이터 방법론",
+    schemaTypes: ["WebPage", "BreadcrumbList"],
+    markers: ["data-research-authorship"],
+  },
+] as const;
+
+function decodeHtmlEntities(value: string): string {
+  const namedEntities: Record<string, string> = {
+    amp: "&",
+    apos: "'",
+    gt: ">",
+    lt: "<",
+    nbsp: " ",
+    quot: '"',
+  };
+  return value
+    .replace(/&#(\d+);/g, (_, decimal: string) => String.fromCodePoint(Number(decimal)))
+    .replace(/&#x([\da-f]+);/gi, (_, hexadecimal: string) =>
+      String.fromCodePoint(Number.parseInt(hexadecimal, 16)),
+    )
+    .replace(/&([a-z]+);/gi, (entity, name: string) => namedEntities[name.toLowerCase()] ?? entity);
+}
+
+function readHtmlAttribute(tag: string, attribute: string): string | undefined {
+  const escapedAttribute = attribute.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = tag.match(
+    new RegExp(
+      `\\s${escapedAttribute}(?:\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>]+)))?(?=\\s|\\/?>)`,
+      "i",
+    ),
+  );
+  if (!match) return undefined;
+  return decodeHtmlEntities(match[1] ?? match[2] ?? match[3] ?? "");
+}
+
+function openingTags(html: string, tagName: string): string[] {
+  const escapedTagName = tagName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return [...html.matchAll(new RegExp(`<${escapedTagName}\\b[^>]*>`, "gi"))].map(
+    (match) => match[0],
+  );
+}
+
+function normalizedVisibleText(html: string): string {
+  return decodeHtmlEntities(html.replace(/<[^>]*>/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function canonicalLinks(html: string): string[] {
+  return openingTags(html, "link")
+    .filter((tag) =>
+      (readHtmlAttribute(tag, "rel") ?? "").toLowerCase().split(/\s+/).includes("canonical"),
+    )
+    .map((tag) => readHtmlAttribute(tag, "href"))
+    .filter((href): href is string => href !== undefined);
+}
+
+function hasNoindexDirective(html: string, response: Response): boolean {
+  if (/\bnoindex\b/i.test(response.headers.get("x-robots-tag") ?? "")) return true;
+  return openingTags(html, "meta").some((tag) => {
+    const name = (readHtmlAttribute(tag, "name") ?? "").toLowerCase();
+    if (!["robots", "googlebot", "bingbot"].includes(name)) return false;
+    return /\bnoindex\b/i.test(readHtmlAttribute(tag, "content") ?? "");
+  });
+}
+
+function collectJsonLdTypes(value: unknown, types: Set<string>): void {
+  if (Array.isArray(value)) {
+    for (const item of value) collectJsonLdTypes(item, types);
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+
+  const record = value as Record<string, unknown>;
+  const schemaType = record["@type"];
+  if (typeof schemaType === "string") types.add(schemaType);
+  if (Array.isArray(schemaType)) {
+    for (const type of schemaType) {
+      if (typeof type === "string") types.add(type);
+    }
+  }
+  for (const child of Object.values(record)) collectJsonLdTypes(child, types);
+}
+
+function jsonLdTypes(html: string, path: string): Set<string> {
+  const types = new Set<string>();
+  const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)].filter(
+    (match) => (readHtmlAttribute(`<script${match[1]}>`, "type") ?? "") === "application/ld+json",
+  );
+
+  for (const script of scripts) {
+    const source = script[2].trim();
+    if (!source) continue;
+    try {
+      collectJsonLdTypes(JSON.parse(source), types);
+    } catch (error) {
+      throw new Error(
+        `${path} JSON-LD를 파싱하지 못했습니다: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+  return types;
+}
+
+function anchorHrefs(html: string): string[] {
+  return openingTags(html, "a")
+    .map((tag) => readHtmlAttribute(tag, "href"))
+    .filter((href): href is string => href !== undefined);
+}
+
+function isHrefForPath(href: string, path: string): boolean {
+  try {
+    const url = new URL(href, `${siteUrl}/`);
+    return url.origin === new URL(siteUrl).origin && url.pathname === path;
+  } catch {
+    return false;
+  }
+}
+
+function hasHtmlAttribute(html: string, attribute: string): boolean {
+  const escapedAttribute = attribute.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\s${escapedAttribute}(?:\\s*=|\\s|\\/?>)`, "i").test(html);
+}
+
+function verifyHtmlPage(expectation: HtmlPageExpectation, response: Response, html: string): void {
+  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!contentType.includes("text/html")) {
+    throw new Error(`${expectation.path} Content-Type이 HTML이 아닙니다: ${contentType || "없음"}`);
+  }
+
+  const canonical = `${siteUrl}${expectation.path}`;
+  const canonicals = canonicalLinks(html);
+  if (canonicals.length !== 1 || canonicals[0] !== canonical) {
+    throw new Error(
+      `${expectation.path} canonical이 정확하지 않습니다. 기대값: ${canonical}, 실제: ${canonicals.join(", ") || "없음"}`,
+    );
+  }
+  if (hasNoindexDirective(html, response)) {
+    throw new Error(`${expectation.path}에 noindex 지시가 있습니다.`);
+  }
+
+  const h1Contents = [...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1\s*>/gi)].map((match) =>
+    normalizedVisibleText(match[1]),
+  );
+  if (h1Contents.length !== 1 || h1Contents[0] !== expectation.h1) {
+    throw new Error(
+      `${expectation.path} H1이 정확하지 않습니다. 기대값: "${expectation.h1}", 실제: ${JSON.stringify(h1Contents)}`,
+    );
+  }
+
+  const types = jsonLdTypes(html, expectation.path);
+  for (const requiredType of expectation.schemaTypes) {
+    if (!types.has(requiredType)) {
+      throw new Error(`${expectation.path} JSON-LD에 ${requiredType} 타입이 없습니다.`);
+    }
+  }
+
+  for (const marker of expectation.markers ?? []) {
+    if (!hasHtmlAttribute(html, marker)) {
+      throw new Error(`${expectation.path}에 ${marker} 신뢰 마커가 없습니다.`);
+    }
+  }
+
+  const visibleText = normalizedVisibleText(html);
+  for (const requiredText of expectation.requiredText ?? []) {
+    if (!visibleText.includes(requiredText)) {
+      throw new Error(`${expectation.path}에 필수 출처 문구가 없습니다: "${requiredText}"`);
+    }
+  }
+
+  const hrefs = anchorHrefs(html);
+  if (
+    expectation.methodologyLink &&
+    !hrefs.some((href) => isHrefForPath(href, "/research/methodology"))
+  ) {
+    throw new Error(`${expectation.path}에 데이터 방법론 내부 링크가 없습니다.`);
+  }
+  for (const officialHost of expectation.officialSourceHosts ?? []) {
+    const hasOfficialLink = hrefs.some((href) => {
+      try {
+        return new URL(href, `${siteUrl}/`).hostname.toLowerCase() === officialHost;
+      } catch {
+        return false;
+      }
+    });
+    if (!hasOfficialLink) {
+      throw new Error(`${expectation.path}에 ${officialHost} 공식 출처 링크가 없습니다.`);
+    }
+  }
+}
 
 function parseCliJson<T>(stdout: string): T {
   const start = stdout.indexOf("{");
@@ -114,23 +365,27 @@ const draftResult = await queryDatabase<DraftRow>(`
 const draftPaths = draftResult.rows.map((row) => row.path);
 
 const cacheBuster = `verify=${encodeURIComponent(verificationId)}`;
-const [home, blog, sitemapResponse, robotsResponse, rssResponse, llmsResponse] = await Promise.all([
-  fetchStatus(`/?${cacheBuster}`, 200),
-  fetchStatus(`/blog?${cacheBuster}`, 200),
-  fetchStatus(`/sitemap.xml?${cacheBuster}`, 200),
-  fetchStatus(`/robots.txt?${cacheBuster}`, 200),
-  fetchStatus(`/rss.xml?${cacheBuster}`, 200),
-  fetchStatus(`/llms.txt?${cacheBuster}`, 200),
-]);
-void home;
+const [coreHtmlResponses, blog, sitemapResponse, robotsResponse, rssResponse, llmsResponse] =
+  await Promise.all([
+    Promise.all(coreHtmlPages.map((page) => fetchStatus(`${page.path}?${cacheBuster}`, 200))),
+    fetchStatus(`/blog?${cacheBuster}`, 200),
+    fetchStatus(`/sitemap.xml?${cacheBuster}`, 200),
+    fetchStatus(`/robots.txt?${cacheBuster}`, 200),
+    fetchStatus(`/rss.xml?${cacheBuster}`, 200),
+    fetchStatus(`/llms.txt?${cacheBuster}`, 200),
+  ]);
 void blog;
 
-const [sitemap, robots, rss, llms] = await Promise.all([
+const [coreHtmlBodies, sitemap, robots, rss, llms] = await Promise.all([
+  Promise.all(coreHtmlResponses.map((response) => response.text())),
   sitemapResponse.text(),
   robotsResponse.text(),
   rssResponse.text(),
   llmsResponse.text(),
 ]);
+for (const [index, expectation] of coreHtmlPages.entries()) {
+  verifyHtmlPage(expectation, coreHtmlResponses[index], coreHtmlBodies[index]);
+}
 const [
   nationalCsvResponse,
   seoulRecordsResponse,
@@ -138,6 +393,8 @@ const [
   sourceManifestResponse,
   nationalMetadataResponse,
   seoulMetadataResponse,
+  nationalSchemaResponse,
+  seoulSchemaResponse,
 ] = await Promise.all([
   fetchStatus(RESEARCH_DOWNLOADS.nationalCsv, 200),
   fetchStatus(RESEARCH_DOWNLOADS.seoulRecordsCsv, 200),
@@ -145,6 +402,8 @@ const [
   fetchStatus(RESEARCH_DOWNLOADS.sourceManifest, 200),
   fetchStatus(RESEARCH_DOWNLOADS.nationalMetadata, 200),
   fetchStatus(RESEARCH_DOWNLOADS.seoulMetadata, 200),
+  fetchStatus(RESEARCH_DOWNLOADS.nationalSchema, 200),
+  fetchStatus(RESEARCH_DOWNLOADS.seoulSchema, 200),
 ]);
 const [
   nationalCsv,
@@ -153,6 +412,8 @@ const [
   sourceManifestText,
   nationalMetadataText,
   seoulMetadataText,
+  nationalSchemaText,
+  seoulSchemaText,
 ] = await Promise.all([
   nationalCsvResponse.text(),
   seoulRecordsResponse.text(),
@@ -160,6 +421,8 @@ const [
   sourceManifestResponse.text(),
   nationalMetadataResponse.text(),
   seoulMetadataResponse.text(),
+  nationalSchemaResponse.text(),
+  seoulSchemaResponse.text(),
 ]);
 if (!nationalCsv.replace(/^\uFEFF/, "").startsWith("reference_year,school_level,category")) {
   throw new Error("음악 사교육비 CSV 헤더가 예상과 다릅니다.");
@@ -191,6 +454,14 @@ const seoulMetadata = JSON.parse(seoulMetadataText) as {
   publishedRecords?: number;
   sourceManifestPath?: string;
 };
+const nationalSchema = JSON.parse(nationalSchemaText) as {
+  datasetId?: string;
+  tables?: { fieldCount?: number; fields?: unknown[] }[];
+};
+const seoulSchema = JSON.parse(seoulSchemaText) as {
+  datasetId?: string;
+  tables?: { fieldCount?: number; fields?: unknown[] }[];
+};
 if (sourceManifest.sources?.length !== 12) {
   throw new Error("원자료 매니페스트의 파일 수가 12개가 아닙니다.");
 }
@@ -210,6 +481,24 @@ if (
 ) {
   throw new Error("서울 피아노 교습비 메타데이터가 예상과 다릅니다.");
 }
+if (
+  nationalSchema.datasetId !== "korea-music-private-education-spending-2025" ||
+  nationalSchema.tables?.length !== 1 ||
+  nationalSchema.tables[0].fieldCount !== 7 ||
+  nationalSchema.tables[0].fields?.length !== 7
+) {
+  throw new Error("음악 사교육비 CSV 데이터 사전이 예상과 다릅니다.");
+}
+if (
+  seoulSchema.datasetId !== "seoul-piano-registered-fees-2026-01-01" ||
+  seoulSchema.tables?.length !== 2 ||
+  seoulSchema.tables[0].fieldCount !== 14 ||
+  seoulSchema.tables[0].fields?.length !== 14 ||
+  seoulSchema.tables[1].fieldCount !== 21 ||
+  seoulSchema.tables[1].fields?.length !== 21
+) {
+  throw new Error("서울 피아노 교습비 CSV 데이터 사전이 예상과 다릅니다.");
+}
 const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 const uniqueSitemapUrls = new Set(sitemapUrls);
 const expectedSitemapUrls =
@@ -225,8 +514,24 @@ if (uniqueSitemapUrls.size !== sitemapUrls.length)
 if (![...uniqueSitemapUrls].every((url) => url.startsWith(`${siteUrl}/`) || url === siteUrl)) {
   throw new Error("사이트맵에 다른 호스트 또는 HTTP URL이 포함되어 있습니다.");
 }
+for (const page of PUBLIC_PAGES) {
+  const canonical = `${siteUrl}${page.path}`;
+  if (!uniqueSitemapUrls.has(canonical)) {
+    throw new Error(`사이트맵에 정적 공개 페이지 canonical이 없습니다: ${canonical}`);
+  }
+}
 if (!robots.includes(`${siteUrl}/sitemap.xml`)) {
   throw new Error("robots.txt에 정식 사이트맵 주소가 없습니다.");
+}
+
+const llmsDestinations = new Set(
+  [...llms.matchAll(/\]\((https?:\/\/[^)\s]+)\)/g)].map((match) => match[1]),
+);
+for (const path of requiredResearchPaths) {
+  const canonical = `${siteUrl}${path}`;
+  if (!llmsDestinations.has(canonical)) {
+    throw new Error(`llms.txt에 연구 페이지 주소가 없습니다: ${canonical}`);
+  }
 }
 
 for (const path of draftPaths) {
@@ -250,7 +555,10 @@ console.log(
     sitemapUrls: sitemapUrls.length,
     checkedPublicUrls: sitemapUrls.length,
     blockedDraftUrls: draftPaths.length,
-    endpoints: ["home", "blog", "sitemap", "robots", "rss", "llms"],
-    researchDownloads: 6,
+    endpoints: ["blog", "sitemap", "robots", "rss", "llms"],
+    verifiedCoreHtmlPages: coreHtmlPages.length,
+    verifiedStaticCanonicalUrls: PUBLIC_PAGES.length,
+    verifiedResearchLlmsUrls: requiredResearchPaths.length,
+    researchDownloads: 8,
   }),
 );

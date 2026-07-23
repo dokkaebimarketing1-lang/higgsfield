@@ -21,6 +21,7 @@ export function buildCollectionPageSchema(input: {
   url: string;
   image: string;
   items: readonly CollectionListItem[];
+  itemListOrder?: "ascending" | "descending" | "unordered";
 }) {
   const pageUrl = toCanonicalUrl(input.url);
   const imageUrl = toCanonicalUrl(input.image);
@@ -38,7 +39,13 @@ export function buildCollectionPageSchema(input: {
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: input.items.length,
-      itemListOrder: "https://schema.org/ItemListOrderDescending",
+      itemListOrder: `https://schema.org/ItemListOrder${
+        input.itemListOrder === "ascending"
+          ? "Ascending"
+          : input.itemListOrder === "unordered"
+            ? "Unordered"
+            : "Descending"
+      }`,
       itemListElement: input.items.map((item, index) => {
         const url = toCanonicalUrl(item.path);
         return {

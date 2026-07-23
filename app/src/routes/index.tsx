@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { SiteFooter, SiteNav } from "../components/site/chrome";
 import { HeroScrub } from "../components/site/hero-scrub";
 import { Monogram } from "../components/site/monogram";
+import { ResearchReferencePanel } from "../components/site/research-reference-panel";
 import { submitInquiry } from "../lib/api/inquiries.functions";
 import {
   listCategories,
@@ -12,6 +13,8 @@ import {
   type PostRow,
 } from "../lib/api/posts.functions";
 import { CATEGORY_SEO, SITE, SITE_URL } from "../lib/content";
+import { RESEARCH_CATALOG_ID } from "../lib/research-data";
+import { HOME_RESEARCH_REFERENCE_IDS } from "../lib/research-links";
 import { SERVICE_PAGES } from "../lib/seo-pages";
 import { useSiteMotion } from "../lib/use-motion";
 
@@ -42,6 +45,7 @@ const jsonLd = {
       url: `${SITE_URL}/`,
       publisher: { "@id": `${SITE_URL}/#business` },
       inLanguage: "ko",
+      hasPart: { "@id": RESEARCH_CATALOG_ID },
     },
     {
       "@type": "FAQPage",
@@ -107,10 +111,25 @@ function Index() {
       <ProcessSection />
       <FaqSection />
       <PricingSection />
+      <ResearchEvidenceSection />
       <LatestPostsSection posts={latest} categories={categories} />
       <ContactSection />
       <SiteFooter />
     </main>
+  );
+}
+
+function ResearchEvidenceSection() {
+  return (
+    <section className="border-t border-line py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-6 md:px-10">
+        <ResearchReferencePanel
+          references={HOME_RESEARCH_REFERENCE_IDS}
+          heading="공식 데이터로 확인하는 피아노 교육 환경"
+          description="레슨 안내와 별도로 전국 음악 사교육비, 서울 피아노 등록 교습비, 가공 방법을 공개합니다. 행정 통계는 시장 배경을 이해하기 위한 자료이며 이 사이트의 레슨비나 수업 성과를 증명하지 않습니다."
+        />
+      </div>
+    </section>
   );
 }
 

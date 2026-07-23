@@ -1,8 +1,21 @@
 {
   "datasetId": "seoul-piano-registered-fees-2026-01-01",
+  "datasetVersion": "1.0.0",
   "name": "2026 서울 피아노 학원·교습소 등록 교습비 파생 데이터",
   "description": "서울특별시교육청이 공개한 2026년 1월 1일 기준 학원·교습소 교습비 원자료에서 피아노가 명시된 교습상품을 추출하고 직접 식별정보를 제외한 뒤 등록 교습비와 시간당 환산값을 제공한다.",
   "referenceDate": "2026-01-01",
+  "datasetPublishedAt": "2026-07-23",
+  "publisher": {
+    "name": "이화 피아노 과외",
+    "url": "https://ewha-piano.higgsfield.app",
+    "role": "파생 데이터셋 발행 및 유지관리"
+  },
+  "derivedReuse": {
+    "scope": "이 사이트가 만든 가공 CSV와 설명",
+    "attribution": "이화 피아노 과외, 「2026 서울 피아노 학원·교습소 등록 교습비 파생 데이터」 v1.0.0, https://ewha-piano.higgsfield.app/research/2026-seoul-piano-academy-fees, 접속일 표기",
+    "notice": "인용·재사용 시 데이터셋명, 버전, URL, 접속일과 공식 원자료 출처 및 가공 사실을 함께 표시한다. 재사용 가능 범위는 원자료 제공기관의 이용조건을 먼저 확인해야 하며, 이 안내는 그 범위를 확대하지 않는다.",
+    "privacyCondition": "공개 가공본을 개인 또는 시설의 직접 식별정보와 결합해 재식별을 시도하지 않는다."
+  },
   "pipelineVersion": "1.0.0",
   "filterVersion": "piano-filter-v1",
   "rawRowsScanned": 337475,
@@ -36,7 +49,30 @@
   },
   "privacy": "가공 CSV에는 설립자·교습자 성명, 전화번호, 시설명, 정확한 주소를 포함하지 않는다. 원자료 파일·시트·행 위치와 시설 ID도 공개 CSV에서 제외하며 시설 수 집계에만 내부 사용한다. 다만 공개 원자료와 속성 조합을 통한 재식별 가능성을 완전히 배제할 수는 없다.",
   "retrievedAt": "2026-07-23",
+  "modifiedAt": "2026-07-23",
   "sourceManifestPath": "/data/research/source-manifest-2026-07-23.json",
+  "officialSource": {
+    "publisher": "서울특별시교육청",
+    "title": "2026년 1월 1일 기준 서울 내 학원·교습소 현황",
+    "referenceDate": "2026-01-01",
+    "sourcePages": [
+      "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130171732114&q_bbsSn=1328",
+      "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130173322632&q_bbsSn=1328",
+      "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130173553025&q_bbsSn=1328"
+    ],
+    "sourceManifestPath": "/data/research/source-manifest-2026-07-23.json"
+  },
+  "sourceLicense": {
+    "scope": "공식 원자료",
+    "provider": "서울특별시교육청",
+    "status": "공식 제공기관의 게시 페이지 및 이용조건 적용",
+    "termsUrls": [
+      "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130171732114&q_bbsSn=1328",
+      "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130173322632&q_bbsSn=1328",
+      "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130173553025&q_bbsSn=1328"
+    ],
+    "notice": "원자료의 저작권과 이용조건은 공식 제공기관의 최신 안내를 따른다. 이 메타데이터는 원자료에 대한 추가 권리나 별도 라이선스를 부여하지 않는다."
+  },
   "seoulSummary": [
     {
       "group_level": "seoul",
@@ -1235,6 +1271,27 @@
       "explicit_one_month_q1_krw": null,
       "explicit_one_month_q3_krw": null,
       "explicit_one_month_note": "n<5: 금액 통계 비공개"
+    }
+  ],
+  "dataDictionaryPath": "/data/research/seoul-piano-fees-schema.json",
+  "distributions": [
+    {
+      "title": "2026 서울 피아노 등록 교습비 공개 레코드 CSV",
+      "contentUrl": "/data/research/seoul-piano-fee-records-2026-01-01.csv",
+      "encodingFormat": "text/csv; charset=utf-8",
+      "bytes": 1738563,
+      "sha256": "39a33430225d442d1ab3b337a95ac0247c201d8186c8fe77934feb6e9a92a6e1",
+      "rowCount": 13675,
+      "fieldCount": 14
+    },
+    {
+      "title": "2026 서울 피아노 등록 교습비 지역별 요약 CSV",
+      "contentUrl": "/data/research/seoul-piano-fee-summary-2026-01-01.csv",
+      "encodingFormat": "text/csv; charset=utf-8",
+      "bytes": 6975,
+      "sha256": "76145323b0852a82f0996805b711d9d6138afeea001568157025866fae38549b",
+      "rowCount": 52,
+      "fieldCount": 21
     }
   ]
 }

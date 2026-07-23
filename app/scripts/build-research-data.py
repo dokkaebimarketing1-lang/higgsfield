@@ -25,9 +25,12 @@ import pandas as pd
 
 
 DATASET_DATE = "2026-01-01"
+DATASET_VERSION = "1.0.0"
+DATASET_PUBLISHED_AT = "2026-07-23"
 PIPELINE_VERSION = "1.0.0"
 FILTER_VERSION = "piano-filter-v1"
 RAW_BASE = "https://buseo.sen.go.kr/component/file/ND_fileDownload.do"
+SITE_ORIGIN = "https://ewha-piano.higgsfield.app"
 
 
 @dataclass(frozen=True)
@@ -158,6 +161,426 @@ NATIONAL_MUSIC_ROWS = (
     ("중학교", 2_415),
     ("고등학교", 2_901),
 )
+
+
+def field_definition(
+    name: str,
+    description: str,
+    data_type: str,
+    unit: str | None,
+    nullable: bool,
+    derivation: str,
+    public_restriction: str,
+) -> dict[str, Any]:
+    return {
+        "name": name,
+        "description": description,
+        "dataType": data_type,
+        "unit": unit,
+        "nullable": nullable,
+        "derivation": derivation,
+        "publicRestriction": public_restriction,
+    }
+
+
+NATIONAL_FIELDS = [
+    field_definition(
+        "reference_year",
+        "사교육비 조사 기준연도",
+        "integer",
+        "year",
+        False,
+        "공식 조사 기준연도 2025를 기록한다.",
+        "없음",
+    ),
+    field_definition(
+        "school_level",
+        "전체 또는 초등학교·중학교·고등학교 학교급",
+        "string",
+        None,
+        False,
+        "공식 통계표의 학교급 행을 전사한다.",
+        "없음",
+    ),
+    field_definition(
+        "category",
+        "사교육 과목 분류",
+        "string",
+        None,
+        False,
+        "공식 통계표에서 음악 항목만 선택해 '음악'으로 기록한다.",
+        "피아노 단독 분류가 아니므로 피아노 지출액으로 해석하지 않는다.",
+    ),
+    field_definition(
+        "spending_100m_krw",
+        "음악 사교육비 총액의 공식 표기값",
+        "integer",
+        "억원",
+        False,
+        "공식 통계표의 음악 사교육비 총액을 전사한다.",
+        "표본조사 추정치이며 반올림과 상대표준오차에 유의한다.",
+    ),
+    field_definition(
+        "spending_krw",
+        "음악 사교육비 총액의 원 단위 환산값",
+        "integer",
+        "KRW",
+        False,
+        "spending_100m_krw × 100,000,000",
+        "환산값이며 공식 통계표의 별도 원 단위 발표값이 아니다.",
+    ),
+    field_definition(
+        "source_table",
+        "값을 전사한 공식 통계표 이름",
+        "string",
+        None,
+        False,
+        "공식 PDF 표 제목을 기록한다.",
+        "없음",
+    ),
+    field_definition(
+        "source_printed_pages",
+        "공식 PDF 인쇄면 기준 표 위치",
+        "string",
+        "page",
+        False,
+        "공식 PDF의 인쇄면 22-23쪽을 기록한다.",
+        "행 단위 원자료 위치가 아니라 공개 문서의 표 위치만 제공한다.",
+    ),
+]
+
+
+SEOUL_RECORD_FIELDS = [
+    field_definition(
+        "facility_type",
+        "학원 또는 교습소 구분",
+        "string",
+        None,
+        False,
+        "공식 공개자료의 파일 유형을 academy 또는 teaching_center로 표준화한다.",
+        "시설명과 내부 시설 식별자는 공개하지 않는다.",
+    ),
+    field_definition(
+        "district",
+        "서울특별시 자치구",
+        "string",
+        None,
+        True,
+        "공식 공개자료에서 자치구 수준만 추출하며 확인할 수 없으면 빈 값으로 둔다.",
+        "정확한 주소는 공개하지 않는다.",
+    ),
+    field_definition(
+        "realm",
+        "공식 자료의 분야 구분",
+        "string",
+        None,
+        True,
+        "공식 공개자료의 분야 구분을 공백 정규화 후 기록한다.",
+        "직접 식별정보는 포함하지 않는다.",
+    ),
+    field_definition(
+        "series",
+        "공식 자료의 교습 계열",
+        "string",
+        None,
+        True,
+        "공식 공개자료의 교습 계열을 공백 정규화 후 기록한다.",
+        "직접 식별정보는 포함하지 않는다.",
+    ),
+    field_definition(
+        "course",
+        "공식 자료의 교습 과정",
+        "string",
+        None,
+        True,
+        "공식 공개자료의 교습 과정을 공백 정규화 후 기록한다.",
+        "직접 식별정보는 포함하지 않는다.",
+    ),
+    field_definition(
+        "subject",
+        "피아노 후보로 분류된 교습 과목 또는 반",
+        "string",
+        None,
+        False,
+        "공식 공개자료의 교습 과목(반)을 공백 정규화 후 기록한다.",
+        "개인 또는 시설을 식별하는 필드는 함께 공개하지 않는다.",
+    ),
+    field_definition(
+        "match_basis",
+        "피아노 후보 포함 근거",
+        "string",
+        None,
+        False,
+        "과목·과정·계열의 피아노 명시 또는 음악 맥락과 피아노 시설명·교육과정 규칙을 적용한다.",
+        "필터 규칙에 따른 후보 분류이며 모든 피아노 교습상품을 완전하게 포괄하지 않는다.",
+    ),
+    field_definition(
+        "registered_period",
+        "공식 자료에 등록된 교습 기간 표현",
+        "string",
+        None,
+        True,
+        "공식 공개자료의 교습 기간을 공백 정규화 후 기록한다.",
+        "표현 형식이 일정하지 않아 임의로 월 단위 환산하지 않는다.",
+    ),
+    field_definition(
+        "total_minutes",
+        "등록 교습시간 합계",
+        "integer",
+        "minute",
+        True,
+        "공식 공개자료의 총교습시간(분)을 숫자로 변환한다.",
+        "누락 또는 숫자 변환 불가 값은 빈 값으로 공개한다.",
+    ),
+    field_definition(
+        "tuition_fee_krw",
+        "등록 교습비",
+        "integer",
+        "KRW",
+        True,
+        "공식 공개자료의 교습비에서 0보다 큰 숫자만 기록한다.",
+        "실제 결제액이나 시장 평균이 아니며 누락·0 값은 빈 값으로 공개한다.",
+    ),
+    field_definition(
+        "total_fee_krw",
+        "등록 총교습비",
+        "integer",
+        "KRW",
+        True,
+        "공식 공개자료의 총교습비에서 0보다 큰 숫자만 기록한다.",
+        "실제 결제액이 아니며 누락·0 값은 빈 값으로 공개한다.",
+    ),
+    field_definition(
+        "hourly_tuition_krw",
+        "등록 교습비의 시간당 환산값",
+        "integer",
+        "KRW/hour",
+        True,
+        "tuition_fee_krw ÷ (total_minutes ÷ 60), 원 단위 반올림",
+        "교습비와 시간이 모두 유효할 때만 제공하며 실제 시간당 결제액을 뜻하지 않는다.",
+    ),
+    field_definition(
+        "explicit_one_month",
+        "교습 기간이 명시적으로 1개월인지 여부",
+        "boolean",
+        None,
+        False,
+        "registered_period가 '1개월' 또는 '1개월 0일'과 정확히 일치하면 true다.",
+        "다른 기간 표현을 1개월로 추정하지 않는다.",
+    ),
+    field_definition(
+        "qc_hourly_extreme",
+        "시간당 환산값의 검토 필요 표시",
+        "boolean",
+        None,
+        False,
+        "유효 시간당 환산값의 하위 1% 이하 또는 상위 1% 이상이면 true다.",
+        "오류 판정이 아니라 극단값 검토 표식이다.",
+    ),
+]
+
+
+def summary_field(
+    name: str,
+    description: str,
+    data_type: str,
+    unit: str | None,
+    nullable: bool,
+    derivation: str,
+    public_restriction: str = "없음",
+) -> dict[str, Any]:
+    return field_definition(
+        name,
+        description,
+        data_type,
+        unit,
+        nullable,
+        derivation,
+        public_restriction,
+    )
+
+
+SEOUL_SUMMARY_FIELDS = [
+    summary_field(
+        "group_level",
+        "집계 수준",
+        "string",
+        None,
+        False,
+        "서울 전체는 seoul, 자치구별 집계는 district로 기록한다.",
+    ),
+    summary_field(
+        "area",
+        "집계 지역",
+        "string",
+        None,
+        False,
+        "서울 전체 또는 자치구 이름을 기록한다.",
+        "자치구보다 세밀한 위치는 공개하지 않는다.",
+    ),
+    summary_field(
+        "facility_type",
+        "학원 또는 교습소 구분",
+        "string",
+        None,
+        False,
+        "academy 또는 teaching_center로 구분한다.",
+    ),
+    summary_field(
+        "candidate_records",
+        "집계에 포함된 피아노 후보 교습상품 수",
+        "integer",
+        "record",
+        False,
+        "그룹별 공개 후보 행 수를 센다.",
+    ),
+    summary_field(
+        "facility_count",
+        "집계에 포함된 고유 시설 수",
+        "integer",
+        "facility",
+        False,
+        "비공개 내부 시설 식별자의 고유 개수를 센다.",
+        "내부 시설 식별자는 공개하지 않고 집계값만 제공한다.",
+    ),
+    summary_field(
+        "valid_tuition_records",
+        "유효 등록 교습비가 있는 행 수",
+        "integer",
+        "record",
+        False,
+        "tuition_fee_krw가 있는 행을 센다.",
+    ),
+    summary_field(
+        "tuition_coverage_pct",
+        "등록 교습비 유효값 비율",
+        "number",
+        "percent",
+        False,
+        "valid_tuition_records ÷ candidate_records × 100, 소수 둘째 자리 반올림",
+    ),
+    summary_field(
+        "registered_tuition_median_krw",
+        "등록 교습비 중앙값",
+        "integer",
+        "KRW",
+        True,
+        "유효 등록 교습비의 50백분위수를 원 단위 반올림한다.",
+        "유효 표본이 5건 미만이면 공개하지 않는다.",
+    ),
+    summary_field(
+        "registered_tuition_q1_krw",
+        "등록 교습비 제1사분위수",
+        "integer",
+        "KRW",
+        True,
+        "유효 등록 교습비의 25백분위수를 원 단위 반올림한다.",
+        "유효 표본이 5건 미만이면 공개하지 않는다.",
+    ),
+    summary_field(
+        "registered_tuition_q3_krw",
+        "등록 교습비 제3사분위수",
+        "integer",
+        "KRW",
+        True,
+        "유효 등록 교습비의 75백분위수를 원 단위 반올림한다.",
+        "유효 표본이 5건 미만이면 공개하지 않는다.",
+    ),
+    summary_field(
+        "registered_tuition_note",
+        "등록 교습비 통계 공개 상태",
+        "string",
+        None,
+        True,
+        "n<5 비공개 또는 n=5~9 표본 적음 안내를 기록하고 그 밖에는 빈 값으로 둔다.",
+    ),
+    summary_field(
+        "valid_hourly_records",
+        "유효 시간당 환산값이 있는 행 수",
+        "integer",
+        "record",
+        False,
+        "hourly_tuition_krw가 있는 행을 센다.",
+    ),
+    summary_field(
+        "hourly_tuition_median_krw",
+        "시간당 환산 등록 교습비 중앙값",
+        "integer",
+        "KRW/hour",
+        True,
+        "유효 시간당 환산값의 50백분위수를 원 단위 반올림한다.",
+        "유효 표본이 5건 미만이면 공개하지 않는다.",
+    ),
+    summary_field(
+        "hourly_tuition_q1_krw",
+        "시간당 환산 등록 교습비 제1사분위수",
+        "integer",
+        "KRW/hour",
+        True,
+        "유효 시간당 환산값의 25백분위수를 원 단위 반올림한다.",
+        "유효 표본이 5건 미만이면 공개하지 않는다.",
+    ),
+    summary_field(
+        "hourly_tuition_q3_krw",
+        "시간당 환산 등록 교습비 제3사분위수",
+        "integer",
+        "KRW/hour",
+        True,
+        "유효 시간당 환산값의 75백분위수를 원 단위 반올림한다.",
+        "유효 표본이 5건 미만이면 공개하지 않는다.",
+    ),
+    summary_field(
+        "hourly_tuition_note",
+        "시간당 환산 통계 공개 상태",
+        "string",
+        None,
+        True,
+        "n<5 비공개 또는 n=5~9 표본 적음 안내를 기록하고 그 밖에는 빈 값으로 둔다.",
+    ),
+    summary_field(
+        "explicit_one_month_records",
+        "명시적 1개월 등록 교습비 행 수",
+        "integer",
+        "record",
+        False,
+        "explicit_one_month가 true이고 교습비가 유효한 행을 센다.",
+    ),
+    summary_field(
+        "explicit_one_month_median_krw",
+        "명시적 1개월 등록 교습비 중앙값",
+        "integer",
+        "KRW",
+        True,
+        "명시적 1개월 교습비의 50백분위수를 원 단위 반올림한다.",
+        "유효 표본이 5건 미만이면 공개하지 않는다.",
+    ),
+    summary_field(
+        "explicit_one_month_q1_krw",
+        "명시적 1개월 등록 교습비 제1사분위수",
+        "integer",
+        "KRW",
+        True,
+        "명시적 1개월 교습비의 25백분위수를 원 단위 반올림한다.",
+        "유효 표본이 5건 미만이면 공개하지 않는다.",
+    ),
+    summary_field(
+        "explicit_one_month_q3_krw",
+        "명시적 1개월 등록 교습비 제3사분위수",
+        "integer",
+        "KRW",
+        True,
+        "명시적 1개월 교습비의 75백분위수를 원 단위 반올림한다.",
+        "유효 표본이 5건 미만이면 공개하지 않는다.",
+    ),
+    summary_field(
+        "explicit_one_month_note",
+        "명시적 1개월 통계 공개 상태",
+        "string",
+        None,
+        True,
+        "n<5 비공개 또는 n=5~9 표본 적음 안내를 기록하고 그 밖에는 빈 값으로 둔다.",
+    ),
+]
 
 
 def text(value: Any) -> str:
@@ -380,14 +803,22 @@ def build_seoul_records(source_dir: Path) -> tuple[pd.DataFrame, dict[str, Any]]
             "validHourlyRecords": int(group["hourly_tuition_krw"].notna().sum()),
         }
 
+    dataset_name = "2026 서울 피아노 학원·교습소 등록 교습비 파생 데이터"
     metadata = {
         "datasetId": "seoul-piano-registered-fees-2026-01-01",
-        "name": "2026 서울 피아노 학원·교습소 등록 교습비 파생 데이터",
+        "datasetVersion": DATASET_VERSION,
+        "name": dataset_name,
         "description": (
             "서울특별시교육청이 공개한 2026년 1월 1일 기준 학원·교습소 교습비 원자료에서 "
             "피아노가 명시된 교습상품을 추출하고 직접 식별정보를 제외한 뒤 등록 교습비와 시간당 환산값을 제공한다."
         ),
         "referenceDate": DATASET_DATE,
+        "datasetPublishedAt": DATASET_PUBLISHED_AT,
+        "publisher": derived_publisher(),
+        "derivedReuse": derived_reuse(
+            dataset_name,
+            "/research/2026-seoul-piano-academy-fees",
+        ),
         "pipelineVersion": PIPELINE_VERSION,
         "filterVersion": FILTER_VERSION,
         "rawRowsScanned": raw_rows,
@@ -491,22 +922,80 @@ def build_source_manifest(raw_dir: Path, retrieved_at: str) -> dict[str, Any]:
     }
 
 
+def derived_publisher() -> dict[str, str]:
+    return {
+        "name": "이화 피아노 과외",
+        "url": SITE_ORIGIN,
+        "role": "파생 데이터셋 발행 및 유지관리",
+    }
+
+
+def source_license(provider: str, terms_urls: Iterable[str]) -> dict[str, Any]:
+    return {
+        "scope": "공식 원자료",
+        "provider": provider,
+        "status": "공식 제공기관의 게시 페이지 및 이용조건 적용",
+        "termsUrls": sorted(set(terms_urls)),
+        "notice": (
+            "원자료의 저작권과 이용조건은 공식 제공기관의 최신 안내를 따른다. "
+            "이 메타데이터는 원자료에 대한 추가 권리나 별도 라이선스를 부여하지 않는다."
+        ),
+    }
+
+
+def derived_reuse(dataset_name: str, canonical_path: str) -> dict[str, str]:
+    return {
+        "scope": "이 사이트가 만든 가공 CSV와 설명",
+        "attribution": (
+            f"이화 피아노 과외, 「{dataset_name}」 v{DATASET_VERSION}, "
+            f"{SITE_ORIGIN}{canonical_path}, 접속일 표기"
+        ),
+        "notice": (
+            "인용·재사용 시 데이터셋명, 버전, URL, 접속일과 공식 원자료 출처 및 가공 사실을 함께 표시한다. "
+            "재사용 가능 범위는 원자료 제공기관의 이용조건을 먼저 확인해야 하며, 이 안내는 그 범위를 확대하지 않는다."
+        ),
+        "privacyCondition": "공개 가공본을 개인 또는 시설의 직접 식별정보와 결합해 재식별을 시도하지 않는다.",
+    }
+
+
 def build_national_metadata(manifest: dict[str, Any], retrieved_at: str) -> dict[str, Any]:
     pdf_source = next(
         source for source in manifest["sources"] if source["sourceId"] == "moe-2025-private-education-survey"
     )
     if sum(value for scope, value in NATIONAL_MUSIC_ROWS if scope != "전체") != 18_876:
         raise ValueError("학교급별 음악 사교육비 합계가 전체와 일치하지 않습니다.")
+    dataset_name = "2025 대한민국 음악 사교육비 공식 통계 정리"
+    source_published_at = "2026-03-12"
     return {
         "datasetId": "korea-music-private-education-spending-2025",
-        "name": "2025 대한민국 음악 사교육비 공식 통계 정리",
+        "datasetVersion": DATASET_VERSION,
+        "name": dataset_name,
         "description": (
             "교육부와 국가데이터처의 2025년 초중고 사교육비 조사 중 음악 과목의 사교육비 총액을 "
             "학교급별로 전사한 데이터다. 피아노 단독 통계나 레슨 가격 통계가 아니다."
         ),
         "referenceYear": 2025,
-        "publishedAt": "2026-03-12",
+        "sourcePublishedAt": source_published_at,
+        "publishedAt": source_published_at,
+        "datasetPublishedAt": DATASET_PUBLISHED_AT,
+        "modifiedAt": retrieved_at,
         "retrievedAt": retrieved_at,
+        "publisher": derived_publisher(),
+        "officialSource": {
+            "publisher": ["교육부", "국가데이터처"],
+            "title": "2025년 초중고 사교육비 조사 결과",
+            "sourcePublishedAt": source_published_at,
+            "sourcePage": pdf_source["sourcePage"],
+            "downloadUrl": pdf_source["downloadUrl"],
+        },
+        "sourceLicense": source_license(
+            "교육부·국가데이터처",
+            [pdf_source["sourcePage"]],
+        ),
+        "derivedReuse": derived_reuse(
+            dataset_name,
+            "/research/2025-music-private-education-statistics",
+        ),
         "unit": "억원",
         "table": "학교급(학년) 및 특성별 사교육비 총액",
         "printedPages": "22-23",
@@ -523,6 +1012,36 @@ def build_national_metadata(manifest: dict[str, Any], retrieved_at: str) -> dict
             "음악 전체 과목의 학생 단위 명목 지출 추정치이며 피아노만 분리하지 않는다. "
             "표본조사이므로 상대표준오차와 반올림에 유의해야 한다."
         ),
+    }
+
+
+def csv_distribution(
+    path: Path,
+    title: str,
+    row_count: int,
+    field_count: int,
+) -> dict[str, Any]:
+    return {
+        "title": title,
+        "contentUrl": f"/data/research/{path.name}",
+        "encodingFormat": "text/csv; charset=utf-8",
+        "bytes": path.stat().st_size,
+        "sha256": sha256_file(path),
+        "rowCount": row_count,
+        "fieldCount": field_count,
+    }
+
+
+def data_dictionary(
+    dataset_id: str,
+    tables: list[dict[str, Any]],
+) -> dict[str, Any]:
+    return {
+        "schemaVersion": "1.0.0",
+        "datasetId": dataset_id,
+        "datasetVersion": DATASET_VERSION,
+        "publishedAt": DATASET_PUBLISHED_AT,
+        "tables": tables,
     }
 
 
@@ -563,7 +1082,23 @@ def main() -> None:
     national_metadata = build_national_metadata(manifest, args.retrieved_at)
 
     seoul_metadata["retrievedAt"] = args.retrieved_at
+    seoul_metadata["modifiedAt"] = args.retrieved_at
     seoul_metadata["sourceManifestPath"] = f"/data/research/{manifest_filename}"
+    seoul_sources = [
+        source for source in manifest["sources"] if source["kind"] == "official-administrative-xls"
+    ]
+    seoul_source_pages = sorted({source["sourcePage"] for source in seoul_sources})
+    seoul_metadata["officialSource"] = {
+        "publisher": "서울특별시교육청",
+        "title": "2026년 1월 1일 기준 서울 내 학원·교습소 현황",
+        "referenceDate": DATASET_DATE,
+        "sourcePages": seoul_source_pages,
+        "sourceManifestPath": f"/data/research/{manifest_filename}",
+    }
+    seoul_metadata["sourceLicense"] = source_license(
+        "서울특별시교육청",
+        seoul_source_pages,
+    )
     city_rows = json.loads(
         summary[summary["group_level"] == "seoul"].to_json(orient="records", force_ascii=False)
     )
@@ -596,19 +1131,22 @@ def main() -> None:
         "explicit_one_month",
         "qc_hourly_extreme",
     ]
+    national_csv = public_dir / "national-music-private-education-2025.csv"
+    seoul_records_csv = public_dir / "seoul-piano-fee-records-2026-01-01.csv"
+    seoul_summary_csv = public_dir / "seoul-piano-fee-summary-2026-01-01.csv"
     frame.to_csv(
-        public_dir / "seoul-piano-fee-records-2026-01-01.csv",
+        seoul_records_csv,
         columns=record_columns,
         index=False,
         encoding="utf-8-sig",
     )
     summary.to_csv(
-        public_dir / "seoul-piano-fee-summary-2026-01-01.csv",
+        seoul_summary_csv,
         index=False,
         encoding="utf-8-sig",
     )
     write_csv(
-        public_dir / "national-music-private-education-2025.csv",
+        national_csv,
         [
             {
                 "reference_year": 2025,
@@ -632,7 +1170,67 @@ def main() -> None:
         ],
     )
 
+    national_metadata["dataDictionaryPath"] = (
+        "/data/research/national-music-private-education-schema.json"
+    )
+    national_metadata["distributions"] = [
+        csv_distribution(
+            national_csv,
+            "2025 대한민국 음악 사교육비 학교급별 CSV",
+            len(national_metadata["rows"]),
+            len(NATIONAL_FIELDS),
+        )
+    ]
+    seoul_metadata["dataDictionaryPath"] = "/data/research/seoul-piano-fees-schema.json"
+    seoul_metadata["distributions"] = [
+        csv_distribution(
+            seoul_records_csv,
+            "2026 서울 피아노 등록 교습비 공개 레코드 CSV",
+            len(frame),
+            len(SEOUL_RECORD_FIELDS),
+        ),
+        csv_distribution(
+            seoul_summary_csv,
+            "2026 서울 피아노 등록 교습비 지역별 요약 CSV",
+            len(summary),
+            len(SEOUL_SUMMARY_FIELDS),
+        ),
+    ]
+    national_schema = data_dictionary(
+        national_metadata["datasetId"],
+        [
+            {
+                "name": "national_music_private_education",
+                "description": "2025년 음악 사교육비 총액의 학교급별 공식 통계 전사·환산표",
+                "csvPath": f"/data/research/{national_csv.name}",
+                "fieldCount": len(NATIONAL_FIELDS),
+                "fields": NATIONAL_FIELDS,
+            }
+        ],
+    )
+    seoul_schema = data_dictionary(
+        seoul_metadata["datasetId"],
+        [
+            {
+                "name": "piano_fee_records",
+                "description": "직접 식별정보와 원자료 위치를 제외한 피아노 후보 교습상품 단위 가공표",
+                "csvPath": f"/data/research/{seoul_records_csv.name}",
+                "fieldCount": len(SEOUL_RECORD_FIELDS),
+                "fields": SEOUL_RECORD_FIELDS,
+            },
+            {
+                "name": "piano_fee_summary",
+                "description": "서울 전체 및 자치구별 학원·교습소 등록 교습비 요약표",
+                "csvPath": f"/data/research/{seoul_summary_csv.name}",
+                "fieldCount": len(SEOUL_SUMMARY_FIELDS),
+                "fields": SEOUL_SUMMARY_FIELDS,
+            },
+        ],
+    )
+
     write_json(public_dir / manifest_filename, manifest)
+    write_json(public_dir / "national-music-private-education-schema.json", national_schema)
+    write_json(public_dir / "seoul-piano-fees-schema.json", seoul_schema)
     write_json(public_dir / "seoul-piano-fees-metadata.json", seoul_metadata)
     write_json(public_dir / "national-music-private-education-metadata.json", national_metadata)
     write_json(src_dir / "source-manifest.json", manifest)

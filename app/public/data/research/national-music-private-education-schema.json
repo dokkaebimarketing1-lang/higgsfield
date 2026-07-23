@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "korea-music-private-education-spending-2025",
+  "datasetVersion": "1.0.0",
+  "publishedAt": "2026-07-23",
+  "tables": [
+    {
+      "name": "national_music_private_education",
+      "description": "2025년 음악 사교육비 총액의 학교급별 공식 통계 전사·환산표",
+      "csvPath": "/data/research/national-music-private-education-2025.csv",
+      "fieldCount": 7,
+      "fields": [
+        {
+          "name": "reference_year",
+          "description": "사교육비 조사 기준연도",
+          "dataType": "integer",
+          "unit": "year",
+          "nullable": false,
+          "derivation": "공식 조사 기준연도 2025를 기록한다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "school_level",
+          "description": "전체 또는 초등학교·중학교·고등학교 학교급",
+          "dataType": "string",
+          "unit": null,
+          "nullable": false,
+          "derivation": "공식 통계표의 학교급 행을 전사한다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "category",
+          "description": "사교육 과목 분류",
+          "dataType": "string",
+          "unit": null,
+          "nullable": false,
+          "derivation": "공식 통계표에서 음악 항목만 선택해 '음악'으로 기록한다.",
+          "publicRestriction": "피아노 단독 분류가 아니므로 피아노 지출액으로 해석하지 않는다."
+        },
+        {
+          "name": "spending_100m_krw",
+          "description": "음악 사교육비 총액의 공식 표기값",
+          "dataType": "integer",
+          "unit": "억원",
+          "nullable": false,
+          "derivation": "공식 통계표의 음악 사교육비 총액을 전사한다.",
+          "publicRestriction": "표본조사 추정치이며 반올림과 상대표준오차에 유의한다."
+        },
+        {
+          "name": "spending_krw",
+          "description": "음악 사교육비 총액의 원 단위 환산값",
+          "dataType": "integer",
+          "unit": "KRW",
+          "nullable": false,
+          "derivation": "spending_100m_krw × 100,000,000",
+          "publicRestriction": "환산값이며 공식 통계표의 별도 원 단위 발표값이 아니다."
+        },
+        {
+          "name": "source_table",
+          "description": "값을 전사한 공식 통계표 이름",
+          "dataType": "string",
+          "unit": null,
+          "nullable": false,
+          "derivation": "공식 PDF 표 제목을 기록한다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "source_printed_pages",
+          "description": "공식 PDF 인쇄면 기준 표 위치",
+          "dataType": "string",
+          "unit": "page",
+          "nullable": false,
+          "derivation": "공식 PDF의 인쇄면 22-23쪽을 기록한다.",
+          "publicRestriction": "행 단위 원자료 위치가 아니라 공개 문서의 표 위치만 제공한다."
+        }
+      ]
+    }
+  ]
+}

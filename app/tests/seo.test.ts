@@ -200,6 +200,9 @@ describe("SEO helpers", () => {
         "/research/methodology",
       ]),
     );
+    expect(
+      PUBLIC_PAGES.filter((page) => page.path.startsWith("/research")).map((page) => page.cluster),
+    ).toEqual(["research", "research", "research", "research"]);
 
     for (const page of PUBLIC_PAGES) {
       expect(page.title).toContain(page.primaryKeyword);

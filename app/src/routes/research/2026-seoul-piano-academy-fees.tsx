@@ -6,14 +6,20 @@ import {
   EvidenceBadge,
   LimitationNotice,
   ResearchBreadcrumb,
+  ResearchEditorialRecord,
   ResearchFaq,
   StatCard,
 } from "../../components/site/research-ui";
 import { SITE_URL } from "../../lib/content";
 import {
   RESEARCH_DOWNLOADS,
+  SEOUL_DATASET_CITATION,
+  SEOUL_DATASET_MODIFIED_AT,
+  SEOUL_DATASET_PUBLISHED_AT,
+  SEOUL_DATASET_VERSION,
   SEOUL_ADMINISTRATIVE_SOURCES,
   SEOUL_PIANO_FEES,
+  buildSeoulDatasetPageSchema,
   buildSeoulPianoFeesDatasetSchema,
   facilityTypeLabel,
   formatBytes,
@@ -51,47 +57,53 @@ const seoulFaq = [
 ] as const;
 
 export const Route = createFileRoute("/research/2026-seoul-piano-academy-fees")({
-  head: () => ({
-    ...buildPublicPageHead(page),
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: safeJsonLd({
-          "@context": "https://schema.org",
-          "@graph": [
-            buildSeoulPianoFeesDatasetSchema(),
-            {
-              "@type": "FAQPage",
-              "@id": `${SITE_URL}${page.path}#faq`,
-              mainEntity: seoulFaq.map((item) => ({
-                "@type": "Question",
-                name: item.question,
-                acceptedAnswer: { "@type": "Answer", text: item.answer },
-              })),
-            },
-            {
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
-                {
-                  "@type": "ListItem",
-                  position: 2,
-                  name: "피아노 통계",
-                  item: `${SITE_URL}/research`,
-                },
-                {
-                  "@type": "ListItem",
-                  position: 3,
-                  name: "2026 서울 피아노 학원비",
-                  item: `${SITE_URL}${page.path}`,
-                },
-              ],
-            },
-          ],
-        }),
-      },
-    ],
-  }),
+  head: () => {
+    const publicHead = buildPublicPageHead(page);
+    return {
+      ...publicHead,
+      meta: [...publicHead.meta, { name: "author", content: "이화 피아노 과외" }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: safeJsonLd({
+            "@context": "https://schema.org",
+            "@graph": [
+              buildSeoulDatasetPageSchema(),
+              buildSeoulPianoFeesDatasetSchema(),
+              {
+                "@type": "FAQPage",
+                "@id": `${SITE_URL}${page.path}#faq`,
+                mainEntity: seoulFaq.map((item) => ({
+                  "@type": "Question",
+                  name: item.question,
+                  acceptedAnswer: { "@type": "Answer", text: item.answer },
+                })),
+              },
+              {
+                "@type": "BreadcrumbList",
+                "@id": `${SITE_URL}${page.path}#breadcrumb`,
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: "피아노 통계",
+                    item: `${SITE_URL}/research`,
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 3,
+                    name: "2026 서울 피아노 학원비",
+                    item: `${SITE_URL}${page.path}`,
+                  },
+                ],
+              },
+            ],
+          }),
+        },
+      ],
+    };
+  },
   component: SeoulPianoFeesPage,
 });
 
@@ -167,6 +179,32 @@ function SeoulPianoFeesPage() {
           </LimitationNotice>
         </div>
 
+        <section className="mt-16 border-l-2 border-brass pl-6" aria-labelledby="seoul-answer">
+          <p className="text-xs tracking-[0.18em] text-brass uppercase">Answer first</p>
+          <h2 id="seoul-answer" className="mt-3 font-serif-kr text-3xl font-bold">
+            2026 서울 피아노 학원·교습소 등록 교습비 중앙값은 얼마인가요?
+          </h2>
+          <p className="mt-5 max-w-[74ch] font-serif-kr text-xl leading-relaxed text-ivory">
+            학원은 {formatKrw(academy.registered_tuition_median_krw)}, 교습소는{" "}
+            {formatKrw(teachingCenter.registered_tuition_median_krw)}입니다. 두 값은 실제 결제액이나
+            개인·방문 레슨 시장 평균이 아니라, 행정자료에 등록된 교습상품 금액의 중앙값입니다.
+          </p>
+          <p className="mt-4 max-w-[76ch] text-sm leading-relaxed text-mute">
+            근거는{" "}
+            <cite className="not-italic">
+              <a
+                href="https://www.data.go.kr/data/3044370/fileData.do"
+                target="_blank"
+                rel="noreferrer"
+                className="text-brass underline underline-offset-4 hover:text-ivory"
+              >
+                서울특별시교육청 학원·교습소 공개자료
+              </a>
+            </cite>
+            의 2026년 1월 1일 스냅샷 11개입니다.
+          </p>
+        </section>
+
         <section className="mt-20" aria-labelledby="seoul-type-comparison-title">
           <div className="max-w-3xl">
             <p className="text-xs tracking-[0.18em] text-brass uppercase">Separate populations</p>
@@ -180,20 +218,35 @@ function SeoulPianoFeesPage() {
           </div>
           <div className="mt-8 overflow-x-auto border border-line">
             <table className="w-full min-w-[860px] border-collapse text-left">
+              <caption className="sr-only">
+                서울 피아노 학원과 교습소의 등록 교습비·교습상품·시설 수 비교
+              </caption>
               <thead className="bg-ebony-2 text-sm text-mute">
                 <tr>
-                  <th className="px-5 py-4 font-medium">시설 유형</th>
-                  <th className="px-5 py-4 text-right font-medium">교습상품</th>
-                  <th className="px-5 py-4 text-right font-medium">시설</th>
-                  <th className="px-5 py-4 text-right font-medium">등록 교습비 중앙값</th>
-                  <th className="px-5 py-4 text-right font-medium">등록 교습비 Q1~Q3</th>
-                  <th className="px-5 py-4 text-right font-medium">시간당 환산 중앙값</th>
+                  <th scope="col" className="px-5 py-4 font-medium">
+                    시설 유형
+                  </th>
+                  <th scope="col" className="px-5 py-4 text-right font-medium">
+                    교습상품
+                  </th>
+                  <th scope="col" className="px-5 py-4 text-right font-medium">
+                    시설
+                  </th>
+                  <th scope="col" className="px-5 py-4 text-right font-medium">
+                    등록 교습비 중앙값
+                  </th>
+                  <th scope="col" className="px-5 py-4 text-right font-medium">
+                    등록 교습비 Q1~Q3
+                  </th>
+                  <th scope="col" className="px-5 py-4 text-right font-medium">
+                    시간당 환산 중앙값
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {[academy, teachingCenter].map((row) => (
                   <tr key={row.facility_type} className="border-t border-line">
-                    <th className="px-5 py-4 font-medium text-ivory">
+                    <th scope="row" className="px-5 py-4 font-medium text-ivory">
                       {facilityTypeLabel(row.facility_type)}
                     </th>
                     <td className="px-5 py-4 text-right tabular-nums text-mute">
@@ -235,11 +288,20 @@ function SeoulPianoFeesPage() {
           </div>
           <div className="mt-8 overflow-x-auto border border-line">
             <table className="w-full min-w-[760px] border-collapse text-left">
+              <caption className="sr-only">
+                서울 25개 자치구별 피아노 학원·교습소 등록 교습비 중앙값
+              </caption>
               <thead className="bg-ebony-2 text-sm text-mute">
                 <tr>
-                  <th className="px-5 py-4 font-medium">자치구</th>
-                  <th className="px-5 py-4 text-right font-medium">학원 중앙값</th>
-                  <th className="px-5 py-4 text-right font-medium">교습소 중앙값</th>
+                  <th scope="col" className="px-5 py-4 font-medium">
+                    자치구
+                  </th>
+                  <th scope="col" className="px-5 py-4 text-right font-medium">
+                    학원 중앙값
+                  </th>
+                  <th scope="col" className="px-5 py-4 text-right font-medium">
+                    교습소 중앙값
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -252,7 +314,9 @@ function SeoulPianoFeesPage() {
                   );
                   return (
                     <tr key={district} className="border-t border-line">
-                      <th className="px-5 py-4 font-medium text-ivory">{district}</th>
+                      <th scope="row" className="px-5 py-4 font-medium text-ivory">
+                        {district}
+                      </th>
                       <td className="px-5 py-4 text-right text-mute">
                         <DistrictValue row={academyRow} />
                       </td>
@@ -276,7 +340,7 @@ function SeoulPianoFeesPage() {
           <h2 id="seoul-download-title" className="font-serif-kr text-3xl font-bold">
             가공 CSV와 검증 파일
           </h2>
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             <DownloadCard
               href={RESEARCH_DOWNLOADS.seoulRecordsCsv}
               title="직접 식별정보 제거 교습상품 CSV"
@@ -288,6 +352,12 @@ function SeoulPianoFeesPage() {
               title="서울·자치구 요약 CSV"
               description="시설 유형별 표본 수, 중앙값, Q1·Q3, 유효률과 공개 제한 메모를 포함합니다."
               meta={`CSV · ${formatNumber(SEOUL_PIANO_FEES.districtSummary.length + SEOUL_PIANO_FEES.seoulSummary.length)}행`}
+            />
+            <DownloadCard
+              href={RESEARCH_DOWNLOADS.seoulSchema}
+              title="CSV 데이터 사전"
+              description="레코드 14개 필드와 요약 21개 필드의 자료형, 단위, 파생식과 공개 제한 규칙입니다."
+              meta="JSON · 2개 표"
             />
             <DownloadCard
               href={RESEARCH_DOWNLOADS.sourceManifest}
@@ -360,6 +430,23 @@ function SeoulPianoFeesPage() {
             </ul>
           </details>
         </section>
+
+        <ResearchEditorialRecord
+          id="seoul-editorial-record"
+          publisherName="이화 피아노 과외"
+          publisherHref="/"
+          sourceName="서울특별시교육청 학원·교습소 교습비 공개자료"
+          sourceHref="https://www.data.go.kr/data/3044370/fileData.do"
+          referenceLabel={SEOUL_PIANO_FEES.referenceDate}
+          datasetPublishedAt={SEOUL_DATASET_PUBLISHED_AT}
+          modifiedAt={SEOUL_DATASET_MODIFIED_AT}
+          version={SEOUL_DATASET_VERSION}
+          verification="원자료 11개 SHA-256, 전체 337,475행 스캔, 중복·유효값·자치구·공개 필드·CSV 행 수 검사"
+          licenseName="공공데이터포털 이용허락범위 제한 없음"
+          licenseHref="https://www.data.go.kr/data/3044370/fileData.do"
+          reuseNote="원자료 이용조건을 우선 적용합니다. 가공 CSV를 재사용할 때는 서울특별시교육청과 이 페이지의 데이터셋명·버전·URL을 함께 표시하고 개인·시설 식별에 사용하지 마세요."
+          citation={SEOUL_DATASET_CITATION}
+        />
 
         <ResearchFaq
           id="seoul-faq-title"

@@ -1,11 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { SubPageShell } from "../../components/site/chrome";
-import { EvidenceBadge, ResearchBreadcrumb, StatCard } from "../../components/site/research-ui";
+import {
+  EvidenceBadge,
+  ResearchBreadcrumb,
+  ResearchEditorialRecord,
+  StatCard,
+} from "../../components/site/research-ui";
 import { SITE_URL } from "../../lib/content";
 import {
   NATIONAL_MUSIC_EDUCATION,
+  NATIONAL_PDF_SOURCE,
   SEOUL_PIANO_FEES,
+  buildResearchDataCatalogSchema,
   formatEokKrw,
   formatNumber,
 } from "../../lib/research-data";
@@ -37,38 +44,45 @@ const researchItems = [
 ] as const;
 
 export const Route = createFileRoute("/research/")({
-  head: () => ({
-    ...buildPublicPageHead(researchPage),
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: safeJsonLd({
-          "@context": "https://schema.org",
-          "@graph": [
-            buildCollectionPageSchema({
-              name: researchPage.primaryKeyword,
-              description: researchPage.description,
-              url: `${SITE_URL}/research`,
-              image: researchPage.image,
-              items: researchItems.map((item) => ({ name: item.name, path: item.path })),
-            }),
-            {
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
-                {
-                  "@type": "ListItem",
-                  position: 2,
-                  name: "피아노 통계",
-                  item: `${SITE_URL}/research`,
-                },
-              ],
-            },
-          ],
-        }),
-      },
-    ],
-  }),
+  head: () => {
+    const publicHead = buildPublicPageHead(researchPage);
+    return {
+      ...publicHead,
+      meta: [...publicHead.meta, { name: "author", content: "이화 피아노 과외" }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: safeJsonLd({
+            "@context": "https://schema.org",
+            "@graph": [
+              buildCollectionPageSchema({
+                name: researchPage.primaryKeyword,
+                description: researchPage.description,
+                url: `${SITE_URL}/research`,
+                image: researchPage.image,
+                items: researchItems.map((item) => ({ name: item.name, path: item.path })),
+                itemListOrder: "unordered",
+              }),
+              buildResearchDataCatalogSchema(),
+              {
+                "@type": "BreadcrumbList",
+                "@id": `${SITE_URL}/research#breadcrumb`,
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: "피아노 통계",
+                    item: `${SITE_URL}/research`,
+                  },
+                ],
+              },
+            ],
+          }),
+        },
+      ],
+    };
+  },
   component: ResearchHub,
 });
 
@@ -127,9 +141,9 @@ function ResearchHub() {
                 <span className="text-xs tracking-[0.14em] text-brass uppercase">
                   {item.evidence}
                 </span>
-                <h2 className="mt-5 font-serif-kr text-2xl font-semibold transition-colors group-hover:text-brass">
+                <h3 className="mt-5 font-serif-kr text-2xl font-semibold transition-colors group-hover:text-brass">
                   {item.name}
-                </h2>
+                </h3>
                 <p className="mt-4 text-sm leading-relaxed text-mute">{item.description}</p>
                 <span className="mt-auto pt-8 text-sm font-medium text-ivory">
                   {item.name} 자세히 보기 →
@@ -172,6 +186,35 @@ function ResearchHub() {
             </ol>
           </div>
         </section>
+
+        <ResearchEditorialRecord
+          id="research-editorial-record"
+          title="자료실 발행·검증 정보"
+          publisherName="이화 피아노 과외"
+          publisherHref="/"
+          sources={[
+            {
+              name: "교육부·국가데이터처 2025년 초중고 사교육비 조사",
+              href: NATIONAL_PDF_SOURCE.sourcePage,
+              dateLabel: "원자료 공표일",
+              dateValue: NATIONAL_MUSIC_EDUCATION.sourcePublishedAt,
+            },
+            {
+              name: "서울특별시교육청 2026년 1월 1일 기준 학원·교습소 현황",
+              href: "https://www.data.go.kr/data/3044370/fileData.do",
+              dateLabel: "원자료 기준일",
+              dateValue: SEOUL_PIANO_FEES.referenceDate,
+            },
+          ]}
+          referenceLabel="2025년 조사·2026-01-01 행정자료"
+          datasetPublishedAt="2026-07-23"
+          modifiedAt="2026-07-23"
+          version="1.0.0"
+          verification="원자료 12개 SHA-256, CSV 행 수, 통계 합계, 공개 필드와 링크 상태 검사"
+          licenseName="데이터셋별 원자료 이용조건과 재사용 기준"
+          licenseHref="/research/methodology#reuse-policy"
+          reuseNote="국가통계와 행정자료의 이용조건을 각각 확인하고, 가공본을 인용할 때는 데이터셋명·버전·정식 URL을 함께 표시합니다."
+        />
       </main>
     </SubPageShell>
   );

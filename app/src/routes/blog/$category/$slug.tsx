@@ -1,12 +1,14 @@
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 import { SubPageShell } from "../../../components/site/chrome";
+import { ResearchReferencePanel } from "../../../components/site/research-reference-panel";
 import { resolvePostRedirect } from "../../../lib/api/post-redirects.functions";
 import { getPostBySlug, listRelatedPosts, type PostRow } from "../../../lib/api/posts.functions";
 import { getMarkdownPlainText } from "../../../lib/blog-quality";
 import { SITE, SITE_URL } from "../../../lib/content";
 import { extractFaq } from "../../../lib/faq";
 import { renderMarkdown } from "../../../lib/markdown";
+import { getArticleResearchReferenceIds, RESEARCH_REFERENCES } from "../../../lib/research-links";
 import { extractExternalLinks, toCanonicalUrl, toIsoDate } from "../../../lib/seo";
 import { getServicePageForPost } from "../../../lib/seo-pages";
 import { safeJsonLd } from "../../../lib/structured-data";
@@ -53,7 +55,13 @@ export const Route = createFileRoute("/blog/$category/$slug")({
     const image = post.cover_image ? toCanonicalUrl(post.cover_image) : FALLBACK_OG;
     const imageAlt = post.cover_alt || post.title;
     const faqItems = extractFaq(post.body);
-    const citations = extractExternalLinks(post.body);
+    const researchReferenceIds = getArticleResearchReferenceIds(post.slug);
+    const citations = [
+      ...new Set([
+        ...extractExternalLinks(post.body),
+        ...researchReferenceIds.map((id) => `${SITE_URL}${RESEARCH_REFERENCES[id].href}`),
+      ]),
+    ];
     const wordCount = getMarkdownPlainText(post.body).split(/\s+/).filter(Boolean).length;
     const datePublished = toIsoDate(post.published_at);
     const rawModified = toIsoDate(post.updated_at);
@@ -184,6 +192,7 @@ function PostPage() {
 
   const html = renderMarkdown(post.body);
   const servicePage = getServicePageForPost(post.keyword_cluster, post.slug);
+  const researchReferenceIds = getArticleResearchReferenceIds(post.slug);
 
   return (
     <SubPageShell>
@@ -236,6 +245,14 @@ function PostPage() {
         )}
 
         <div className="prose-ewha mt-12" dangerouslySetInnerHTML={{ __html: html }} />
+
+        {researchReferenceIds.length > 0 && (
+          <ResearchReferencePanel
+            references={researchReferenceIds}
+            heading="이 글의 가격과 지역 판단에 참고할 행정 데이터"
+            className="mt-14"
+          />
+        )}
 
         {servicePage && (
           <section

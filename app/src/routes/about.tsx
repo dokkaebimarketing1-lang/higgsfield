@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { SubPageShell } from "../components/site/chrome";
+import { ResearchReferencePanel } from "../components/site/research-reference-panel";
 import { SITE_URL } from "../lib/content";
+import { ABOUT_RESEARCH_REFERENCE_IDS } from "../lib/research-links";
 import { buildPublicPageHead, PUBLIC_PAGE_BY_PATH } from "../lib/seo-pages";
 
 const aboutPage = PUBLIC_PAGE_BY_PATH.get("/about")!;
@@ -207,6 +209,14 @@ function AboutPage() {
               피아노 레슨비와 포함 항목 확인
             </a>
           </p>
+        </section>
+
+        <section className="mt-24" aria-label="데이터 공개 원칙">
+          <ResearchReferencePanel
+            references={ABOUT_RESEARCH_REFERENCE_IDS}
+            heading="강사 소개와 데이터 근거를 분리해 공개합니다"
+            description="강사 경력과 수업 안내에 사용한 배경 자료를 독립적으로 검토할 수 있도록 연구 허브와 방법론을 연결합니다. 이 자료는 강사 경력, 개인 레슨의 품질, 학습 성과를 증명하는 근거가 아닙니다."
+          />
         </section>
 
         <section className="mt-24" aria-labelledby="about-faq-heading">

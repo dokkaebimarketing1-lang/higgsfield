@@ -6,7 +6,11 @@ import {
   RESEARCH_SOURCE_MANIFEST,
   SEOUL_ADMINISTRATIVE_SOURCES,
   SEOUL_PIANO_FEES,
+  RESEARCH_CATALOG_ID,
+  buildNationalDatasetPageSchema,
   buildNationalMusicDatasetSchema,
+  buildResearchDataCatalogSchema,
+  buildSeoulDatasetPageSchema,
   buildSeoulPianoFeesDatasetSchema,
 } from "../src/lib/research-data";
 
@@ -91,6 +95,7 @@ describe("research datasets", () => {
   test("emits Google-compatible Dataset distributions", () => {
     const national = buildNationalMusicDatasetSchema();
     const seoul = buildSeoulPianoFeesDatasetSchema();
+    const catalog = buildResearchDataCatalogSchema();
 
     for (const schema of [national, seoul]) {
       expect(schema["@type"]).toBe("Dataset");
@@ -100,12 +105,107 @@ describe("research datasets", () => {
       expect(schema.distribution.length).toBeGreaterThan(0);
       expect(schema.isAccessibleForFree).toBe(true);
       expect(schema.keywords.length).toBeGreaterThan(0);
-      expect(schema.version.length).toBeGreaterThan(0);
+      expect(schema.version).toBe("1.0.0");
+      expect(schema.creator).toEqual({ "@id": "https://ewha-piano.higgsfield.app/#business" });
+      expect(schema.publisher).toEqual({ "@id": "https://ewha-piano.higgsfield.app/#business" });
+      expect(schema.includedInDataCatalog).toEqual({ "@id": RESEARCH_CATALOG_ID });
+      expect(schema.mainEntityOfPage["@id"]).toEndWith("#webpage");
+      expect(schema.creditText).toContain(schema.url);
+      expect(schema.publishingPrinciples).toBe(
+        "https://ewha-piano.higgsfield.app/research/methodology",
+      );
+      expect(schema.usageInfo).toBe(
+        "https://ewha-piano.higgsfield.app/research/methodology#reuse-policy",
+      );
+      expect(new Date(schema.datePublished).getTime()).toBeLessThanOrEqual(
+        new Date(schema.dateModified).getTime(),
+      );
       for (const distribution of schema.distribution) {
         expect(distribution["@type"]).toBe("DataDownload");
         expect(distribution.contentUrl.startsWith("https://")).toBe(true);
         expect(distribution.encodingFormat.length).toBeGreaterThan(0);
+        expect(distribution.contentSize).toMatch(/^[\d,]+ B$/);
+        expect(distribution.sha256).toMatch(/^[a-f0-9]{64}$/);
       }
     }
+
+    expect(national.distribution).toHaveLength(1);
+    expect(national.distribution[0].contentUrl).toEndWith(
+      "/data/research/national-music-private-education-2025.csv",
+    );
+    expect(JSON.stringify(national.distribution)).not.toContain(".pdf");
+    expect(national.isBasedOn["@type"]).toBe("Report");
+    expect(national.isBasedOn.license).toBe(NATIONAL_MUSIC_EDUCATION.source.sourcePage);
+    expect(national.citation).toHaveLength(2);
+
+    expect(seoul.distribution).toHaveLength(2);
+    expect(JSON.stringify(seoul.distribution)).not.toContain("source-manifest");
+    expect(seoul.isBasedOn["@type"]).toBe("Dataset");
+    expect(seoul.isBasedOn.license).toBe("https://www.data.go.kr/data/3044370/fileData.do");
+    expect(seoul.citation).toHaveLength(1);
+
+    expect(catalog["@type"]).toBe("DataCatalog");
+    expect(catalog["@id"]).toBe(RESEARCH_CATALOG_ID);
+    expect(catalog.dataset).toEqual([
+      {
+        "@id":
+          "https://ewha-piano.higgsfield.app/research/2025-music-private-education-statistics#dataset",
+      },
+      {
+        "@id": "https://ewha-piano.higgsfield.app/research/2026-seoul-piano-academy-fees#dataset",
+      },
+    ]);
+
+    for (const pageSchema of [buildNationalDatasetPageSchema(), buildSeoulDatasetPageSchema()]) {
+      expect(pageSchema["@type"]).toBe("WebPage");
+      expect(pageSchema.author).toEqual({
+        "@id": "https://ewha-piano.higgsfield.app/#business",
+      });
+      expect(pageSchema.mainEntity["@id"]).toEndWith("#dataset");
+    }
+  });
+
+  test("keeps visible research authorship, citations, and table semantics in source", () => {
+    const nationalRoute = readFileSync(
+      new URL(
+        "../src/routes/research/2025-music-private-education-statistics.tsx",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    const seoulRoute = readFileSync(
+      new URL("../src/routes/research/2026-seoul-piano-academy-fees.tsx", import.meta.url),
+      "utf8",
+    );
+    const methodologyRoute = readFileSync(
+      new URL("../src/routes/research/methodology.tsx", import.meta.url),
+      "utf8",
+    );
+    const researchHubRoute = readFileSync(
+      new URL("../src/routes/research/index.tsx", import.meta.url),
+      "utf8",
+    );
+    const researchUi = readFileSync(
+      new URL("../src/components/site/research-ui.tsx", import.meta.url),
+      "utf8",
+    );
+
+    expect(researchUi).toContain("data-research-authorship");
+    expect(researchUi).toContain("data-research-citation");
+    expect(researchUi).toContain("data-research-source");
+    expect(researchUi).toContain("<cite");
+    for (const route of [nationalRoute, seoulRoute, methodologyRoute]) {
+      expect(route).toContain("<caption");
+      expect(route).toContain('scope="col"');
+      expect(route).toContain('scope="row"');
+    }
+    expect(nationalRoute).toContain("NATIONAL_DATASET_CITATION");
+    expect(seoulRoute).toContain("SEOUL_DATASET_CITATION");
+    expect(researchHubRoute).toContain("NATIONAL_PDF_SOURCE.sourcePage");
+    expect(researchHubRoute).toContain("https://www.data.go.kr/data/3044370/fileData.do");
+    expect(researchHubRoute).toContain('dateLabel: "원자료 공표일"');
+    expect(researchHubRoute).toContain('dateLabel: "원자료 기준일"');
+    expect(methodologyRoute).toContain('id="reuse-policy"');
+    expect(methodologyRoute).toContain('<time dateTime="2026-07-23"');
   });
 });

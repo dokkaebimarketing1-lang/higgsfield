@@ -1,0 +1,339 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "seoul-piano-registered-fees-2026-01-01",
+  "datasetVersion": "1.0.0",
+  "publishedAt": "2026-07-23",
+  "tables": [
+    {
+      "name": "piano_fee_records",
+      "description": "직접 식별정보와 원자료 위치를 제외한 피아노 후보 교습상품 단위 가공표",
+      "csvPath": "/data/research/seoul-piano-fee-records-2026-01-01.csv",
+      "fieldCount": 14,
+      "fields": [
+        {
+          "name": "facility_type",
+          "description": "학원 또는 교습소 구분",
+          "dataType": "string",
+          "unit": null,
+          "nullable": false,
+          "derivation": "공식 공개자료의 파일 유형을 academy 또는 teaching_center로 표준화한다.",
+          "publicRestriction": "시설명과 내부 시설 식별자는 공개하지 않는다."
+        },
+        {
+          "name": "district",
+          "description": "서울특별시 자치구",
+          "dataType": "string",
+          "unit": null,
+          "nullable": true,
+          "derivation": "공식 공개자료에서 자치구 수준만 추출하며 확인할 수 없으면 빈 값으로 둔다.",
+          "publicRestriction": "정확한 주소는 공개하지 않는다."
+        },
+        {
+          "name": "realm",
+          "description": "공식 자료의 분야 구분",
+          "dataType": "string",
+          "unit": null,
+          "nullable": true,
+          "derivation": "공식 공개자료의 분야 구분을 공백 정규화 후 기록한다.",
+          "publicRestriction": "직접 식별정보는 포함하지 않는다."
+        },
+        {
+          "name": "series",
+          "description": "공식 자료의 교습 계열",
+          "dataType": "string",
+          "unit": null,
+          "nullable": true,
+          "derivation": "공식 공개자료의 교습 계열을 공백 정규화 후 기록한다.",
+          "publicRestriction": "직접 식별정보는 포함하지 않는다."
+        },
+        {
+          "name": "course",
+          "description": "공식 자료의 교습 과정",
+          "dataType": "string",
+          "unit": null,
+          "nullable": true,
+          "derivation": "공식 공개자료의 교습 과정을 공백 정규화 후 기록한다.",
+          "publicRestriction": "직접 식별정보는 포함하지 않는다."
+        },
+        {
+          "name": "subject",
+          "description": "피아노 후보로 분류된 교습 과목 또는 반",
+          "dataType": "string",
+          "unit": null,
+          "nullable": false,
+          "derivation": "공식 공개자료의 교습 과목(반)을 공백 정규화 후 기록한다.",
+          "publicRestriction": "개인 또는 시설을 식별하는 필드는 함께 공개하지 않는다."
+        },
+        {
+          "name": "match_basis",
+          "description": "피아노 후보 포함 근거",
+          "dataType": "string",
+          "unit": null,
+          "nullable": false,
+          "derivation": "과목·과정·계열의 피아노 명시 또는 음악 맥락과 피아노 시설명·교육과정 규칙을 적용한다.",
+          "publicRestriction": "필터 규칙에 따른 후보 분류이며 모든 피아노 교습상품을 완전하게 포괄하지 않는다."
+        },
+        {
+          "name": "registered_period",
+          "description": "공식 자료에 등록된 교습 기간 표현",
+          "dataType": "string",
+          "unit": null,
+          "nullable": true,
+          "derivation": "공식 공개자료의 교습 기간을 공백 정규화 후 기록한다.",
+          "publicRestriction": "표현 형식이 일정하지 않아 임의로 월 단위 환산하지 않는다."
+        },
+        {
+          "name": "total_minutes",
+          "description": "등록 교습시간 합계",
+          "dataType": "integer",
+          "unit": "minute",
+          "nullable": true,
+          "derivation": "공식 공개자료의 총교습시간(분)을 숫자로 변환한다.",
+          "publicRestriction": "누락 또는 숫자 변환 불가 값은 빈 값으로 공개한다."
+        },
+        {
+          "name": "tuition_fee_krw",
+          "description": "등록 교습비",
+          "dataType": "integer",
+          "unit": "KRW",
+          "nullable": true,
+          "derivation": "공식 공개자료의 교습비에서 0보다 큰 숫자만 기록한다.",
+          "publicRestriction": "실제 결제액이나 시장 평균이 아니며 누락·0 값은 빈 값으로 공개한다."
+        },
+        {
+          "name": "total_fee_krw",
+          "description": "등록 총교습비",
+          "dataType": "integer",
+          "unit": "KRW",
+          "nullable": true,
+          "derivation": "공식 공개자료의 총교습비에서 0보다 큰 숫자만 기록한다.",
+          "publicRestriction": "실제 결제액이 아니며 누락·0 값은 빈 값으로 공개한다."
+        },
+        {
+          "name": "hourly_tuition_krw",
+          "description": "등록 교습비의 시간당 환산값",
+          "dataType": "integer",
+          "unit": "KRW/hour",
+          "nullable": true,
+          "derivation": "tuition_fee_krw ÷ (total_minutes ÷ 60), 원 단위 반올림",
+          "publicRestriction": "교습비와 시간이 모두 유효할 때만 제공하며 실제 시간당 결제액을 뜻하지 않는다."
+        },
+        {
+          "name": "explicit_one_month",
+          "description": "교습 기간이 명시적으로 1개월인지 여부",
+          "dataType": "boolean",
+          "unit": null,
+          "nullable": false,
+          "derivation": "registered_period가 '1개월' 또는 '1개월 0일'과 정확히 일치하면 true다.",
+          "publicRestriction": "다른 기간 표현을 1개월로 추정하지 않는다."
+        },
+        {
+          "name": "qc_hourly_extreme",
+          "description": "시간당 환산값의 검토 필요 표시",
+          "dataType": "boolean",
+          "unit": null,
+          "nullable": false,
+          "derivation": "유효 시간당 환산값의 하위 1% 이하 또는 상위 1% 이상이면 true다.",
+          "publicRestriction": "오류 판정이 아니라 극단값 검토 표식이다."
+        }
+      ]
+    },
+    {
+      "name": "piano_fee_summary",
+      "description": "서울 전체 및 자치구별 학원·교습소 등록 교습비 요약표",
+      "csvPath": "/data/research/seoul-piano-fee-summary-2026-01-01.csv",
+      "fieldCount": 21,
+      "fields": [
+        {
+          "name": "group_level",
+          "description": "집계 수준",
+          "dataType": "string",
+          "unit": null,
+          "nullable": false,
+          "derivation": "서울 전체는 seoul, 자치구별 집계는 district로 기록한다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "area",
+          "description": "집계 지역",
+          "dataType": "string",
+          "unit": null,
+          "nullable": false,
+          "derivation": "서울 전체 또는 자치구 이름을 기록한다.",
+          "publicRestriction": "자치구보다 세밀한 위치는 공개하지 않는다."
+        },
+        {
+          "name": "facility_type",
+          "description": "학원 또는 교습소 구분",
+          "dataType": "string",
+          "unit": null,
+          "nullable": false,
+          "derivation": "academy 또는 teaching_center로 구분한다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "candidate_records",
+          "description": "집계에 포함된 피아노 후보 교습상품 수",
+          "dataType": "integer",
+          "unit": "record",
+          "nullable": false,
+          "derivation": "그룹별 공개 후보 행 수를 센다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "facility_count",
+          "description": "집계에 포함된 고유 시설 수",
+          "dataType": "integer",
+          "unit": "facility",
+          "nullable": false,
+          "derivation": "비공개 내부 시설 식별자의 고유 개수를 센다.",
+          "publicRestriction": "내부 시설 식별자는 공개하지 않고 집계값만 제공한다."
+        },
+        {
+          "name": "valid_tuition_records",
+          "description": "유효 등록 교습비가 있는 행 수",
+          "dataType": "integer",
+          "unit": "record",
+          "nullable": false,
+          "derivation": "tuition_fee_krw가 있는 행을 센다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "tuition_coverage_pct",
+          "description": "등록 교습비 유효값 비율",
+          "dataType": "number",
+          "unit": "percent",
+          "nullable": false,
+          "derivation": "valid_tuition_records ÷ candidate_records × 100, 소수 둘째 자리 반올림",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "registered_tuition_median_krw",
+          "description": "등록 교습비 중앙값",
+          "dataType": "integer",
+          "unit": "KRW",
+          "nullable": true,
+          "derivation": "유효 등록 교습비의 50백분위수를 원 단위 반올림한다.",
+          "publicRestriction": "유효 표본이 5건 미만이면 공개하지 않는다."
+        },
+        {
+          "name": "registered_tuition_q1_krw",
+          "description": "등록 교습비 제1사분위수",
+          "dataType": "integer",
+          "unit": "KRW",
+          "nullable": true,
+          "derivation": "유효 등록 교습비의 25백분위수를 원 단위 반올림한다.",
+          "publicRestriction": "유효 표본이 5건 미만이면 공개하지 않는다."
+        },
+        {
+          "name": "registered_tuition_q3_krw",
+          "description": "등록 교습비 제3사분위수",
+          "dataType": "integer",
+          "unit": "KRW",
+          "nullable": true,
+          "derivation": "유효 등록 교습비의 75백분위수를 원 단위 반올림한다.",
+          "publicRestriction": "유효 표본이 5건 미만이면 공개하지 않는다."
+        },
+        {
+          "name": "registered_tuition_note",
+          "description": "등록 교습비 통계 공개 상태",
+          "dataType": "string",
+          "unit": null,
+          "nullable": true,
+          "derivation": "n<5 비공개 또는 n=5~9 표본 적음 안내를 기록하고 그 밖에는 빈 값으로 둔다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "valid_hourly_records",
+          "description": "유효 시간당 환산값이 있는 행 수",
+          "dataType": "integer",
+          "unit": "record",
+          "nullable": false,
+          "derivation": "hourly_tuition_krw가 있는 행을 센다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "hourly_tuition_median_krw",
+          "description": "시간당 환산 등록 교습비 중앙값",
+          "dataType": "integer",
+          "unit": "KRW/hour",
+          "nullable": true,
+          "derivation": "유효 시간당 환산값의 50백분위수를 원 단위 반올림한다.",
+          "publicRestriction": "유효 표본이 5건 미만이면 공개하지 않는다."
+        },
+        {
+          "name": "hourly_tuition_q1_krw",
+          "description": "시간당 환산 등록 교습비 제1사분위수",
+          "dataType": "integer",
+          "unit": "KRW/hour",
+          "nullable": true,
+          "derivation": "유효 시간당 환산값의 25백분위수를 원 단위 반올림한다.",
+          "publicRestriction": "유효 표본이 5건 미만이면 공개하지 않는다."
+        },
+        {
+          "name": "hourly_tuition_q3_krw",
+          "description": "시간당 환산 등록 교습비 제3사분위수",
+          "dataType": "integer",
+          "unit": "KRW/hour",
+          "nullable": true,
+          "derivation": "유효 시간당 환산값의 75백분위수를 원 단위 반올림한다.",
+          "publicRestriction": "유효 표본이 5건 미만이면 공개하지 않는다."
+        },
+        {
+          "name": "hourly_tuition_note",
+          "description": "시간당 환산 통계 공개 상태",
+          "dataType": "string",
+          "unit": null,
+          "nullable": true,
+          "derivation": "n<5 비공개 또는 n=5~9 표본 적음 안내를 기록하고 그 밖에는 빈 값으로 둔다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "explicit_one_month_records",
+          "description": "명시적 1개월 등록 교습비 행 수",
+          "dataType": "integer",
+          "unit": "record",
+          "nullable": false,
+          "derivation": "explicit_one_month가 true이고 교습비가 유효한 행을 센다.",
+          "publicRestriction": "없음"
+        },
+        {
+          "name": "explicit_one_month_median_krw",
+          "description": "명시적 1개월 등록 교습비 중앙값",
+          "dataType": "integer",
+          "unit": "KRW",
+          "nullable": true,
+          "derivation": "명시적 1개월 교습비의 50백분위수를 원 단위 반올림한다.",
+          "publicRestriction": "유효 표본이 5건 미만이면 공개하지 않는다."
+        },
+        {
+          "name": "explicit_one_month_q1_krw",
+          "description": "명시적 1개월 등록 교습비 제1사분위수",
+          "dataType": "integer",
+          "unit": "KRW",
+          "nullable": true,
+          "derivation": "명시적 1개월 교습비의 25백분위수를 원 단위 반올림한다.",
+          "publicRestriction": "유효 표본이 5건 미만이면 공개하지 않는다."
+        },
+        {
+          "name": "explicit_one_month_q3_krw",
+          "description": "명시적 1개월 등록 교습비 제3사분위수",
+          "dataType": "integer",
+          "unit": "KRW",
+          "nullable": true,
+          "derivation": "명시적 1개월 교습비의 75백분위수를 원 단위 반올림한다.",
+          "publicRestriction": "유효 표본이 5건 미만이면 공개하지 않는다."
+        },
+        {
+          "name": "explicit_one_month_note",
+          "description": "명시적 1개월 통계 공개 상태",
+          "dataType": "string",
+          "unit": null,
+          "nullable": true,
+          "derivation": "n<5 비공개 또는 n=5~9 표본 적음 안내를 기록하고 그 밖에는 빈 값으로 둔다.",
+          "publicRestriction": "없음"
+        }
+      ]
+    }
+  ]
+}

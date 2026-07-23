@@ -6,9 +6,11 @@ import {
   EvidenceBadge,
   LimitationNotice,
   ResearchBreadcrumb,
+  ResearchEditorialRecord,
 } from "../../components/site/research-ui";
 import { SITE, SITE_URL } from "../../lib/content";
 import {
+  NATIONAL_PDF_SOURCE,
   RESEARCH_DOWNLOADS,
   RESEARCH_SOURCE_MANIFEST,
   SEOUL_PIANO_FEES,
@@ -20,52 +22,59 @@ import { safeJsonLd } from "../../lib/structured-data";
 const page = PUBLIC_PAGE_BY_PATH.get("/research/methodology")!;
 
 export const Route = createFileRoute("/research/methodology")({
-  head: () => ({
-    ...buildPublicPageHead(page),
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: safeJsonLd({
-          "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "WebPage",
-              "@id": `${SITE_URL}${page.path}#webpage`,
-              name: page.title,
-              description: page.description,
-              url: `${SITE_URL}${page.path}`,
-              dateModified: SEOUL_PIANO_FEES.retrievedAt,
-              inLanguage: "ko",
-              author: { "@type": "Organization", name: SITE.brand, url: SITE_URL },
-              isPartOf: { "@id": `${SITE_URL}/#website` },
-              about: [
-                { "@id": `${SITE_URL}/research/2025-music-private-education-statistics#dataset` },
-                { "@id": `${SITE_URL}/research/2026-seoul-piano-academy-fees#dataset` },
-              ],
-            },
-            {
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
-                {
-                  "@type": "ListItem",
-                  position: 2,
-                  name: "피아노 통계",
-                  item: `${SITE_URL}/research`,
-                },
-                {
-                  "@type": "ListItem",
-                  position: 3,
-                  name: "피아노 데이터 방법론",
-                  item: `${SITE_URL}${page.path}`,
-                },
-              ],
-            },
-          ],
-        }),
-      },
-    ],
-  }),
+  head: () => {
+    const publicHead = buildPublicPageHead(page);
+    return {
+      ...publicHead,
+      meta: [...publicHead.meta, { name: "author", content: SITE.brand }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: safeJsonLd({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "WebPage",
+                "@id": `${SITE_URL}${page.path}#webpage`,
+                name: page.title,
+                description: page.description,
+                url: `${SITE_URL}${page.path}`,
+                datePublished: SEOUL_PIANO_FEES.datasetPublishedAt ?? SEOUL_PIANO_FEES.retrievedAt,
+                dateModified: SEOUL_PIANO_FEES.modifiedAt ?? SEOUL_PIANO_FEES.retrievedAt,
+                inLanguage: "ko",
+                author: { "@id": `${SITE_URL}/#business` },
+                publisher: { "@id": `${SITE_URL}/#business` },
+                isPartOf: { "@id": `${SITE_URL}/#website` },
+                about: [
+                  { "@id": `${SITE_URL}/research/2025-music-private-education-statistics#dataset` },
+                  { "@id": `${SITE_URL}/research/2026-seoul-piano-academy-fees#dataset` },
+                ],
+              },
+              {
+                "@type": "BreadcrumbList",
+                "@id": `${SITE_URL}${page.path}#breadcrumb`,
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: "피아노 통계",
+                    item: `${SITE_URL}/research`,
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 3,
+                    name: "피아노 데이터 방법론",
+                    item: `${SITE_URL}${page.path}`,
+                  },
+                ],
+              },
+            ],
+          }),
+        },
+      ],
+    };
+  },
   component: ResearchMethodologyPage,
 });
 
@@ -143,11 +152,20 @@ function ResearchMethodologyPage() {
           </h2>
           <div className="mt-8 overflow-x-auto border border-line">
             <table className="w-full min-w-[720px] border-collapse text-left">
+              <caption className="sr-only">
+                서울 피아노 교습비 원자료 필드와 공개 가공 CSV 필드의 처리 원칙
+              </caption>
               <thead className="bg-ebony-2 text-sm text-mute">
                 <tr>
-                  <th className="px-5 py-4 font-medium">원자료</th>
-                  <th className="px-5 py-4 font-medium">가공 CSV</th>
-                  <th className="px-5 py-4 font-medium">처리 원칙</th>
+                  <th scope="col" className="px-5 py-4 font-medium">
+                    원자료
+                  </th>
+                  <th scope="col" className="px-5 py-4 font-medium">
+                    가공 CSV
+                  </th>
+                  <th scope="col" className="px-5 py-4 font-medium">
+                    처리 원칙
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -169,7 +187,9 @@ function ResearchMethodologyPage() {
                   ["파생값", "hourly_tuition_krw", "교습비와 총교습시간이 모두 양수일 때만 계산"],
                 ].map(([raw, output, rule]) => (
                   <tr key={raw} className="border-t border-line">
-                    <th className="px-5 py-4 font-medium text-ivory">{raw}</th>
+                    <th scope="row" className="px-5 py-4 font-medium text-ivory">
+                      {raw}
+                    </th>
                     <td className="px-5 py-4 font-mono text-xs text-mute">{output}</td>
                     <td className="px-5 py-4 text-sm leading-relaxed text-mute">{rule}</td>
                   </tr>
@@ -221,6 +241,54 @@ function ResearchMethodologyPage() {
           </ul>
         </section>
 
+        <section id="reuse-policy" className="mt-20" aria-labelledby="reuse-policy-title">
+          <h2 id="reuse-policy-title" className="font-serif-kr text-3xl font-bold">
+            이용조건과 인용 기준
+          </h2>
+          <p className="mt-4 max-w-[74ch] leading-relaxed text-mute">
+            원자료 권리와 본 사이트의 가공·편집 책임을 섞지 않습니다. 아래 안내는 원자료의 공식
+            이용조건을 대신하지 않으며, 재사용 시 각 공식 페이지의 최신 조건을 먼저 확인해야 합니다.
+          </p>
+          <dl className="mt-8 grid gap-5 md:grid-cols-3">
+            <div className="border border-line bg-ebony-2 p-6">
+              <dt className="font-serif-kr text-lg font-semibold text-ivory">국가통계 원자료</dt>
+              <dd className="mt-3 text-sm leading-relaxed text-mute">
+                교육부 원문은{" "}
+                <a
+                  href={NATIONAL_PDF_SOURCE.sourcePage}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-brass underline underline-offset-4"
+                >
+                  공식 게시 페이지의 이용조건
+                </a>
+                을 확인하고 출처를 표시합니다.
+              </dd>
+            </div>
+            <div className="border border-line bg-ebony-2 p-6">
+              <dt className="font-serif-kr text-lg font-semibold text-ivory">서울 행정자료</dt>
+              <dd className="mt-3 text-sm leading-relaxed text-mute">
+                <a
+                  href="https://www.data.go.kr/data/3044370/fileData.do"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-brass underline underline-offset-4"
+                >
+                  공공데이터포털의 이용허락범위
+                </a>
+                와 서울특별시교육청 원문 안내를 확인합니다.
+              </dd>
+            </div>
+            <div className="border border-line bg-ebony-2 p-6">
+              <dt className="font-serif-kr text-lg font-semibold text-ivory">가공 CSV</dt>
+              <dd className="mt-3 text-sm leading-relaxed text-mute">
+                원자료 기관, 데이터셋명, 버전, 정식 URL을 표시하고 개인·시설 식별에 사용하지 마세요.
+                사실 데이터 자체에 별도 권리를 부여하거나 보증하는 문구가 아닙니다.
+              </dd>
+            </div>
+          </dl>
+        </section>
+
         <section className="mt-20" aria-labelledby="reproduction-title">
           <h2 id="reproduction-title" className="font-serif-kr text-3xl font-bold">
             재생성 방법
@@ -245,8 +313,38 @@ function ResearchMethodologyPage() {
               description="파이프라인·필터 버전, 포함·제외 건수, 유형별 표본 규모를 확인합니다."
               meta="JSON"
             />
+            <DownloadCard
+              href={RESEARCH_DOWNLOADS.nationalSchema}
+              title="국가통계 CSV 데이터 사전"
+              description="7개 공개 필드의 자료형, 단위, 원자료 대응과 null 규칙을 확인합니다."
+              meta="JSON"
+            />
+            <DownloadCard
+              href={RESEARCH_DOWNLOADS.seoulSchema}
+              title="서울 CSV 데이터 사전"
+              description="레코드 14개·요약 21개 필드의 파생식과 공개 제한 규칙을 확인합니다."
+              meta="JSON"
+            />
           </div>
         </section>
+
+        <ResearchEditorialRecord
+          id="methodology-editorial-record"
+          title="방법론 작성·검증 정보"
+          publisherName={SITE.brand}
+          publisherHref="/"
+          sourceName="원자료 12개 출처·SHA-256 매니페스트"
+          sourceHref={RESEARCH_DOWNLOADS.sourceManifest}
+          referenceLabel="2025년 조사·2026-01-01 행정자료"
+          sourcePublishedAt="2026-03-12"
+          datasetPublishedAt={SEOUL_PIANO_FEES.datasetPublishedAt ?? SEOUL_PIANO_FEES.retrievedAt}
+          modifiedAt={SEOUL_PIANO_FEES.modifiedAt ?? SEOUL_PIANO_FEES.retrievedAt}
+          version={SEOUL_PIANO_FEES.datasetVersion ?? SEOUL_PIANO_FEES.pipelineVersion}
+          verification="필터·중복·표본 공개·직접 식별정보 제거·행 수·해시·스키마를 자동 검사"
+          licenseName="데이터셋별 원자료 이용조건과 재사용 기준"
+          licenseHref="/research/methodology#reuse-policy"
+          reuseNote="원자료별 공식 이용조건을 우선하고 가공본 인용 시 데이터셋명·버전·정식 URL을 표시합니다."
+        />
 
         <section
           id="change-log"
@@ -258,7 +356,9 @@ function ResearchMethodologyPage() {
             수정 이력
           </h2>
           <div className="mt-8 grid gap-4 md:grid-cols-[160px_1fr]">
-            <div className="text-sm text-faint">2026-07-23</div>
+            <time dateTime="2026-07-23" className="text-sm text-faint">
+              2026-07-23
+            </time>
             <div className="border-l border-line pl-5">
               <h3 className="font-serif-kr text-xl font-semibold text-ivory">
                 v{SEOUL_PIANO_FEES.pipelineVersion} 최초 공개
