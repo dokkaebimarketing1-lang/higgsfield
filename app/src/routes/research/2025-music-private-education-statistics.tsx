@@ -102,7 +102,7 @@ export const Route = createFileRoute("/research/2025-music-private-education-sta
 function NationalMusicStatisticsPage() {
   return (
     <SubPageShell>
-      <main className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
+      <div className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
         <ResearchBreadcrumb
           items={[{ label: "피아노 통계", href: "/research" }, { label: "2025 음악 사교육비" }]}
         />
@@ -315,7 +315,7 @@ function NationalMusicStatisticsPage() {
           title="음악 사교육비 통계 자주 묻는 질문"
           items={nationalFaq}
         />
-      </main>
+      </div>
     </SubPageShell>
   );
 }

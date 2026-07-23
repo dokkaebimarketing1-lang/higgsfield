@@ -65,7 +65,81 @@ const requiredResearchPaths = [
   "/research",
   "/research/2025-music-private-education-statistics",
   "/research/2026-seoul-piano-academy-fees",
+  "/research/piano-search-demand-report-2026",
   "/research/methodology",
+  "/research/changelog",
+] as const;
+
+const resourceDownloads = {
+  levelRoadmapCsv: "/data/resources/piano-level-roadmap.csv",
+  practicePlannerTemplateCsv: "/data/resources/piano-practice-planner-template.csv",
+} as const;
+
+const searchDemandExpectedHeader = [
+  "keyword",
+  "total_search_volume",
+  "naver_total",
+  "naver_mobile",
+  "naver_pc",
+  "google_monthly_average",
+  "naver_competition",
+  "google_competition",
+  "google_competition_index",
+  "google_bid_low_krw",
+  "google_bid_high_krw",
+  "google_search_volume_2025_07",
+  "google_search_volume_2025_08",
+  "google_search_volume_2025_09",
+  "google_search_volume_2025_10",
+  "google_search_volume_2025_11",
+  "google_search_volume_2025_12",
+  "google_search_volume_2026_01",
+  "google_search_volume_2026_02",
+  "google_search_volume_2026_03",
+  "google_search_volume_2026_04",
+  "google_search_volume_2026_05",
+  "google_search_volume_2026_06",
+  "source_coverage",
+  "in_lesson_segment",
+  "in_local_segment",
+  "in_audience_segment",
+  "in_jobs_segment",
+  "in_parent_segment",
+  "in_naver_discovered_segment",
+] as const;
+
+const searchDemandSummaryExpectedHeader = [
+  "sheet_name",
+  "segment_id",
+  "data_rows",
+  "column_count",
+  "total_search_volume_sum",
+  "naver_search_volume_sum",
+  "google_monthly_average_sum",
+  "overlap_policy",
+  "notes",
+] as const;
+
+const levelRoadmapExpectedHeader = [
+  "단계",
+  "단계명",
+  "현재 수준 확인 기준",
+  "연주 기술",
+  "이론·읽기",
+  "예시 레퍼토리",
+  "다음 단계 준비 체크",
+  "해석 한계",
+] as const;
+
+const practicePlannerExpectedHeader = [
+  "요일",
+  "오늘의 목표",
+  "몸풀기(분)",
+  "테크닉(분)",
+  "곡 연습(분)",
+  "초견·이론(분)",
+  "합계(분)",
+  "연습 메모",
 ] as const;
 
 const serviceHtmlPages: readonly HtmlPageExpectation[] = Object.values(SERVICE_PAGES).map(
@@ -139,6 +213,82 @@ const coreHtmlPages: readonly HtmlPageExpectation[] = [
     requiredInternalPaths: ["/about"],
     requiredText: ["피아노 정보 허브 편집 기준"],
   },
+  {
+    path: "/tools",
+    h1: "피아노 학습 도구",
+    schemaTypes: ["WebPage", "ItemList", "FAQPage", "BreadcrumbList"],
+    markers: ["data-page-authority"],
+    requiredText: ["피아노 도구 작성·운영 기준", "외부·전문가 독립 검토 전"],
+    requiredInternalPaths: [
+      "/editorial-policy",
+      "/tools/piano-chord-chart",
+      "/tools/piano-lesson-cost-calculator",
+    ],
+  },
+  {
+    path: "/tools/piano-chord-chart",
+    h1: "피아노 코드표",
+    schemaTypes: ["WebPage", "WebApplication", "FAQPage", "BreadcrumbList"],
+    markers: ["data-page-authority"],
+    requiredText: ["피아노 코드표 작성·운영 기준", "132개 구성음·전위", "외부·전문가 독립 검토 전"],
+    requiredInternalPaths: ["/editorial-policy", "/tools"],
+  },
+  {
+    path: "/tools/piano-lesson-cost-calculator",
+    h1: "피아노 레슨비 계산기",
+    schemaTypes: ["WebPage", "WebApplication", "FAQPage", "BreadcrumbList"],
+    markers: ["data-page-authority"],
+    requiredText: [
+      "레슨비 계산기 작성·운영 기준",
+      "월 총액, 회당, 분당, 60분 환산값",
+      "외부·전문가 독립 검토 전",
+    ],
+    requiredInternalPaths: ["/editorial-policy", "/research/2026-seoul-piano-academy-fees"],
+  },
+  {
+    path: "/resources",
+    h1: "피아노 학습 자료실",
+    schemaTypes: ["CollectionPage", "ItemList", "FAQPage", "BreadcrumbList"],
+    markers: ["data-page-authority"],
+    requiredText: ["피아노 학습 자료 작성·운영 기준", "외부·전문가 독립 검토 전"],
+    requiredInternalPaths: [
+      "/editorial-policy",
+      "/resources/piano-level-roadmap",
+      "/resources/piano-practice-planner",
+    ],
+  },
+  {
+    path: "/resources/piano-level-roadmap",
+    h1: "피아노 수준별 학습 로드맵",
+    schemaTypes: ["WebPage", "Article", "ItemList", "FAQPage", "BreadcrumbList"],
+    markers: ["data-page-authority"],
+    requiredText: [
+      "수준별 로드맵 작성·운영 기준",
+      "다섯 단계의 관찰 가능한 기준",
+      "외부·전문가 독립 검토 전",
+    ],
+    requiredInternalPaths: ["/editorial-policy", "/resources"],
+  },
+  {
+    path: "/resources/piano-practice-planner",
+    h1: "주간 피아노 연습 플래너",
+    schemaTypes: ["WebPage", "WebApplication", "FAQPage", "BreadcrumbList"],
+    markers: ["data-page-authority"],
+    requiredText: [
+      "주간 연습 플래너 작성·운영 기준",
+      "입력 내용을 서버에 보내지 않은 채",
+      "외부·전문가 독립 검토 전",
+    ],
+    requiredInternalPaths: ["/editorial-policy", "/resources"],
+  },
+  {
+    path: "/editorial-policy",
+    h1: "편집·출처·AI 활용 정책",
+    schemaTypes: ["WebPage", "Article", "BreadcrumbList"],
+    markers: ["data-page-authority"],
+    requiredText: ["이 편집 정책의 운영 책임", "외부·전문가 독립 검토 전"],
+    requiredInternalPaths: ["/about", "/research/changelog"],
+  },
   ...serviceHtmlPages,
   ...categoryHtmlPages,
   {
@@ -172,10 +322,33 @@ const coreHtmlPages: readonly HtmlPageExpectation[] = [
     officialSourceHosts: ["www.data.go.kr", "buseo.sen.go.kr"],
   },
   {
+    path: "/research/piano-search-demand-report-2026",
+    h1: "2026 피아노 키워드 검색수요 조사",
+    schemaTypes: ["WebPage", "Dataset", "Article", "FAQPage", "BreadcrumbList"],
+    markers: ["data-research-authorship", "data-research-citation"],
+    methodologyLink: true,
+    officialSourceHosts: ["business.google.com", "ads.naver.com"],
+    requiredText: [
+      "자체 조사 · 광고 도구 추정치 · 공식 통계 아님",
+      "4,545개 피아노 관련 키워드",
+      "CSV 행·필드 수, 파일 크기·SHA-256",
+    ],
+    requiredInternalPaths: ["/tools/piano-chord-chart"],
+  },
+  {
     path: "/research/methodology",
     h1: "피아노 데이터 방법론",
     schemaTypes: ["WebPage", "BreadcrumbList"],
     markers: ["data-research-authorship"],
+  },
+  {
+    path: "/research/changelog",
+    h1: "연구 데이터 수정 이력",
+    schemaTypes: ["WebPage", "Article", "BreadcrumbList"],
+    markers: ["data-research-authorship"],
+    officialSourceHosts: ["www.moe.go.kr", "www.data.go.kr"],
+    requiredText: ["수정 이력 작성·검증 정보"],
+    requiredInternalPaths: ["/research/methodology", "/research"],
   },
 ] as const;
 
@@ -220,6 +393,102 @@ function normalizedVisibleText(html: string): string {
     .replace(/\s+/g, " ")
     .replace(/\s+([:：,.;!?])/g, "$1")
     .trim();
+}
+
+function parseCsvRows(csv: string, label: string): string[][] {
+  const source = csv.replace(/^\uFEFF/, "");
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index];
+    if (quoted) {
+      if (character === '"' && source[index + 1] === '"') {
+        cell += '"';
+        index += 1;
+      } else if (character === '"') {
+        quoted = false;
+      } else {
+        cell += character;
+      }
+      continue;
+    }
+
+    if (character === '"') {
+      if (cell) throw new Error(`${label} CSV의 따옴표 위치가 유효하지 않습니다.`);
+      quoted = true;
+    } else if (character === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (character === "\r" || character === "\n") {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+      if (character === "\r" && source[index + 1] === "\n") index += 1;
+    } else {
+      cell += character;
+    }
+  }
+
+  if (quoted) throw new Error(`${label} CSV에 닫히지 않은 따옴표가 있습니다.`);
+  if (cell || row.length) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows;
+}
+
+function verifyCsvShape(
+  label: string,
+  csv: string,
+  expectedHeader: readonly string[],
+  expectedDataRows: number,
+): string[][] {
+  const rows = parseCsvRows(csv, label);
+  const header = rows[0] ?? [];
+  if (JSON.stringify(header) !== JSON.stringify(expectedHeader)) {
+    throw new Error(
+      `${label} CSV 헤더가 예상과 다릅니다. 기대값: ${expectedHeader.join(",")}, 실제: ${header.join(",")}`,
+    );
+  }
+  const dataRows = rows.slice(1);
+  if (dataRows.length !== expectedDataRows) {
+    throw new Error(
+      `${label} CSV 데이터 행이 ${dataRows.length}개입니다. 기대값: ${expectedDataRows}`,
+    );
+  }
+  const invalidWidthRow = dataRows.findIndex((row) => row.length !== expectedHeader.length);
+  if (invalidWidthRow >= 0) {
+    throw new Error(
+      `${label} CSV ${invalidWidthRow + 2}행의 필드 수가 ${dataRows[invalidWidthRow].length}개입니다. 기대값: ${expectedHeader.length}`,
+    );
+  }
+  return dataRows;
+}
+
+function parseRequiredInteger(value: string, label: string): number {
+  if (!/^-?\d+$/.test(value)) throw new Error(`${label} 값이 정수가 아닙니다: ${value}`);
+  return Number(value);
+}
+
+function parseNullableInteger(value: string, label: string): number | null {
+  return value === "" ? null : parseRequiredInteger(value, label);
+}
+
+async function readResponseBytes(response: Response): Promise<{
+  bytes: Uint8Array<ArrayBuffer>;
+  text: string;
+}> {
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  return { bytes, text: new TextDecoder().decode(bytes) };
+}
+
+async function sha256Hex(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, "0")).join("");
 }
 
 function canonicalLinks(html: string): string[] {
@@ -616,6 +885,13 @@ const [
   seoulMetadataResponse,
   nationalSchemaResponse,
   seoulSchemaResponse,
+  searchDemandCsvResponse,
+  searchDemandSummaryResponse,
+  searchDemandMetadataResponse,
+  searchDemandSchemaResponse,
+  searchDemandManifestResponse,
+  levelRoadmapResponse,
+  practicePlannerTemplateResponse,
 ] = await Promise.all([
   fetchStatus(RESEARCH_DOWNLOADS.nationalCsv, 200),
   fetchStatus(RESEARCH_DOWNLOADS.seoulRecordsCsv, 200),
@@ -625,6 +901,13 @@ const [
   fetchStatus(RESEARCH_DOWNLOADS.seoulMetadata, 200),
   fetchStatus(RESEARCH_DOWNLOADS.nationalSchema, 200),
   fetchStatus(RESEARCH_DOWNLOADS.seoulSchema, 200),
+  fetchStatus(`${RESEARCH_DOWNLOADS.searchDemandCsv}?${cacheBuster}`, 200),
+  fetchStatus(`${RESEARCH_DOWNLOADS.searchDemandSummaryCsv}?${cacheBuster}`, 200),
+  fetchStatus(`${RESEARCH_DOWNLOADS.searchDemandMetadata}?${cacheBuster}`, 200),
+  fetchStatus(`${RESEARCH_DOWNLOADS.searchDemandSchema}?${cacheBuster}`, 200),
+  fetchStatus(`${RESEARCH_DOWNLOADS.searchDemandManifest}?${cacheBuster}`, 200),
+  fetchStatus(`${resourceDownloads.levelRoadmapCsv}?${cacheBuster}`, 200),
+  fetchStatus(`${resourceDownloads.practicePlannerTemplateCsv}?${cacheBuster}`, 200),
 ]);
 const [
   nationalCsv,
@@ -635,6 +918,13 @@ const [
   seoulMetadataText,
   nationalSchemaText,
   seoulSchemaText,
+  searchDemandCsvAsset,
+  searchDemandSummaryAsset,
+  searchDemandMetadataText,
+  searchDemandSchemaText,
+  searchDemandManifestText,
+  levelRoadmapAsset,
+  practicePlannerTemplateAsset,
 ] = await Promise.all([
   nationalCsvResponse.text(),
   seoulRecordsResponse.text(),
@@ -644,6 +934,13 @@ const [
   seoulMetadataResponse.text(),
   nationalSchemaResponse.text(),
   seoulSchemaResponse.text(),
+  readResponseBytes(searchDemandCsvResponse),
+  readResponseBytes(searchDemandSummaryResponse),
+  searchDemandMetadataResponse.text(),
+  searchDemandSchemaResponse.text(),
+  searchDemandManifestResponse.text(),
+  readResponseBytes(levelRoadmapResponse),
+  readResponseBytes(practicePlannerTemplateResponse),
 ]);
 if (!nationalCsv.replace(/^\uFEFF/, "").startsWith("reference_year,school_level,category")) {
   throw new Error("음악 사교육비 CSV 헤더가 예상과 다릅니다.");
@@ -683,6 +980,57 @@ const seoulSchema = JSON.parse(seoulSchemaText) as {
   datasetId?: string;
   tables?: { fieldCount?: number; fields?: unknown[] }[];
 };
+const searchDemandMetadata = JSON.parse(searchDemandMetadataText) as {
+  datasetId?: string;
+  datasetVersion?: string;
+  uniqueKeywords?: number;
+  naverMeasuredKeywords?: number;
+  totalSearchVolumeSum?: number;
+  naverSearchVolumeSum?: number;
+  googleMonthlyAverageSum?: number;
+  segments?: {
+    segmentId?: string;
+    dataRows?: number;
+    totalSearchVolumeSum?: number | null;
+    naverSearchVolumeSum?: number | null;
+    googleMonthlyAverageSum?: number | null;
+  }[];
+  sourceWorkbook?: {
+    bytes?: number;
+    sha256?: string;
+    manifestPath?: string;
+  };
+  dataDictionaryPath?: string;
+  distributions?: {
+    title?: string;
+    contentUrl?: string;
+    encodingFormat?: string;
+    bytes?: number;
+    sha256?: string;
+    rowCount?: number;
+    fieldCount?: number;
+  }[];
+};
+const searchDemandSchema = JSON.parse(searchDemandSchemaText) as {
+  datasetId?: string;
+  datasetVersion?: string;
+  tables?: {
+    name?: string;
+    csvPath?: string;
+    fieldCount?: number;
+    fields?: { name?: string }[];
+  }[];
+};
+const searchDemandManifest = JSON.parse(searchDemandManifestText) as {
+  manifestVersion?: string;
+  datasetId?: string;
+  source?: {
+    originalName?: string;
+    bytes?: number;
+    sha256?: string;
+    publiclyRedistributed?: boolean;
+  };
+};
 if (sourceManifest.sources?.length !== 12) {
   throw new Error("원자료 매니페스트의 파일 수가 12개가 아닙니다.");
 }
@@ -720,6 +1068,178 @@ if (
 ) {
   throw new Error("서울 피아노 교습비 CSV 데이터 사전이 예상과 다릅니다.");
 }
+
+if (
+  searchDemandMetadata.datasetId !== "ewha-piano-search-demand-2026" ||
+  searchDemandMetadata.datasetVersion !== "1.0.0" ||
+  searchDemandMetadata.uniqueKeywords !== 4_545 ||
+  searchDemandMetadata.naverMeasuredKeywords !== 4_522 ||
+  searchDemandMetadata.totalSearchVolumeSum !== 1_001_925 ||
+  searchDemandMetadata.naverSearchVolumeSum !== 593_235 ||
+  searchDemandMetadata.googleMonthlyAverageSum !== 408_690 ||
+  searchDemandMetadata.segments?.length !== 7 ||
+  searchDemandMetadata.dataDictionaryPath !== RESEARCH_DOWNLOADS.searchDemandSchema ||
+  searchDemandMetadata.sourceWorkbook?.manifestPath !== RESEARCH_DOWNLOADS.searchDemandManifest ||
+  !/^[a-f0-9]{64}$/.test(searchDemandMetadata.sourceWorkbook.sha256 ?? "")
+) {
+  throw new Error("피아노 검색수요 메타데이터의 버전·행 수·합계 또는 연결 경로가 예상과 다릅니다.");
+}
+
+if (
+  searchDemandSchema.datasetId !== searchDemandMetadata.datasetId ||
+  searchDemandSchema.datasetVersion !== searchDemandMetadata.datasetVersion ||
+  searchDemandSchema.tables?.length !== 2
+) {
+  throw new Error("피아노 검색수요 CSV 데이터 사전의 데이터셋 식별자가 예상과 다릅니다.");
+}
+const searchDemandTable = searchDemandSchema.tables[0];
+const searchDemandSummaryTable = searchDemandSchema.tables[1];
+if (
+  searchDemandTable.name !== "keyword_search_demand" ||
+  searchDemandTable.csvPath !== RESEARCH_DOWNLOADS.searchDemandCsv ||
+  searchDemandTable.fieldCount !== searchDemandExpectedHeader.length ||
+  JSON.stringify(searchDemandTable.fields?.map((field) => field.name)) !==
+    JSON.stringify(searchDemandExpectedHeader) ||
+  searchDemandSummaryTable.name !== "segment_summary" ||
+  searchDemandSummaryTable.csvPath !== RESEARCH_DOWNLOADS.searchDemandSummaryCsv ||
+  searchDemandSummaryTable.fieldCount !== searchDemandSummaryExpectedHeader.length ||
+  JSON.stringify(searchDemandSummaryTable.fields?.map((field) => field.name)) !==
+    JSON.stringify(searchDemandSummaryExpectedHeader)
+) {
+  throw new Error("피아노 검색수요 CSV 데이터 사전의 표·필드 정의가 예상과 다릅니다.");
+}
+
+if (
+  searchDemandManifest.manifestVersion !== "1.0.0" ||
+  searchDemandManifest.datasetId !== searchDemandMetadata.datasetId ||
+  searchDemandManifest.source?.originalName !== "피아노_키워드_최종완전판.xlsx" ||
+  searchDemandManifest.source.bytes !== searchDemandMetadata.sourceWorkbook.bytes ||
+  searchDemandManifest.source.sha256 !== searchDemandMetadata.sourceWorkbook.sha256 ||
+  searchDemandManifest.source.publiclyRedistributed !== false
+) {
+  throw new Error("피아노 검색수요 원본 매니페스트의 파일·해시·재배포 상태가 예상과 다릅니다.");
+}
+
+const searchDemandRows = verifyCsvShape(
+  "피아노 검색수요",
+  searchDemandCsvAsset.text,
+  searchDemandExpectedHeader,
+  searchDemandMetadata.uniqueKeywords,
+);
+const keywordColumn = searchDemandExpectedHeader.indexOf("keyword");
+const totalVolumeColumn = searchDemandExpectedHeader.indexOf("total_search_volume");
+const naverTotalColumn = searchDemandExpectedHeader.indexOf("naver_total");
+const googleAverageColumn = searchDemandExpectedHeader.indexOf("google_monthly_average");
+const searchDemandComputed = searchDemandRows.reduce(
+  (result, row, index) => {
+    const naverValue = parseNullableInteger(
+      row[naverTotalColumn],
+      `피아노 검색수요 ${index + 2}행 네이버 검색량`,
+    );
+    const googleValue = parseNullableInteger(
+      row[googleAverageColumn],
+      `피아노 검색수요 ${index + 2}행 구글 월평균`,
+    );
+    result.keywords.add(row[keywordColumn]);
+    result.total += parseRequiredInteger(
+      row[totalVolumeColumn],
+      `피아노 검색수요 ${index + 2}행 참고 합계`,
+    );
+    if (naverValue !== null) {
+      result.naverMeasured += 1;
+      result.naver += naverValue;
+    }
+    if (googleValue !== null) result.google += googleValue;
+    return result;
+  },
+  {
+    keywords: new Set<string>(),
+    total: 0,
+    naverMeasured: 0,
+    naver: 0,
+    google: 0,
+  },
+);
+if (
+  searchDemandComputed.keywords.size !== searchDemandMetadata.uniqueKeywords ||
+  searchDemandComputed.total !== searchDemandMetadata.totalSearchVolumeSum ||
+  searchDemandComputed.naverMeasured !== searchDemandMetadata.naverMeasuredKeywords ||
+  searchDemandComputed.naver !== searchDemandMetadata.naverSearchVolumeSum ||
+  searchDemandComputed.google !== searchDemandMetadata.googleMonthlyAverageSum
+) {
+  throw new Error("피아노 검색수요 CSV의 고유 키워드·플랫폼별 합계가 메타데이터와 다릅니다.");
+}
+
+const searchDemandSummaryRows = verifyCsvShape(
+  "피아노 검색수요 세그먼트 요약",
+  searchDemandSummaryAsset.text,
+  searchDemandSummaryExpectedHeader,
+  searchDemandMetadata.segments.length,
+);
+for (const [index, row] of searchDemandSummaryRows.entries()) {
+  const segment = searchDemandMetadata.segments.find((item) => item.segmentId === row[1]);
+  if (
+    !segment ||
+    segment.dataRows !== parseRequiredInteger(row[2], `세그먼트 요약 ${index + 2}행 행 수`) ||
+    segment.totalSearchVolumeSum !==
+      parseNullableInteger(row[4], `세그먼트 요약 ${index + 2}행 참고 합계`) ||
+    segment.naverSearchVolumeSum !==
+      parseNullableInteger(row[5], `세그먼트 요약 ${index + 2}행 네이버 합계`) ||
+    segment.googleMonthlyAverageSum !==
+      parseNullableInteger(row[6], `세그먼트 요약 ${index + 2}행 구글 합계`)
+  ) {
+    throw new Error(`피아노 검색수요 세그먼트 요약 ${index + 2}행이 메타데이터와 다릅니다.`);
+  }
+}
+
+const searchDemandDistribution = searchDemandMetadata.distributions?.find(
+  (distribution) => distribution.contentUrl === RESEARCH_DOWNLOADS.searchDemandCsv,
+);
+const searchDemandSummaryDistribution = searchDemandMetadata.distributions?.find(
+  (distribution) => distribution.contentUrl === RESEARCH_DOWNLOADS.searchDemandSummaryCsv,
+);
+if (
+  searchDemandMetadata.distributions?.length !== 2 ||
+  searchDemandDistribution?.encodingFormat !== "text/csv" ||
+  searchDemandDistribution.rowCount !== searchDemandMetadata.uniqueKeywords ||
+  searchDemandDistribution.fieldCount !== searchDemandExpectedHeader.length ||
+  searchDemandDistribution.bytes !== searchDemandCsvAsset.bytes.byteLength ||
+  !/^[a-f0-9]{64}$/.test(searchDemandDistribution.sha256 ?? "") ||
+  searchDemandDistribution.sha256 !== (await sha256Hex(searchDemandCsvAsset.bytes)) ||
+  searchDemandSummaryDistribution?.encodingFormat !== "text/csv" ||
+  searchDemandSummaryDistribution.rowCount !== searchDemandMetadata.segments.length ||
+  searchDemandSummaryDistribution.fieldCount !== searchDemandSummaryExpectedHeader.length ||
+  searchDemandSummaryDistribution.bytes !== searchDemandSummaryAsset.bytes.byteLength ||
+  !/^[a-f0-9]{64}$/.test(searchDemandSummaryDistribution.sha256 ?? "") ||
+  searchDemandSummaryDistribution.sha256 !== (await sha256Hex(searchDemandSummaryAsset.bytes))
+) {
+  throw new Error("피아노 검색수요 CSV의 파일 크기·행·필드·SHA-256이 메타데이터와 다릅니다.");
+}
+
+const levelRoadmapRows = verifyCsvShape(
+  "피아노 수준별 로드맵",
+  levelRoadmapAsset.text,
+  levelRoadmapExpectedHeader,
+  5,
+);
+const practicePlannerRows = verifyCsvShape(
+  "피아노 연습 플래너 템플릿",
+  practicePlannerTemplateAsset.text,
+  practicePlannerExpectedHeader,
+  7,
+);
+if (
+  levelRoadmapRows.map((row) => row[0]).join(",") !== "Level 1,Level 2,Level 3,Level 4,Level 5" ||
+  practicePlannerRows.map((row) => row[0]).join(",") !==
+    "월요일,화요일,수요일,목요일,금요일,토요일,일요일" ||
+  (await sha256Hex(levelRoadmapAsset.bytes)) !==
+    "e4318c63cc304f7be7c9af6f57d7e08b626f34769482c84250f41fbfc5954f7f" ||
+  (await sha256Hex(practicePlannerTemplateAsset.bytes)) !==
+    "bedff3a679f733705502c908977c683e482e341df7abf03e782e30fed9bab94e"
+) {
+  throw new Error("피아노 학습 자료 CSV의 단계·요일 또는 SHA-256이 예상과 다릅니다.");
+}
+
 const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 const uniqueSitemapUrls = new Set(sitemapUrls);
 const expectedSitemapUrls =
@@ -782,7 +1302,15 @@ console.log(
     verifiedPublishedArticlePages: publicPostHtmlPages.length,
     verifiedStaticCanonicalUrls: PUBLIC_PAGES.length,
     verifiedResearchLlmsUrls: requiredResearchPaths.length,
-    verifiedPageAuthorityPages: serviceHtmlPages.length + categoryHtmlPages.length + 1,
-    researchDownloads: 8,
+    verifiedPageAuthorityPages: verifiedHtmlPages.filter((page) =>
+      page.markers?.includes("data-page-authority"),
+    ).length,
+    verifiedResearchAuthorityPages: verifiedHtmlPages.filter(
+      (page) =>
+        page.markers?.includes("data-research-authorship") ||
+        page.markers?.includes("data-research-citation"),
+    ).length,
+    researchDownloads: 13,
+    resourceDownloads: 2,
   }),
 );

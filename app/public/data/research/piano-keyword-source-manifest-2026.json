@@ -1,0 +1,13 @@
+{
+  "manifestVersion": "1.0.0",
+  "datasetId": "ewha-piano-search-demand-2026",
+  "source": {
+    "originalName": "피아노_키워드_최종완전판.xlsx",
+    "format": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "bytes": 713375,
+    "sha256": "f292d020d7e9abd9861c7b5d737b76478376d1d18670b7373167f493f6aae27b",
+    "lookupDate": "2026-07-23",
+    "publiclyRedistributed": false,
+    "notice": "원본 XLSX는 작업용 수식·서식이 포함된 내부 조사 파일이라 재배포하지 않습니다. 개인정보는 없으며 공개 CSV는 전체 키워드 시트의 값과 세그먼트 소속만 재구성합니다."
+  }
+}

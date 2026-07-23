@@ -112,6 +112,7 @@ function Index() {
       <FaqSection />
       <PricingSection />
       <ResearchEvidenceSection />
+      <AuthorityAssetsSection />
       <LatestPostsSection posts={latest} categories={categories} />
       <ContactSection />
       <SiteFooter />
@@ -125,9 +126,88 @@ function ResearchEvidenceSection() {
       <div className="mx-auto max-w-6xl px-6 md:px-10">
         <ResearchReferencePanel
           references={HOME_RESEARCH_REFERENCE_IDS}
-          heading="공식 데이터로 확인하는 피아노 교육 환경"
-          description="레슨 안내와 별도로 전국 음악 사교육비, 서울 피아노 등록 교습비, 가공 방법을 공개합니다. 행정 통계는 시장 배경을 이해하기 위한 자료이며 이 사이트의 레슨비나 수업 성과를 증명하지 않습니다."
+          heading="검증 가능한 데이터로 확인하는 피아노 교육 환경"
+          description="레슨 안내와 별도로 전국 음악 사교육비, 서울 피아노 등록 교습비, 구글·네이버 검색수요 자체 조사와 가공 방법을 공개합니다. 통계와 광고 도구 추정치는 시장 배경을 이해하기 위한 자료이며 이 사이트의 레슨비나 수업 성과를 증명하지 않습니다."
         />
+      </div>
+    </section>
+  );
+}
+
+const AUTHORITY_ASSETS = [
+  {
+    href: "/tools/piano-chord-chart",
+    label: "검색량 추정 4,230",
+    title: "132개 피아노 코드표",
+    description: "12개 근음과 11개 코드 종류의 구성음·전위·진행을 확인하고 PNG·CSV로 저장합니다.",
+  },
+  {
+    href: "/tools/piano-lesson-cost-calculator",
+    label: "같은 단위로 비교",
+    title: "피아노 레슨비 계산기",
+    description: "월 금액과 횟수, 시간을 회당·분당·60분 기준으로 환산하며 시장 평균과 구분합니다.",
+  },
+  {
+    href: "/resources/piano-level-roadmap",
+    label: "5단계 진단 기준",
+    title: "피아노 수준별 로드맵",
+    description:
+      "입문부터 상급 준비까지 읽기·테크닉·이론·예시곡과 다음 단계 준비 기준을 제공합니다.",
+  },
+  {
+    href: "/resources/piano-practice-planner",
+    label: "입력값 서버 미전송",
+    title: "주간 피아노 연습 플래너",
+    description: "요일별 연습 목표와 시간을 계산해 CSV 또는 인쇄·PDF로 보관할 수 있습니다.",
+  },
+] as const;
+
+function AuthorityAssetsSection() {
+  return (
+    <section
+      className="border-t border-line py-24 md:py-32"
+      aria-labelledby="authority-assets-title"
+    >
+      <div className="mx-auto max-w-6xl px-6 md:px-10">
+        <div className="max-w-4xl">
+          <p className="text-xs tracking-[0.18em] text-brass uppercase">
+            Free tools &amp; resources
+          </p>
+          <h2
+            id="authority-assets-title"
+            className="mt-3 font-serif-kr text-4xl font-bold tracking-tight md:text-5xl"
+          >
+            인용하고 다시 사용할 수 있는 피아노 자료
+          </h2>
+          <p className="mt-5 max-w-[70ch] leading-relaxed text-mute">
+            검색 글만 늘리지 않고 계산 근거, 다운로드 파일, 해석 한계가 남는 독립 자료를 공개합니다.
+            전체 목록은{" "}
+            <a href="/tools" className="text-brass underline underline-offset-4">
+              피아노 학습 도구
+            </a>
+            와{" "}
+            <a href="/resources" className="text-brass underline underline-offset-4">
+              피아노 학습 자료
+            </a>
+            에서 확인할 수 있습니다.
+          </p>
+        </div>
+        <div className="mt-10 grid gap-5 md:grid-cols-2">
+          {AUTHORITY_ASSETS.map((asset) => (
+            <a
+              key={asset.href}
+              href={asset.href}
+              className="group border border-line bg-ebony-2 p-7 transition-colors hover:border-brass/60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass"
+            >
+              <span className="text-xs tracking-[0.14em] text-brass uppercase">{asset.label}</span>
+              <h3 className="mt-4 font-serif-kr text-2xl font-semibold transition-colors group-hover:text-brass">
+                {asset.title}
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-mute">{asset.description}</p>
+              <span className="mt-6 inline-block text-sm text-ivory">자료 사용하기 →</span>
+            </a>
+          ))}
+        </div>
       </div>
     </section>
   );

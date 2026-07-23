@@ -10,7 +10,7 @@ export function SiteNav() {
           <Monogram className="h-6 w-6 text-brass" />
           <span className="font-serif-kr text-lg font-semibold tracking-tight">{SITE.brand}</span>
         </a>
-        <nav className="hidden items-center gap-7 md:flex">
+        <nav className="hidden items-center gap-6 lg:flex">
           {SITE.nav.map((item) => (
             <a
               key={item.href}
@@ -22,7 +22,7 @@ export function SiteNav() {
           ))}
         </nav>
         <div className="flex items-center gap-4">
-          <details className="group relative md:hidden">
+          <details className="group relative lg:hidden">
             <summary className="cursor-pointer list-none text-sm text-mute transition-colors hover:text-ivory [&::-webkit-details-marker]:hidden">
               메뉴
             </summary>
@@ -90,6 +90,18 @@ export function SiteFooter() {
               </a>
             ))}
           </nav>
+          <nav className="flex flex-col gap-3" aria-label="무료 피아노 도구와 자료">
+            <span className="text-xs tracking-[0.14em] text-faint uppercase">무료 도구·자료</span>
+            {SITE.authorityNav.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="text-sm text-mute transition-colors hover:text-ivory"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
           <a
             href="/#contact"
             className="group flex items-center gap-3 font-serif-kr text-2xl text-ivory transition-colors hover:text-brass"
@@ -107,6 +119,9 @@ export function SiteFooter() {
             <a href="/privacy" className="transition-colors hover:text-mute">
               개인정보 처리 안내
             </a>
+            <a href="/editorial-policy" className="transition-colors hover:text-mute">
+              편집 정책
+            </a>
             <a href="/admin" rel="nofollow" className="transition-colors hover:text-mute">
               {SITE.footer.admin}
             </a>
@@ -117,13 +132,13 @@ export function SiteFooter() {
   );
 }
 
-// 서브 페이지 상단 여백 (고정 헤더 높이 보상)
+// 고정 헤더 여백을 보상하면서 페이지당 main 랜드마크를 하나만 제공합니다.
 export function SubPageShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-dvh bg-ebony text-ivory antialiased">
+    <div className="min-h-dvh bg-ebony text-ivory antialiased">
       <SiteNav />
-      <div className="pt-16 md:pt-[72px]">{children}</div>
+      <main className="pt-16 md:pt-[72px]">{children}</main>
       <SiteFooter />
-    </main>
+    </div>
   );
 }

@@ -1,26 +1,31 @@
 # 연구 데이터 운영
 
-`/research`는 CMS 칼럼과 분리된 공식 데이터·파생분석 영역입니다. 원자료, 가공물, 방법론, 한계와 수정 이력을 한 단위로 배포합니다.
+`/research`는 CMS 칼럼과 분리된 데이터·파생분석 영역입니다. 공식 통계와 자체 수집한
+광고도구 검색수요 자료를 같은 것으로 표현하지 않으며, 각 보고서에 원자료 성격,
+가공물, 방법론, 한계와 수정 이력을 함께 배포합니다.
 
 ## 데이터셋
 
-| 공개 페이지                                         | 근거                                                         | 공개 파일                                                                                          |
-| --------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `/research/2025-music-private-education-statistics` | 교육부·국가데이터처 2025년 초중고 사교육비 조사              | 학교급별 음악 사교육비 CSV, 원자료 PDF 직접 링크, 메타데이터 JSON, 7필드 데이터 사전 JSON          |
-| `/research/2026-seoul-piano-academy-fees`           | 서울특별시교육청 2026-01-01 기준 학원·교습소 교습비 XLS 11개 | 직접 식별정보 제거 교습상품 CSV, 서울·자치구 요약 CSV, 메타데이터·매니페스트·필드 데이터 사전 JSON |
-| `/research/methodology`                             | 변환 스크립트와 공개 규칙                                    | 필터, 직접 식별정보 제거, 통계 기준, 이용조건, 한계, 수정 이력                                     |
+| 공개 페이지                                         | 원자료 성격                                                   | 공개 파일                                                                                          |
+| --------------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `/research/2025-music-private-education-statistics` | 교육부·국가데이터처 2025년 초중고 사교육비 조사               | 학교급별 음악 사교육비 CSV, 원자료 PDF 직접 링크, 메타데이터 JSON, 7필드 데이터 사전 JSON          |
+| `/research/2026-seoul-piano-academy-fees`           | 서울특별시교육청 2026-01-01 기준 학원·교습소 교습비 XLS 11개  | 직접 식별정보 제거 교습상품 CSV, 서울·자치구 요약 CSV, 메타데이터·매니페스트·필드 데이터 사전 JSON |
+| `/research/piano-search-demand-report-2026`         | 구글 키워드 플래너·네이버 검색광고 도구를 합친 자체 조사 파일 | 4,545개 키워드 CSV, 7개 세그먼트 요약 CSV, 메타데이터·매니페스트·30필드 데이터 사전 JSON           |
+| `/research/methodology`                             | 변환 스크립트와 공개 규칙                                     | 수집·필터·직접 식별정보 제거·통계·검색량 해석 기준과 한계                                          |
+| `/research/changelog`                               | 저장소의 공개 버전 기록                                       | 데이터셋별 발행일·버전·검증 범위와 정정 이력                                                       |
 
-각 메타데이터에는 가공본 버전·공개일·수정일, 공식 원자료 기관, 가공본 발행자, 원자료
-이용조건, 권장 출처표시, CSV의 실제 바이트·SHA-256·행·필드 수를 기록합니다. Dataset
-구조화 데이터의 `distribution`에는 실제 CSV만 넣고 원문·메타데이터·데이터 사전은
-`isBasedOn`, `citation`, `subjectOf`로 분리합니다.
+각 메타데이터에는 가공본 버전·공개일·수정일, 원자료 성격과 발행자, 권장 출처표시,
+CSV의 실제 바이트·SHA-256·행·필드 수를 기록합니다. Dataset 구조화 데이터의
+`distribution`에는 실제 CSV만 넣고 원문·메타데이터·데이터 사전은 `isBasedOn`,
+`citation`, `subjectOf`로 분리합니다.
 
-## 갱신
+## 공식 통계 갱신
 
 Windows PowerShell, Microsoft Excel, Python의 `pandas`와 `openpyxl`이 필요합니다.
 
 ```powershell
-Set-Location 'C:\Users\이경수\OneDrive\문서\피아노사이트\app'
+$repoRoot = git rev-parse --show-toplevel
+Set-Location (Join-Path $repoRoot 'app')
 .\scripts\refresh-research-data.ps1 -RetrievedAt 2026-07-23
 bun test tests/research-data.test.ts
 ```
@@ -34,6 +39,52 @@ bun test tests/research-data.test.ts
 5. 직접 식별정보와 원자료 파일·시트·행 위치 및 시설 ID를 제외한 CSV와 메타데이터 JSON만 `app/public/data/research`와 `app/src/data/research`에 생성합니다.
 6. CSV를 쓴 뒤 실제 파일 크기와 SHA-256을 계산하고 메타데이터·데이터 사전 JSON을 생성합니다.
 7. 테스트가 원문 합계, 출처 12개, 해시, 행 수, 자치구 수, 개인정보 컬럼 부재, 필드 정의와 Dataset 배포 정보를 검사합니다.
+
+## 검색수요 데이터 재생성
+
+원본 통합문서는 Git 밖의 비공개 작업 파일입니다.
+
+원본 파일명은 `피아노_키워드_최종완전판.xlsx`이며 로컬 절대 경로는 저장소와 공개
+매니페스트에 기록하지 않습니다.
+
+원본에는 구글 키워드 플래너 최근 12개월 월평균과 네이버 검색광고 조회일 기준 최근
+30일 월간 검색수, 경쟁도·입찰가와 자체 세그먼트 분류가 들어 있습니다. 두 플랫폼이나
+정부가 공표한 공식 통계가 아니며, 사이트는 구글·네이버가 해당 데이터셋을 발행 또는
+검토한 것으로 표시하지 않습니다.
+
+원본이 바뀐 경우에만 다음 명령으로 공개 산출물을 다시 만듭니다.
+
+```powershell
+$repoRoot = git rev-parse --show-toplevel
+Set-Location (Join-Path $repoRoot 'app')
+$sourceWorkbook = '<피아노_키워드_최종완전판.xlsx의 절대 경로>'
+python .\scripts\build-search-demand-data.py --source $sourceWorkbook
+bun test tests/search-demand-report.test.ts
+```
+
+생성기는 필수 시트와 열, 전체 4,545행, 키워드 중복 부재, 통합 검색량 1,001,925,
+네이버 합계 593,235와 구글 월평균 합계 408,690을 확인한 뒤 다음 파일을 갱신합니다.
+
+| 공개 다운로드 또는 저장소 파일                             | 역할                                                 |
+| ---------------------------------------------------------- | ---------------------------------------------------- |
+| `/data/research/piano-keyword-search-demand-2026.csv`      | 키워드 4,545행·30필드 전체 가공본                    |
+| `/data/research/piano-keyword-segment-summary-2026.csv`    | 전체와 6개 부분집합을 구분한 7행·9필드 세그먼트 요약 |
+| `/data/research/piano-keyword-search-demand-metadata.json` | 버전, 관측기간, 합계, 한계, 배포 파일 해시           |
+| `/data/research/piano-keyword-search-demand-schema.json`   | 두 CSV의 필드 순서·형식·설명                         |
+| `/data/research/piano-keyword-source-manifest-2026.json`   | 비공개 원본 파일명·바이트·SHA-256과 공개 경계        |
+| `src/data/research/piano-keyword-search-demand.json`       | 페이지와 JSON-LD가 사용하는 메타데이터 복제본        |
+
+공개 CSV에는 통합문서의 서식·수식·로컬 경로를 넣지 않습니다. 원본 통합문서 자체는
+재배포하지 않고 매니페스트의 SHA-256으로 어느 스냅샷을 가공했는지 확인합니다.
+
+### 검색수요 해석 한계
+
+- 검색량은 광고 플랫폼의 추정치이며 실제 트래픽, 노출, 클릭 또는 고유 이용자 수가 아닙니다.
+- 구글은 최근 12개월 월평균, 네이버는 최근 30일 월간 검색수이므로 관측 기간이 다릅니다.
+- 키워드와 세그먼트는 서로 겹칩니다. 행별 합계나 세그먼트 합계를 고유 수요로 다시 합산하지 않습니다.
+- 자체 분류에는 누락·오분류가 있을 수 있고 학부모 세그먼트에는 인접 음악 키워드가 포함될 수 있습니다.
+- 원본 요약 시트의 지역·알바 행 수 수식은 `#NAME?` 오류가 있어 각 시트의 실제 비어 있지 않은 행으로 재계산합니다.
+- 검색량이 높아도 실제 서비스·저작권·검색 의도와 맞지 않으면 목표 페이지를 만들지 않습니다.
 
 ## 인용과 재사용
 
@@ -51,6 +102,7 @@ bun test tests/research-data.test.ts
 - 등록 교습비를 실제 결제액, 개인과외 가격, 방문 레슨 가격 또는 전체 시장 평균으로 표현하지 않습니다.
 - 학원과 교습소 통계는 분리합니다.
 - 표본 수가 5건 미만인 그룹은 금액을 공개하지 않습니다.
+- 검색수요 원본 통합문서는 Git과 공개 다운로드에서 제외하고 가공 CSV와 검증용 매니페스트만 공개합니다.
 
 ## 실패 조건
 
@@ -64,3 +116,19 @@ bun test tests/research-data.test.ts
 - 메타데이터 행 수와 CSV 행 수 불일치
 - 메타데이터의 바이트·SHA-256·행·필드 수와 실제 CSV 불일치
 - 데이터 사전의 필드명·순서와 실제 CSV 헤더 불일치
+- 검색수요 통합문서의 필수 시트·열 누락, 전체 행 수 4,545 불일치 또는 중복 키워드 발견
+- 검색수요의 통합·네이버·구글 합계가 검증값과 불일치
+
+## 전체 검증
+
+```powershell
+$repoRoot = git rev-parse --show-toplevel
+Set-Location (Join-Path $repoRoot 'app')
+bun test tests/research-data.test.ts tests/search-demand-report.test.ts
+bun run verify:ci
+```
+
+배포 뒤에는 `bun run verify:live`가 보고서 HTML, Dataset 구조화 데이터, 사이트맵과
+`llms.txt`, 공개 CSV·메타데이터·데이터 사전·매니페스트의 HTTP 응답과 핵심 무결성을
+확인해야 합니다. 발행일·버전·해시가 바뀌면 `/research/changelog`에도 같은 변경을
+기록합니다.

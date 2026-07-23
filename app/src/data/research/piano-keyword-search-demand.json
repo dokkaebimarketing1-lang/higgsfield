@@ -1,0 +1,309 @@
+{
+  "datasetId": "ewha-piano-search-demand-2026",
+  "datasetVersion": "1.0.0",
+  "name": "2026 피아노 키워드 검색수요 데이터",
+  "description": "구글 키워드 플래너 최근 12개월 월평균과 네이버 검색광고 키워드도구 최근 30일 월간 검색수를 결합한 4,545개 피아노 관련 키워드 자체 조사",
+  "publisher": {
+    "name": "이화 피아노 과외",
+    "url": "https://ewha-piano.higgsfield.app",
+    "role": "자체 키워드 조사 가공·분류·배포"
+  },
+  "lookupDate": "2026-07-23",
+  "googleWindow": {
+    "start": "2025-07",
+    "end": "2026-06",
+    "metric": "monthly average"
+  },
+  "naverWindow": {
+    "description": "조회일 기준 최근 30일 월간 검색수"
+  },
+  "sourceWorkbook": {
+    "originalName": "피아노_키워드_최종완전판.xlsx",
+    "bytes": 713375,
+    "sha256": "f292d020d7e9abd9861c7b5d737b76478376d1d18670b7373167f493f6aae27b",
+    "sourceSheet": "전체 키워드",
+    "manifestPath": "/data/research/piano-keyword-source-manifest-2026.json"
+  },
+  "datasetPublishedAt": "2026-07-23",
+  "modifiedAt": "2026-07-23",
+  "uniqueKeywords": 4545,
+  "naverMeasuredKeywords": 4522,
+  "totalSearchVolumeSum": 1001925,
+  "naverSearchVolumeSum": 593235,
+  "googleMonthlyAverageSum": 408690,
+  "segments": [
+    {
+      "sheetName": "전체 키워드",
+      "segmentId": "overall",
+      "dataRows": 4545,
+      "columnCount": 23,
+      "totalSearchVolumeSum": 1001925,
+      "naverSearchVolumeSum": 593235,
+      "googleMonthlyAverageSum": 408690,
+      "overlapPolicy": "기준 모수",
+      "notes": "공개 데이터셋의 기준 모수. 키워드 1개당 1행이며 다른 세그먼트 시트와 합산하지 않습니다."
+    },
+    {
+      "sheetName": "레슨·과외(알바용)",
+      "segmentId": "lesson",
+      "dataRows": 603,
+      "columnCount": 23,
+      "totalSearchVolumeSum": 95865,
+      "naverSearchVolumeSum": 80515,
+      "googleMonthlyAverageSum": 15350,
+      "overlapPolicy": "전체 키워드 및 다른 세그먼트와 중복 가능",
+      "notes": "전체 키워드의 큐레이션 부분집합이며 레슨 탐색과 구인 의도가 일부 함께 포함될 수 있습니다."
+    },
+    {
+      "sheetName": "지역별",
+      "segmentId": "local",
+      "dataRows": 243,
+      "columnCount": 23,
+      "totalSearchVolumeSum": 25720,
+      "naverSearchVolumeSum": 19840,
+      "googleMonthlyAverageSum": 5880,
+      "overlapPolicy": "전체 키워드 및 다른 세그먼트와 중복 가능",
+      "notes": "전체 키워드의 지역 표현 부분집합입니다."
+    },
+    {
+      "sheetName": "대상별(유아~시니어)",
+      "segmentId": "audience",
+      "dataRows": 150,
+      "columnCount": 23,
+      "totalSearchVolumeSum": 19925,
+      "naverSearchVolumeSum": 16075,
+      "googleMonthlyAverageSum": 3850,
+      "overlapPolicy": "전체 키워드 및 다른 세그먼트와 중복 가능",
+      "notes": "전체 키워드의 연령·대상 표현 부분집합입니다."
+    },
+    {
+      "sheetName": "알바·구인",
+      "segmentId": "jobs",
+      "dataRows": 66,
+      "columnCount": 23,
+      "totalSearchVolumeSum": 7790,
+      "naverSearchVolumeSum": 5830,
+      "googleMonthlyAverageSum": 1960,
+      "overlapPolicy": "전체 키워드 및 다른 세그먼트와 중복 가능",
+      "notes": "전체 키워드 중 구인·구직 의도 부분집합으로 레슨 고객 유입과 분리해 해석합니다."
+    },
+    {
+      "sheetName": "엄마·자녀(학부모)",
+      "segmentId": "parent",
+      "dataRows": 155,
+      "columnCount": 7,
+      "totalSearchVolumeSum": 42690,
+      "naverSearchVolumeSum": 37200,
+      "googleMonthlyAverageSum": 5490,
+      "overlapPolicy": "전체 키워드 및 다른 세그먼트와 중복 가능",
+      "notes": "학부모·자녀 관련 자체 분류이며 피아노 외 인접 음악 검색어가 포함될 수 있습니다."
+    },
+    {
+      "sheetName": "네이버 발굴 키워드",
+      "segmentId": "naver_discovered",
+      "dataRows": 3392,
+      "columnCount": 6,
+      "totalSearchVolumeSum": null,
+      "naverSearchVolumeSum": 441245,
+      "googleMonthlyAverageSum": null,
+      "overlapPolicy": "전체 키워드 및 다른 세그먼트와 중복 가능",
+      "notes": "네이버 지표만 있는 발굴 목록입니다. 전체 키워드와 중복되며 구글+네이버 합계와 직접 비교하지 않습니다."
+    }
+  ],
+  "topKeywords": [
+    {
+      "keyword": "피아노",
+      "totalSearchVolume": 79580,
+      "naverTotal": 39080,
+      "googleMonthlyAverage": 40500
+    },
+    {
+      "keyword": "메트로놈",
+      "totalSearchVolume": 61680,
+      "naverTotal": 21180,
+      "googleMonthlyAverage": 40500
+    },
+    {
+      "keyword": "마음 만은 피아니스트",
+      "totalSearchVolume": 34890,
+      "naverTotal": 22790,
+      "googleMonthlyAverage": 12100
+    },
+    {
+      "keyword": "피아노 악보",
+      "totalSearchVolume": 23860,
+      "naverTotal": 11760,
+      "googleMonthlyAverage": 12100
+    },
+    {
+      "keyword": "피아노 학원",
+      "totalSearchVolume": 22240,
+      "naverTotal": 20640,
+      "googleMonthlyAverage": 1600
+    },
+    {
+      "keyword": "전자 피아노",
+      "totalSearchVolume": 19430,
+      "naverTotal": 15830,
+      "googleMonthlyAverage": 3600
+    },
+    {
+      "keyword": "가상 피아노",
+      "totalSearchVolume": 17930,
+      "naverTotal": 3130,
+      "googleMonthlyAverage": 14800
+    },
+    {
+      "keyword": "쇼팽",
+      "totalSearchVolume": 15270,
+      "naverTotal": 7170,
+      "googleMonthlyAverage": 8100
+    },
+    {
+      "keyword": "신디사이저",
+      "totalSearchVolume": 14140,
+      "naverTotal": 6040,
+      "googleMonthlyAverage": 8100
+    },
+    {
+      "keyword": "히사이시 조",
+      "totalSearchVolume": 13190,
+      "naverTotal": 9590,
+      "googleMonthlyAverage": 3600
+    },
+    {
+      "keyword": "디지털 피아노",
+      "totalSearchVolume": 12260,
+      "naverTotal": 10660,
+      "googleMonthlyAverage": 1600
+    },
+    {
+      "keyword": "야마하 전자 피아노",
+      "totalSearchVolume": 12010,
+      "naverTotal": 11420,
+      "googleMonthlyAverage": 590
+    },
+    {
+      "keyword": "실용 음악 학원",
+      "totalSearchVolume": 11710,
+      "naverTotal": 10710,
+      "googleMonthlyAverage": 1000
+    },
+    {
+      "keyword": "영창 피아노",
+      "totalSearchVolume": 9260,
+      "naverTotal": 8260,
+      "googleMonthlyAverage": 1000
+    },
+    {
+      "keyword": "피아노 게임",
+      "totalSearchVolume": 7670,
+      "naverTotal": 1070,
+      "googleMonthlyAverage": 6600
+    },
+    {
+      "keyword": "피아노 연습실",
+      "totalSearchVolume": 7140,
+      "naverTotal": 6660,
+      "googleMonthlyAverage": 480
+    },
+    {
+      "keyword": "오르간",
+      "totalSearchVolume": 7040,
+      "naverTotal": 3440,
+      "googleMonthlyAverage": 3600
+    },
+    {
+      "keyword": "그랜드 피아노",
+      "totalSearchVolume": 6870,
+      "naverTotal": 3970,
+      "googleMonthlyAverage": 2900
+    },
+    {
+      "keyword": "멜로디언",
+      "totalSearchVolume": 6590,
+      "naverTotal": 4190,
+      "googleMonthlyAverage": 2400
+    },
+    {
+      "keyword": "쉬운 피아노 악보",
+      "totalSearchVolume": 6450,
+      "naverTotal": 4050,
+      "googleMonthlyAverage": 2400
+    }
+  ],
+  "targetKeywordRows": [
+    {
+      "keyword": "피아노 학원",
+      "totalSearchVolume": 22240,
+      "naverTotal": 20640,
+      "googleMonthlyAverage": 1600
+    },
+    {
+      "keyword": "피아노 코드",
+      "totalSearchVolume": 4230,
+      "naverTotal": 1830,
+      "googleMonthlyAverage": 2400
+    },
+    {
+      "keyword": "어린이 피아노",
+      "totalSearchVolume": 1790,
+      "naverTotal": 1620,
+      "googleMonthlyAverage": 170
+    },
+    {
+      "keyword": "성인 피아노",
+      "totalSearchVolume": 1770,
+      "naverTotal": 1510,
+      "googleMonthlyAverage": 260
+    },
+    {
+      "keyword": "피아노 레슨",
+      "totalSearchVolume": 1360,
+      "naverTotal": 1150,
+      "googleMonthlyAverage": 210
+    },
+    {
+      "keyword": "피아노 연습",
+      "totalSearchVolume": 530,
+      "naverTotal": 320,
+      "googleMonthlyAverage": 210
+    },
+    {
+      "keyword": "피아노 과외",
+      "totalSearchVolume": 200,
+      "naverTotal": 130,
+      "googleMonthlyAverage": 70
+    }
+  ],
+  "dataDictionaryPath": "/data/research/piano-keyword-search-demand-schema.json",
+  "distributions": [
+    {
+      "title": "piano-keyword-search-demand-2026",
+      "contentUrl": "/data/research/piano-keyword-search-demand-2026.csv",
+      "encodingFormat": "text/csv",
+      "bytes": 561979,
+      "sha256": "276f1b5b3d51ea41314a85226cd138616edfeb11b8fead7fee360c451815e8e2",
+      "rowCount": 4545,
+      "fieldCount": 30
+    },
+    {
+      "title": "piano-keyword-segment-summary-2026",
+      "contentUrl": "/data/research/piano-keyword-segment-summary-2026.csv",
+      "encodingFormat": "text/csv",
+      "bytes": 1620,
+      "sha256": "9e7538c82066e68d827241d8984c74f9fe5c795f33b9da8ad7f112a74f3d56fa",
+      "rowCount": 7,
+      "fieldCount": 9
+    }
+  ],
+  "limitations": [
+    "검색량은 광고 플랫폼의 추정치이며 실제 검색 트래픽, 노출, 클릭 또는 사용자 수가 아닙니다.",
+    "구글은 최근 12개월 월평균, 네이버는 최근 30일 월간 검색수라 관측 기간이 다릅니다.",
+    "키워드끼리 검색 의도와 이용자가 겹치므로 행별 검색량 합계를 고유 이용자 수로 해석하면 안 됩니다.",
+    "세그먼트 시트는 서로 중복되는 큐레이션 부분집합이라 행 수와 검색량을 다시 합산하면 안 됩니다.",
+    "학부모 세그먼트에는 피아노 외 인접 음악 키워드가 포함될 수 있고 분류 누락·오분류 가능성이 있습니다.",
+    "원본 요약 시트의 지역·알바 행 수 수식은 #NAME? 오류가 있어 공개 집계는 각 시트의 실제 비어 있지 않은 행을 다시 계산했습니다.",
+    "검색량이 높아도 사이트 서비스, 저작권, 검색 의도와 맞지 않으면 목표 페이지로 사용하지 않습니다."
+  ]
+}

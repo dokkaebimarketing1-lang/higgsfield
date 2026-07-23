@@ -1,4 +1,5 @@
 import nationalMetadataJson from "../data/research/national-music-private-education.json";
+import searchDemandMetadataJson from "../data/research/piano-keyword-search-demand.json";
 import seoulMetadataJson from "../data/research/seoul-piano-fees.json";
 import sourceManifestJson from "../data/research/source-manifest.json";
 import { SITE, SITE_URL } from "./content";
@@ -61,8 +62,15 @@ type NationalMetadata = typeof nationalMetadataJson & {
   modifiedAt?: string;
 };
 
+type SearchDemandMetadata = typeof searchDemandMetadataJson & {
+  datasetVersion?: string;
+  datasetPublishedAt?: string;
+  modifiedAt?: string;
+};
+
 export const SEOUL_PIANO_FEES = seoulMetadataJson as SeoulMetadata;
 export const NATIONAL_MUSIC_EDUCATION = nationalMetadataJson as NationalMetadata;
+export const PIANO_SEARCH_DEMAND = searchDemandMetadataJson as SearchDemandMetadata;
 export const RESEARCH_SOURCE_MANIFEST = sourceManifestJson as SourceManifest;
 export const SEOUL_ADMINISTRATIVE_SOURCES = RESEARCH_SOURCE_MANIFEST.sources.filter(
   (source) => source.kind === "official-administrative-xls",
@@ -82,6 +90,13 @@ export const RESEARCH_DOWNLOADS = {
     NATIONAL_MUSIC_EDUCATION.dataDictionaryPath ??
     "/data/research/national-music-private-education-schema.json",
   seoulSchema: SEOUL_PIANO_FEES.dataDictionaryPath ?? "/data/research/seoul-piano-fees-schema.json",
+  searchDemandCsv: "/data/research/piano-keyword-search-demand-2026.csv",
+  searchDemandSummaryCsv: "/data/research/piano-keyword-segment-summary-2026.csv",
+  searchDemandMetadata: "/data/research/piano-keyword-search-demand-metadata.json",
+  searchDemandSchema:
+    PIANO_SEARCH_DEMAND.dataDictionaryPath ??
+    "/data/research/piano-keyword-search-demand-schema.json",
+  searchDemandManifest: PIANO_SEARCH_DEMAND.sourceWorkbook.manifestPath,
 } as const;
 
 const numberFormatter = new Intl.NumberFormat("ko-KR");
@@ -117,6 +132,7 @@ const publisher = {
 export const RESEARCH_CATALOG_ID = `${SITE_URL}/research#catalog`;
 export const NATIONAL_DATASET_URL = `${SITE_URL}/research/2025-music-private-education-statistics`;
 export const SEOUL_DATASET_URL = `${SITE_URL}/research/2026-seoul-piano-academy-fees`;
+export const SEARCH_DEMAND_DATASET_URL = `${SITE_URL}/research/piano-search-demand-report-2026`;
 export const RESEARCH_METHOD_URL = `${SITE_URL}/research/methodology`;
 export const NATIONAL_DATASET_VERSION = NATIONAL_MUSIC_EDUCATION.datasetVersion ?? "1.0.0";
 export const SEOUL_DATASET_VERSION =
@@ -129,6 +145,11 @@ export const SEOUL_DATASET_PUBLISHED_AT =
   SEOUL_PIANO_FEES.datasetPublishedAt ?? SEOUL_PIANO_FEES.retrievedAt;
 export const SEOUL_DATASET_MODIFIED_AT =
   SEOUL_PIANO_FEES.modifiedAt ?? SEOUL_PIANO_FEES.retrievedAt;
+export const SEARCH_DEMAND_DATASET_VERSION = PIANO_SEARCH_DEMAND.datasetVersion ?? "1.0.0";
+export const SEARCH_DEMAND_DATASET_PUBLISHED_AT =
+  PIANO_SEARCH_DEMAND.datasetPublishedAt ?? PIANO_SEARCH_DEMAND.lookupDate;
+export const SEARCH_DEMAND_DATASET_MODIFIED_AT =
+  PIANO_SEARCH_DEMAND.modifiedAt ?? PIANO_SEARCH_DEMAND.lookupDate;
 
 export const NATIONAL_DATASET_CITATION =
   `${SITE.brand} (${NATIONAL_DATASET_PUBLISHED_AT.slice(0, 4)}). ` +
@@ -139,6 +160,12 @@ export const SEOUL_DATASET_CITATION =
   `${SITE.brand} (${SEOUL_DATASET_PUBLISHED_AT.slice(0, 4)}). ` +
   `${SEOUL_PIANO_FEES.name} (버전 ${SEOUL_DATASET_VERSION}). ` +
   `서울특별시교육청 공개자료 기반. ${SEOUL_DATASET_URL}`;
+
+export const SEARCH_DEMAND_DATASET_CITATION =
+  `${SITE.brand} (${SEARCH_DEMAND_DATASET_PUBLISHED_AT.slice(0, 4)}). ` +
+  `${PIANO_SEARCH_DEMAND.name} (버전 ${SEARCH_DEMAND_DATASET_VERSION}). ` +
+  `Google Ads Keyword Planner·네이버 검색광고 키워드도구 기반 자체 조사. ` +
+  `${SEARCH_DEMAND_DATASET_URL}`;
 
 function buildDataDownload(distribution: {
   title: string;
@@ -192,19 +219,106 @@ export function buildResearchDataCatalogSchema() {
     "@id": RESEARCH_CATALOG_ID,
     name: "이화 피아노 통계 자료실",
     description:
-      "공식 국가통계와 행정자료 기반 피아노 파생 데이터, 가공 CSV, 방법론과 한계를 제공하는 데이터 카탈로그",
+      "공식 국가통계·행정자료 기반 피아노 파생 데이터와 광고 도구 기반 자체 검색수요 조사, 가공 CSV, 방법론과 한계를 제공하는 데이터 카탈로그",
     url: `${SITE_URL}/research`,
     publisher,
     datePublished: NATIONAL_DATASET_PUBLISHED_AT,
-    dateModified:
-      NATIONAL_DATASET_MODIFIED_AT > SEOUL_DATASET_MODIFIED_AT
-        ? NATIONAL_DATASET_MODIFIED_AT
-        : SEOUL_DATASET_MODIFIED_AT,
+    dateModified: [
+      NATIONAL_DATASET_MODIFIED_AT,
+      SEOUL_DATASET_MODIFIED_AT,
+      SEARCH_DEMAND_DATASET_MODIFIED_AT,
+    ]
+      .sort()
+      .at(-1),
     inLanguage: "ko",
     dataset: [
       { "@id": `${NATIONAL_DATASET_URL}#dataset` },
       { "@id": `${SEOUL_DATASET_URL}#dataset` },
+      { "@id": `${SEARCH_DEMAND_DATASET_URL}#dataset` },
     ],
+  };
+}
+
+const searchDemandToolSources = [
+  {
+    "@type": "SoftwareApplication",
+    name: "Google Ads Keyword Planner",
+    url: "https://ads.google.com/home/tools/keyword-planner/",
+    provider: {
+      "@type": "Organization",
+      name: "Google",
+      url: "https://about.google/",
+    },
+  },
+  {
+    "@type": "SoftwareApplication",
+    name: "네이버 검색광고 키워드도구",
+    url: "https://searchad.naver.com/",
+    provider: {
+      "@type": "Organization",
+      name: "네이버",
+      url: "https://www.navercorp.com/",
+    },
+  },
+] as const;
+
+export function buildPianoSearchDemandDatasetSchema() {
+  const pageUrl = SEARCH_DEMAND_DATASET_URL;
+  return {
+    "@type": "Dataset",
+    "@id": `${pageUrl}#dataset`,
+    name: PIANO_SEARCH_DEMAND.name,
+    description: PIANO_SEARCH_DEMAND.description,
+    url: pageUrl,
+    identifier: PIANO_SEARCH_DEMAND.datasetId,
+    version: SEARCH_DEMAND_DATASET_VERSION,
+    keywords: ["피아노 키워드 검색량", "피아노 검색 수요", "구글 키워드 플래너", "네이버 검색광고"],
+    isAccessibleForFree: true,
+    creator: publisher,
+    publisher,
+    datePublished: SEARCH_DEMAND_DATASET_PUBLISHED_AT,
+    dateModified: SEARCH_DEMAND_DATASET_MODIFIED_AT,
+    temporalCoverage: "2025-07/2026-07",
+    spatialCoverage: { "@type": "Place", name: "대한민국" },
+    inLanguage: "ko",
+    mainEntityOfPage: { "@id": `${pageUrl}#webpage` },
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    isBasedOn: searchDemandToolSources,
+    citation: searchDemandToolSources,
+    creditText: SEARCH_DEMAND_DATASET_CITATION,
+    publishingPrinciples: `${SITE_URL}/editorial-policy`,
+    usageInfo: `${RESEARCH_METHOD_URL}#reuse-policy`,
+    measurementTechnique:
+      "2026-07-23 조회 기준 Google Ads Keyword Planner 최근 12개월 월평균과 네이버 검색광고 키워드도구 최근 30일 월간 검색수를 키워드 단위로 결합하고, 원본 세그먼트 시트 포함 여부를 플래그로 표시",
+    variableMeasured: [
+      { "@type": "PropertyValue", name: "통합 월간 검색량 추정치" },
+      { "@type": "PropertyValue", name: "네이버 모바일·PC 월간 검색수" },
+      { "@type": "PropertyValue", name: "Google 최근 12개월 월평균 검색량" },
+      { "@type": "PropertyValue", name: "검색 의도 세그먼트 포함 여부" },
+    ],
+    distribution: PIANO_SEARCH_DEMAND.distributions.map(buildDataDownload),
+    subjectOf: [
+      { "@type": "WebPage", "@id": `${RESEARCH_METHOD_URL}#webpage`, url: RESEARCH_METHOD_URL },
+      {
+        "@type": "DataDownload",
+        name: "피아노 키워드 검색수요 메타데이터",
+        contentUrl: `${SITE_URL}${RESEARCH_DOWNLOADS.searchDemandMetadata}`,
+        encodingFormat: "application/json",
+      },
+      {
+        "@type": "DataDownload",
+        name: "피아노 키워드 검색수요 데이터 사전",
+        contentUrl: `${SITE_URL}${RESEARCH_DOWNLOADS.searchDemandSchema}`,
+        encodingFormat: "application/json",
+      },
+      {
+        "@type": "CreativeWork",
+        name: "자체 조사 원본 파일 해시 매니페스트",
+        url: `${SITE_URL}${RESEARCH_DOWNLOADS.searchDemandManifest}`,
+        encodingFormat: "application/json",
+      },
+    ],
+    includedInDataCatalog: { "@id": RESEARCH_CATALOG_ID },
   };
 }
 
@@ -363,5 +477,22 @@ export function buildSeoulDatasetPageSchema() {
     inLanguage: "ko",
     isPartOf: { "@id": `${SITE_URL}/#website` },
     mainEntity: { "@id": `${SEOUL_DATASET_URL}#dataset` },
+  };
+}
+
+export function buildPianoSearchDemandPageSchema() {
+  return {
+    "@type": "WebPage",
+    "@id": `${SEARCH_DEMAND_DATASET_URL}#webpage`,
+    name: PIANO_SEARCH_DEMAND.name,
+    description: PIANO_SEARCH_DEMAND.description,
+    url: SEARCH_DEMAND_DATASET_URL,
+    datePublished: SEARCH_DEMAND_DATASET_PUBLISHED_AT,
+    dateModified: SEARCH_DEMAND_DATASET_MODIFIED_AT,
+    author: publisher,
+    publisher,
+    inLanguage: "ko",
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    mainEntity: { "@id": `${SEARCH_DEMAND_DATASET_URL}#dataset` },
   };
 }

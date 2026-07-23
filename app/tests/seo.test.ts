@@ -188,7 +188,7 @@ describe("SEO helpers", () => {
     const paths = PUBLIC_PAGES.map((page) => page.path);
     const keywords = PUBLIC_PAGES.map((page) => normalizeKeyword(page.primaryKeyword));
 
-    expect(PUBLIC_PAGES).toHaveLength(15);
+    expect(PUBLIC_PAGES).toHaveLength(24);
     expect(Object.values(SERVICE_PAGES)).toHaveLength(6);
     expect(new Set(paths).size).toBe(paths.length);
     expect(new Set(keywords).size).toBe(keywords.length);
@@ -199,11 +199,22 @@ describe("SEO helpers", () => {
         "/research/2025-music-private-education-statistics",
         "/research/2026-seoul-piano-academy-fees",
         "/research/methodology",
+        "/research/piano-search-demand-report-2026",
+        "/research/changelog",
+        "/tools",
+        "/tools/piano-chord-chart",
+        "/tools/piano-lesson-cost-calculator",
+        "/resources",
+        "/resources/piano-level-roadmap",
+        "/resources/piano-practice-planner",
+        "/editorial-policy",
       ]),
     );
     expect(
-      PUBLIC_PAGES.filter((page) => page.path.startsWith("/research")).map((page) => page.cluster),
-    ).toEqual(["research", "research", "research", "research"]);
+      PUBLIC_PAGES.filter((page) => page.path.startsWith("/research")).every(
+        (page) => page.cluster === "research",
+      ),
+    ).toBe(true);
 
     for (const page of PUBLIC_PAGES) {
       expect(page.title).toContain(page.primaryKeyword);

@@ -23,6 +23,7 @@ describe("research contextual links", () => {
       hub: /피아노 교육 데이터와 원자료/,
       national: /2025 전국 음악 사교육비 원자료와 가공 CSV/,
       seoul: /2026 서울 피아노 교습비 행정자료와 가공 통계/,
+      searchDemand: /구글·네이버 피아노 키워드 4,545개 검색량과 가공 CSV/,
       methodology: /원자료 가공 방법, 한계와 수정 이력/,
     };
 
@@ -38,11 +39,18 @@ describe("research contextual links", () => {
     expect(RESEARCH_REFERENCES.national.limitation).toContain("피아노 단독");
     expect(RESEARCH_REFERENCES.seoul.limitation).toContain("실제 결제액");
     expect(RESEARCH_REFERENCES.seoul.limitation).toContain("개인 레슨비");
+    expect(RESEARCH_REFERENCES.searchDemand.limitation).toContain("실제 사이트 트래픽");
+    expect(RESEARCH_REFERENCES.searchDemand.limitation).toContain("다시 더하면 안 됩니다");
     expect(RESEARCH_REFERENCES.methodology.limitation).toContain("알려진 한계");
   });
 
   test("maps home, lesson, category, article, and about contexts deliberately", () => {
-    expect(HOME_RESEARCH_REFERENCE_IDS).toEqual(["national", "seoul", "methodology"]);
+    expect(HOME_RESEARCH_REFERENCE_IDS).toEqual([
+      "national",
+      "seoul",
+      "searchDemand",
+      "methodology",
+    ]);
     expect(ABOUT_RESEARCH_REFERENCE_IDS).toEqual(["hub", "methodology"]);
 
     expect(getServiceResearchReferenceIds("/pricing")).toEqual(["seoul"]);
@@ -51,10 +59,10 @@ describe("research contextual links", () => {
     expect(getServiceResearchReferenceIds("/lessons/children")).toEqual(["national"]);
     expect(getServiceResearchReferenceIds("/lessons/admission")).toEqual([]);
 
-    expect(getCategoryResearchReferenceIds("lesson-guide")).toEqual(["seoul"]);
+    expect(getCategoryResearchReferenceIds("lesson-guide")).toEqual(["seoul", "searchDemand"]);
     expect(getCategoryResearchReferenceIds("local")).toEqual(["seoul"]);
-    expect(getCategoryResearchReferenceIds("parents")).toEqual(["national"]);
-    expect(getCategoryResearchReferenceIds("practice")).toEqual([]);
+    expect(getCategoryResearchReferenceIds("parents")).toEqual(["national", "searchDemand"]);
+    expect(getCategoryResearchReferenceIds("practice")).toEqual(["searchDemand"]);
 
     for (const slug of [
       "piano-tutoring-cost",
@@ -87,7 +95,11 @@ describe("research contextual links", () => {
       })),
     ];
 
-    for (const datasetId of ["national", "seoul"] satisfies ResearchDatasetReferenceId[]) {
+    for (const datasetId of [
+      "national",
+      "seoul",
+      "searchDemand",
+    ] satisfies ResearchDatasetReferenceId[]) {
       const inboundOrigins = new Set(
         origins
           .filter((origin) => origin.references.includes(datasetId))

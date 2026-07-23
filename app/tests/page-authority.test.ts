@@ -56,11 +56,55 @@ describe("page-level authority signals", () => {
     const article = source("../src/routes/blog/$category/$slug.tsx");
 
     expect(record).toContain("data-page-authority");
-    expect(record).toContain('href="/about#person"');
+    expect(record).toContain('authorName = "이화 피아노 과외 사이트 운영팀"');
+    expect(record).toContain('authorHref = "/editorial-policy"');
+    expect(record).toContain('reviewStatus = "외부·전문가 독립 검토 전"');
+    expect(record).not.toContain('authorName = "김서연');
     expect(landing).toContain("<PageAuthorityRecord");
     expect(blogHub).toContain("<PageAuthorityRecord");
     expect(categoryHub).toContain("<PageAuthorityRecord");
     expect(article).toContain("about: servicePages.map");
     expect(article).toContain("getServicePagesForPost");
+  });
+
+  test("keeps the site navigation and footer outside one shared main landmark", () => {
+    const shell = source("../src/components/site/chrome.tsx");
+    const nestedMainRoutes = [
+      "../src/routes/editorial-policy.tsx",
+      "../src/routes/research/index.tsx",
+      "../src/routes/research/2025-music-private-education-statistics.tsx",
+      "../src/routes/research/2026-seoul-piano-academy-fees.tsx",
+      "../src/routes/research/methodology.tsx",
+      "../src/routes/research/changelog.tsx",
+      "../src/routes/research/piano-search-demand-report-2026.tsx",
+      "../src/routes/tools/index.tsx",
+      "../src/routes/tools/piano-chord-chart.tsx",
+      "../src/routes/tools/piano-lesson-cost-calculator.tsx",
+    ];
+
+    expect(shell.match(/<main\b/g)).toHaveLength(1);
+    expect(shell.indexOf("<SiteNav")).toBeLessThan(shell.indexOf("<main"));
+    expect(shell.indexOf("</main>")).toBeLessThan(shell.indexOf("<SiteFooter"));
+    for (const routePath of nestedMainRoutes) {
+      expect(source(routePath)).not.toMatch(/<main\b/);
+    }
+  });
+
+  test("does not fabricate a named human review for newly published authority assets", () => {
+    const editorialPolicy = source("../src/routes/editorial-policy.tsx");
+    const newAssets = [
+      editorialPolicy,
+      source("../src/routes/tools/index.tsx"),
+      source("../src/routes/tools/piano-chord-chart.tsx"),
+      source("../src/routes/tools/piano-lesson-cost-calculator.tsx"),
+      source("../src/routes/resources/index.tsx"),
+      source("../src/routes/resources/piano-level-roadmap.tsx"),
+      source("../src/routes/resources/piano-practice-planner.tsx"),
+    ].join("\n");
+
+    expect(newAssets).toContain('reviewStatus="외부·전문가 독립 검토 전"');
+    expect(editorialPolicy).toContain("확인 기록이 있을 때만 개인 저자·검토자로 표시");
+    expect(editorialPolicy).not.toContain("김서연이 작성·검토");
+    expect(newAssets).not.toContain('author: { "@id": `${SITE_URL}/about#person` }');
   });
 });

@@ -443,9 +443,9 @@ describe("search-volume editorial draft migration", () => {
     {
       slug: "piano-chords-basics",
       category: "practice",
-      keyword: "피아노 코드",
-      total: 4230,
-      sourceRow: 38,
+      keyword: "피아노 코드 연습",
+      total: 80,
+      sourceRow: 1240,
     },
     {
       slug: "arts-high-school-admission",
@@ -624,6 +624,7 @@ describe("search-volume editorial draft migration", () => {
       )
       .all(...expectedDrafts.map((draft) => draft.slug));
     applyMigration(db, "0016_search_volume_drafts.sql");
+    applyMigration(db, "0017_authority_keyword_ownership.sql");
     const after = db
       .query<{ slug: string; updated_at: string }, []>(
         `SELECT slug, updated_at FROM posts

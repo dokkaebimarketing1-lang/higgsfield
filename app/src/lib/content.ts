@@ -210,6 +210,14 @@ export const SITE = {
     { label: "요금 안내", href: "/pricing" },
     { label: "피아노 이야기", href: "/blog" },
     { label: "피아노 데이터", href: "/research" },
+    { label: "무료 도구", href: "/tools" },
+  ],
+  authorityNav: [
+    { label: "피아노 코드표", href: "/tools/piano-chord-chart" },
+    { label: "레슨비 계산기", href: "/tools/piano-lesson-cost-calculator" },
+    { label: "수준별 로드맵", href: "/resources/piano-level-roadmap" },
+    { label: "연습 플래너", href: "/resources/piano-practice-planner" },
+    { label: "편집 정책", href: "/editorial-policy" },
   ],
   hero: {
     eyebrow: "이화여자대학교 피아노과",

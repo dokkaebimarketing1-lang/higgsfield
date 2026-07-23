@@ -11,6 +11,7 @@ import {
 import { SITE, SITE_URL } from "../../lib/content";
 import {
   NATIONAL_PDF_SOURCE,
+  PIANO_SEARCH_DEMAND,
   RESEARCH_DOWNLOADS,
   RESEARCH_SOURCE_MANIFEST,
   SEOUL_PIANO_FEES,
@@ -48,6 +49,7 @@ export const Route = createFileRoute("/research/methodology")({
                 about: [
                   { "@id": `${SITE_URL}/research/2025-music-private-education-statistics#dataset` },
                   { "@id": `${SITE_URL}/research/2026-seoul-piano-academy-fees#dataset` },
+                  { "@id": `${SITE_URL}/research/piano-search-demand-report-2026#dataset` },
                 ],
               },
               {
@@ -101,6 +103,25 @@ const methodSteps = [
   },
 ] as const;
 
+const searchDemandMethodSteps = [
+  {
+    title: "1. 원본 통합 문서를 해시로 고정합니다",
+    body: `조회일 ${PIANO_SEARCH_DEMAND.lookupDate}의 원본 XLSX 이름, 파일 크기와 SHA-256을 별도 매니페스트에 기록합니다. 원본의 수식·서식은 재배포하지 않고 검색어·지표·세그먼트 소속만 공개 CSV로 다시 구성합니다.`,
+  },
+  {
+    title: "2. 전체 키워드를 유일한 기준 모수로 둡니다",
+    body: `‘전체 키워드’ 시트의 비어 있지 않은 ${formatNumber(PIANO_SEARCH_DEMAND.uniqueKeywords)}개 고유 검색어를 1키워드 1행으로 고정합니다. 레슨·지역·대상·구인·학부모·네이버 발굴 시트는 서로 겹칠 수 있는 부분집합으로만 표시합니다.`,
+  },
+  {
+    title: "3. 플랫폼별 관측 기간을 보존합니다",
+    body: `Google은 ${PIANO_SEARCH_DEMAND.googleWindow.start}~${PIANO_SEARCH_DEMAND.googleWindow.end} 최근 12개월 월평균, 네이버는 ${PIANO_SEARCH_DEMAND.lookupDate} 조회 기준 최근 30일 월간 검색수입니다. 두 값의 행별 합계는 참고용이며 동일 기간의 공식 통계로 바꾸어 말하지 않습니다.`,
+  },
+  {
+    title: "4. 수식 오류와 목표 페이지 적합성을 따로 검사합니다",
+    body: "원본 요약 시트의 #NAME? 행 수 수식을 사용하지 않고 각 시트의 실제 데이터 행을 재계산합니다. 검색량 순위와 사이트 목표 페이지는 분리하며 서비스 적합성·검색 의도·기존 페이지 중복을 함께 검토합니다.",
+  },
+] as const;
+
 const limitations = [
   "등록·신고 교습비이며 할인, 교재비, 콩쿠르비, 추가 레슨비를 반영한 실제 결제금액이 아닙니다.",
   "학원·교습소 자료이므로 프리랜서 개인과외와 방문 레슨은 포함하지 않습니다.",
@@ -116,7 +137,7 @@ const limitations = [
 function ResearchMethodologyPage() {
   return (
     <SubPageShell>
-      <main className="mx-auto max-w-5xl px-6 py-20 md:px-10 md:py-28">
+      <div className="mx-auto max-w-5xl px-6 py-20 md:px-10 md:py-28">
         <ResearchBreadcrumb
           items={[{ label: "피아노 통계", href: "/research" }, { label: "피아노 데이터 방법론" }]}
         />
@@ -144,6 +165,82 @@ function ResearchMethodologyPage() {
               </li>
             ))}
           </ol>
+        </section>
+
+        <section className="mt-20" aria-labelledby="search-demand-method-title">
+          <div className="max-w-3xl">
+            <p className="text-xs tracking-[0.18em] text-brass uppercase">
+              Self-reported search-demand dataset
+            </p>
+            <h2 id="search-demand-method-title" className="mt-3 font-serif-kr text-3xl font-bold">
+              검색수요 자체 조사 처리 절차
+            </h2>
+            <p className="mt-4 leading-relaxed text-mute">
+              광고 도구가 제공한 추정값과 이 사이트의 가공·분류 책임을 구분합니다. Google과 네이버는
+              도구 운영기관이며 이 데이터셋의 발행자·검토자나 통계 보증기관이 아닙니다.
+            </p>
+          </div>
+          <ol className="mt-8 divide-y divide-line border-y border-line">
+            {searchDemandMethodSteps.map((step) => (
+              <li key={step.title} className="grid gap-3 py-7 md:grid-cols-[0.55fr_1.45fr]">
+                <h3 className="font-serif-kr text-xl font-semibold text-ivory">{step.title}</h3>
+                <p className="leading-relaxed text-mute">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-8 overflow-x-auto border border-line">
+            <table className="w-full min-w-[760px] border-collapse text-left">
+              <caption className="sr-only">
+                피아노 키워드 검색수요 공개 데이터의 주요 필드와 해석 기준
+              </caption>
+              <thead className="bg-ebony-2 text-sm text-mute">
+                <tr>
+                  <th scope="col" className="px-5 py-4 font-medium">
+                    공개 필드
+                  </th>
+                  <th scope="col" className="px-5 py-4 font-medium">
+                    값의 의미
+                  </th>
+                  <th scope="col" className="px-5 py-4 font-medium">
+                    금지되는 해석
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  [
+                    "total_search_volume",
+                    "Google 월평균과 네이버 최근 30일 수치의 행별 참고 합계",
+                    "월간 순이용자·예상 방문자 수",
+                  ],
+                  ["google_monthly_average", "최근 12개월 Google 월평균 추정치", "실제 노출·클릭"],
+                  [
+                    "naver_total",
+                    "조회일 기준 네이버 모바일·PC 월간 검색수 합계",
+                    "Google과 동일 기간 통계",
+                  ],
+                  [
+                    "in_*_segment",
+                    "해당 자체 분류 시트에 같은 검색어가 있으면 1",
+                    "서로 배타적인 이용자 집단",
+                  ],
+                  [
+                    "source_coverage",
+                    "해당 행에 값이 있는 플랫폼 조합",
+                    "측정 정확도나 데이터 품질 점수",
+                  ],
+                ].map(([field, meaning, prohibited]) => (
+                  <tr key={field} className="border-t border-line">
+                    <th scope="row" className="px-5 py-4 font-mono text-xs text-ivory">
+                      {field}
+                    </th>
+                    <td className="px-5 py-4 text-sm leading-relaxed text-mute">{meaning}</td>
+                    <td className="px-5 py-4 text-sm leading-relaxed text-mute">{prohibited}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="mt-20" aria-labelledby="field-policy-title">
@@ -239,6 +336,19 @@ function ResearchMethodologyPage() {
               </li>
             ))}
           </ul>
+          <h3 className="mt-12 font-serif-kr text-2xl font-semibold text-ivory">
+            검색수요 자체 조사의 추가 한계
+          </h3>
+          <ul className="mt-6 grid gap-4 md:grid-cols-2">
+            {PIANO_SEARCH_DEMAND.limitations.map((limitation) => (
+              <li
+                key={limitation}
+                className="border border-line p-5 text-sm leading-relaxed text-mute"
+              >
+                {limitation}
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section id="reuse-policy" className="mt-20" aria-labelledby="reuse-policy-title">
@@ -294,11 +404,15 @@ function ResearchMethodologyPage() {
             재생성 방법
           </h2>
           <p className="mt-4 max-w-[72ch] leading-relaxed text-mute">
-            Windows PowerShell, Microsoft Excel, Python의 pandas·openpyxl이 필요합니다. 스크립트는
-            원자료를 임시 폴더에만 저장하고 공개 CSV·JSON을 다시 생성합니다.
+            공식 원자료 파이프라인은 Windows PowerShell과 Microsoft Excel을 사용합니다. 키워드
+            검색수요 파이프라인은 Python의 pandas·openpyxl로 비공개 원본 XLSX를 읽어 공개 CSV·JSON을
+            다시 생성합니다.
           </p>
           <pre className="mt-6 overflow-x-auto border border-line bg-ebony-2 p-5 text-sm text-mute">
             <code>{`.\\scripts\\refresh-research-data.ps1 -RetrievedAt 2026-07-23`}</code>
+          </pre>
+          <pre className="mt-4 overflow-x-auto border border-line bg-ebony-2 p-5 text-sm text-mute">
+            <code>{`python scripts/build-search-demand-data.py --source "<원본 XLSX 경로>"`}</code>
           </pre>
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             <DownloadCard
@@ -323,6 +437,24 @@ function ResearchMethodologyPage() {
               href={RESEARCH_DOWNLOADS.seoulSchema}
               title="서울 CSV 데이터 사전"
               description="레코드 14개·요약 21개 필드의 파생식과 공개 제한 규칙을 확인합니다."
+              meta="JSON"
+            />
+            <DownloadCard
+              href={RESEARCH_DOWNLOADS.searchDemandMetadata}
+              title="검색수요 데이터셋 메타데이터"
+              description="관측 기간, 행 수, 검색량 합계, 목표 키워드, 배포 파일 크기와 해시를 확인합니다."
+              meta="JSON"
+            />
+            <DownloadCard
+              href={RESEARCH_DOWNLOADS.searchDemandSchema}
+              title="검색수요 CSV 데이터 사전"
+              description="키워드 30개·세그먼트 요약 9개 필드의 자료형, 단위, 파생식과 해석 제한을 확인합니다."
+              meta="JSON"
+            />
+            <DownloadCard
+              href={RESEARCH_DOWNLOADS.searchDemandManifest}
+              title="검색수요 원본 해시 매니페스트"
+              description="비공개 원본 XLSX의 파일명, 크기, 조회일, SHA-256과 재배포 범위를 확인합니다."
               meta="JSON"
             />
           </div>
@@ -355,6 +487,12 @@ function ResearchMethodologyPage() {
           <h2 id="change-log-title" className="mt-3 font-serif-kr text-3xl font-bold">
             수정 이력
           </h2>
+          <a
+            href="/research/changelog"
+            className="mt-4 inline-block text-sm text-brass underline underline-offset-4"
+          >
+            연구 데이터 전체 수정 이력 보기 →
+          </a>
           <div className="mt-8 grid gap-4 md:grid-cols-[160px_1fr]">
             <time dateTime="2026-07-23" className="text-sm text-faint">
               2026-07-23
@@ -372,7 +510,7 @@ function ResearchMethodologyPage() {
             </div>
           </div>
         </section>
-      </main>
+      </div>
     </SubPageShell>
   );
 }

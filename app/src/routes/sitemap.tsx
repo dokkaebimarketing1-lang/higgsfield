@@ -36,8 +36,13 @@ function SitemapPage() {
   };
 
   const lessonPages = Object.values(SERVICE_PAGES);
-  const lessonPaths = new Set<string>(lessonPages.map((page) => page.path));
-  const mainPages = PUBLIC_PAGES.filter((page) => !lessonPaths.has(page.path));
+  const researchPages = PUBLIC_PAGES.filter((page) => page.cluster === "research");
+  const toolPages = PUBLIC_PAGES.filter((page) => page.cluster === "tools");
+  const resourcePages = PUBLIC_PAGES.filter((page) => page.cluster === "resources");
+  const groupedPaths = new Set(
+    [...lessonPages, ...researchPages, ...toolPages, ...resourcePages].map((page) => page.path),
+  );
+  const mainPages = PUBLIC_PAGES.filter((page) => !groupedPaths.has(page.path));
   const publicCategories = categories.filter((category) => Number(category.post_count ?? 0) > 0);
 
   return (
@@ -49,6 +54,39 @@ function SitemapPage() {
         <h2 className="mt-14 font-serif-kr text-2xl font-bold">주요 페이지</h2>
         <ul className="mt-5">
           {mainPages.map((p) => (
+            <li key={p.path} className="border-b border-line first:border-t">
+              <a href={p.path} className="block py-4 text-ivory transition-colors hover:text-brass">
+                {p.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <h2 className="mt-14 font-serif-kr text-2xl font-bold">피아노 연구·데이터</h2>
+        <ul className="mt-5">
+          {researchPages.map((p) => (
+            <li key={p.path} className="border-b border-line first:border-t">
+              <a href={p.path} className="block py-4 text-ivory transition-colors hover:text-brass">
+                {p.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <h2 className="mt-14 font-serif-kr text-2xl font-bold">무료 피아노 도구</h2>
+        <ul className="mt-5">
+          {toolPages.map((p) => (
+            <li key={p.path} className="border-b border-line first:border-t">
+              <a href={p.path} className="block py-4 text-ivory transition-colors hover:text-brass">
+                {p.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <h2 className="mt-14 font-serif-kr text-2xl font-bold">다운로드 학습 자료</h2>
+        <ul className="mt-5">
+          {resourcePages.map((p) => (
             <li key={p.path} className="border-b border-line first:border-t">
               <a href={p.path} className="block py-4 text-ivory transition-colors hover:text-brass">
                 {p.label}

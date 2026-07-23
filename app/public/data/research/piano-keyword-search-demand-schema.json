@@ -1,0 +1,373 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "ewha-piano-search-demand-2026",
+  "datasetVersion": "1.0.0",
+  "publishedAt": "2026-07-23",
+  "tables": [
+    {
+      "name": "keyword_search_demand",
+      "csvPath": "/data/research/piano-keyword-search-demand-2026.csv",
+      "fieldCount": 30,
+      "fields": [
+        {
+          "name": "keyword",
+          "dataType": "string",
+          "nullable": false,
+          "unit": null,
+          "description": "검색어 원문",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "total_search_volume",
+          "dataType": "integer",
+          "nullable": false,
+          "unit": "monthly search estimate",
+          "description": "구글 최근 12개월 월평균과 네이버 최근 30일 월간 검색수의 합",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "naver_total",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "네이버 모바일과 PC 월간 검색수 합계",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "naver_mobile",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "네이버 모바일 월간 검색수",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "naver_pc",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "네이버 PC 월간 검색수",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_monthly_average",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 키워드 플래너 최근 12개월 월평균 검색량",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "naver_competition",
+          "dataType": "string",
+          "nullable": true,
+          "unit": null,
+          "description": "네이버 검색광고 키워드도구 경쟁도",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_competition",
+          "dataType": "string",
+          "nullable": true,
+          "unit": null,
+          "description": "구글 키워드 플래너 경쟁도 구간",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_competition_index",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": null,
+          "description": "구글 키워드 플래너 경쟁지수",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_bid_low_krw",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "KRW",
+          "description": "구글 페이지 상단 입찰가 하한 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_bid_high_krw",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "KRW",
+          "description": "구글 페이지 상단 입찰가 상한 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2025_07",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2025_08",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2025_09",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2025_10",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2025_11",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2025_12",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2026_01",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2026_02",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2026_03",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2026_04",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2026_05",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "google_search_volume_2026_06",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "구글 월별 검색량 추정치",
+          "derivation": "원본 전체 키워드 시트 값 유지",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "source_coverage",
+          "dataType": "string",
+          "nullable": false,
+          "unit": null,
+          "description": "해당 행에 값이 있는 플랫폼 조합",
+          "derivation": "네이버·구글 검색량 필드의 값 존재 여부로 플랫폼 조합을 계산",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "in_lesson_segment",
+          "dataType": "integer",
+          "nullable": false,
+          "unit": null,
+          "description": "해당 자체 분류 세그먼트 포함 여부(1 또는 0)",
+          "derivation": "동일 키워드가 원본의 해당 세그먼트 시트에 있으면 1",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "in_local_segment",
+          "dataType": "integer",
+          "nullable": false,
+          "unit": null,
+          "description": "해당 자체 분류 세그먼트 포함 여부(1 또는 0)",
+          "derivation": "동일 키워드가 원본의 해당 세그먼트 시트에 있으면 1",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "in_audience_segment",
+          "dataType": "integer",
+          "nullable": false,
+          "unit": null,
+          "description": "해당 자체 분류 세그먼트 포함 여부(1 또는 0)",
+          "derivation": "동일 키워드가 원본의 해당 세그먼트 시트에 있으면 1",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "in_jobs_segment",
+          "dataType": "integer",
+          "nullable": false,
+          "unit": null,
+          "description": "해당 자체 분류 세그먼트 포함 여부(1 또는 0)",
+          "derivation": "동일 키워드가 원본의 해당 세그먼트 시트에 있으면 1",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "in_parent_segment",
+          "dataType": "integer",
+          "nullable": false,
+          "unit": null,
+          "description": "해당 자체 분류 세그먼트 포함 여부(1 또는 0)",
+          "derivation": "동일 키워드가 원본의 해당 세그먼트 시트에 있으면 1",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        },
+        {
+          "name": "in_naver_discovered_segment",
+          "dataType": "integer",
+          "nullable": false,
+          "unit": null,
+          "description": "해당 자체 분류 세그먼트 포함 여부(1 또는 0)",
+          "derivation": "동일 키워드가 원본의 해당 세그먼트 시트에 있으면 1",
+          "publicRestriction": "광고 도구 추정치이며 실제 사이트 트래픽이나 검색 이용자 수로 해석하지 않음"
+        }
+      ]
+    },
+    {
+      "name": "segment_summary",
+      "csvPath": "/data/research/piano-keyword-segment-summary-2026.csv",
+      "fieldCount": 9,
+      "fields": [
+        {
+          "name": "sheet_name",
+          "dataType": "string",
+          "nullable": false,
+          "unit": null,
+          "description": "원본 시트별 행 수·검색량 합계·중복 해석 기준",
+          "derivation": "각 원본 시트를 독립 집계하며 시트 간 합계를 다시 합산하지 않음",
+          "publicRestriction": "세그먼트는 서로 중복될 수 있어 전체 키워드 수로 합산하지 않음"
+        },
+        {
+          "name": "segment_id",
+          "dataType": "string",
+          "nullable": false,
+          "unit": null,
+          "description": "원본 시트별 행 수·검색량 합계·중복 해석 기준",
+          "derivation": "각 원본 시트를 독립 집계하며 시트 간 합계를 다시 합산하지 않음",
+          "publicRestriction": "세그먼트는 서로 중복될 수 있어 전체 키워드 수로 합산하지 않음"
+        },
+        {
+          "name": "data_rows",
+          "dataType": "integer",
+          "nullable": false,
+          "unit": null,
+          "description": "원본 시트별 행 수·검색량 합계·중복 해석 기준",
+          "derivation": "각 원본 시트를 독립 집계하며 시트 간 합계를 다시 합산하지 않음",
+          "publicRestriction": "세그먼트는 서로 중복될 수 있어 전체 키워드 수로 합산하지 않음"
+        },
+        {
+          "name": "column_count",
+          "dataType": "integer",
+          "nullable": false,
+          "unit": null,
+          "description": "원본 시트별 행 수·검색량 합계·중복 해석 기준",
+          "derivation": "각 원본 시트를 독립 집계하며 시트 간 합계를 다시 합산하지 않음",
+          "publicRestriction": "세그먼트는 서로 중복될 수 있어 전체 키워드 수로 합산하지 않음"
+        },
+        {
+          "name": "total_search_volume_sum",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "원본 시트별 행 수·검색량 합계·중복 해석 기준",
+          "derivation": "각 원본 시트를 독립 집계하며 시트 간 합계를 다시 합산하지 않음",
+          "publicRestriction": "세그먼트는 서로 중복될 수 있어 전체 키워드 수로 합산하지 않음"
+        },
+        {
+          "name": "naver_search_volume_sum",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "원본 시트별 행 수·검색량 합계·중복 해석 기준",
+          "derivation": "각 원본 시트를 독립 집계하며 시트 간 합계를 다시 합산하지 않음",
+          "publicRestriction": "세그먼트는 서로 중복될 수 있어 전체 키워드 수로 합산하지 않음"
+        },
+        {
+          "name": "google_monthly_average_sum",
+          "dataType": "integer",
+          "nullable": true,
+          "unit": "monthly search estimate",
+          "description": "원본 시트별 행 수·검색량 합계·중복 해석 기준",
+          "derivation": "각 원본 시트를 독립 집계하며 시트 간 합계를 다시 합산하지 않음",
+          "publicRestriction": "세그먼트는 서로 중복될 수 있어 전체 키워드 수로 합산하지 않음"
+        },
+        {
+          "name": "overlap_policy",
+          "dataType": "string",
+          "nullable": false,
+          "unit": null,
+          "description": "원본 시트별 행 수·검색량 합계·중복 해석 기준",
+          "derivation": "각 원본 시트를 독립 집계하며 시트 간 합계를 다시 합산하지 않음",
+          "publicRestriction": "세그먼트는 서로 중복될 수 있어 전체 키워드 수로 합산하지 않음"
+        },
+        {
+          "name": "notes",
+          "dataType": "string",
+          "nullable": false,
+          "unit": null,
+          "description": "원본 시트별 행 수·검색량 합계·중복 해석 기준",
+          "derivation": "각 원본 시트를 독립 집계하며 시트 간 합계를 다시 합산하지 않음",
+          "publicRestriction": "세그먼트는 서로 중복될 수 있어 전체 키워드 수로 합산하지 않음"
+        }
+      ]
+    }
+  ]
+}

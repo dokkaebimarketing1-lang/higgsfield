@@ -11,6 +11,7 @@ import { SITE_URL } from "../../lib/content";
 import {
   NATIONAL_MUSIC_EDUCATION,
   NATIONAL_PDF_SOURCE,
+  PIANO_SEARCH_DEMAND,
   SEOUL_PIANO_FEES,
   buildResearchDataCatalogSchema,
   formatEokKrw,
@@ -40,6 +41,18 @@ const researchItems = [
     path: "/research/methodology",
     description: "수집·필터·직접 식별정보 제거·통계 기준·한계·수정 이력",
     evidence: "재현성 문서",
+  },
+  {
+    name: "2026 피아노 키워드 검색수요 조사",
+    path: "/research/piano-search-demand-report-2026",
+    description: "구글·네이버 광고 도구 기반 4,545개 키워드 자체 조사와 공개 CSV",
+    evidence: "자체 검색수요 조사",
+  },
+  {
+    name: "피아노 데이터 수정 이력",
+    path: "/research/changelog",
+    description: "데이터셋 최초 공개, 버전, 무결성 정정과 검증 범위",
+    evidence: "변경 추적",
   },
 ] as const;
 
@@ -89,21 +102,24 @@ export const Route = createFileRoute("/research/")({
 function ResearchHub() {
   return (
     <SubPageShell>
-      <main className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
+      <div className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
         <ResearchBreadcrumb items={[{ label: "피아노 통계" }]} />
 
         <header className="mt-10 max-w-4xl">
-          <EvidenceBadge>공식 원문과 파생분석을 분리 공개합니다</EvidenceBadge>
+          <EvidenceBadge>공식 원문·파생분석·자체 조사를 분리 공개합니다</EvidenceBadge>
           <h1 className="mt-6 font-serif-kr text-4xl font-bold tracking-tight md:text-6xl">
             피아노 통계 자료실
           </h1>
           <p className="mt-6 max-w-[70ch] text-lg leading-relaxed text-mute">
-            숫자만 인용하지 않습니다. 공식 원자료의 출처와 해시, 직접 식별정보를 제거한 가공 CSV,
-            필터와 계산 방법, 해석하면 안 되는 범위와 수정 이력을 같은 페이지에서 제공합니다.
+            숫자만 인용하지 않습니다. 공식 원자료와 자체 조사 원본의 출처·해시, 직접 식별정보를
+            제거한 가공 CSV, 필터와 계산 방법, 해석하면 안 되는 범위와 수정 이력을 함께 제공합니다.
           </p>
         </header>
 
-        <section className="mt-14 grid gap-4 md:grid-cols-3" aria-label="핵심 데이터 규모">
+        <section
+          className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+          aria-label="핵심 데이터 규모"
+        >
           <StatCard
             label="2025 음악 사교육비 총액"
             value={formatEokKrw(nationalTotal.musicPrivateEducationSpending100mKrw)}
@@ -119,6 +135,11 @@ function ResearchHub() {
             value={`${formatNumber(SEOUL_PIANO_FEES.publishedFacilities)}곳`}
             detail="학원과 교습소를 분리 집계했으며 시설명·전화번호·정확한 주소는 공개하지 않습니다."
           />
+          <StatCard
+            label="피아노 검색 키워드"
+            value={`${formatNumber(PIANO_SEARCH_DEMAND.uniqueKeywords)}개`}
+            detail="광고 도구의 추정 검색량을 결합한 자체 조사이며 실제 트래픽이나 고유 이용자 수는 아닙니다."
+          />
         </section>
 
         <section className="mt-20">
@@ -128,10 +149,11 @@ function ResearchHub() {
               데이터셋과 검증 문서
             </h2>
             <p className="mt-4 leading-relaxed text-mute">
-              국가통계와 행정자료 기반 파생 통계를 섞지 않고 독립 페이지로 관리합니다.
+              국가통계, 행정자료 기반 파생 통계와 광고 도구 기반 자체 조사를 섞지 않고 독립 페이지로
+              관리합니다.
             </p>
           </div>
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {researchItems.map((item) => (
               <a
                 key={item.path}
@@ -205,17 +227,29 @@ function ResearchHub() {
               dateLabel: "원자료 기준일",
               dateValue: SEOUL_PIANO_FEES.referenceDate,
             },
+            {
+              name: "Google Ads Keyword Planner 공식 도구 안내",
+              href: "https://business.google.com/en-all/ad-tools/keyword-planner/",
+              dateLabel: "자체 조사 조회일",
+              dateValue: PIANO_SEARCH_DEMAND.lookupDate,
+            },
+            {
+              name: "네이버 검색광고 키워드도구 공식 도움말",
+              href: "https://ads.naver.com/help/faq/1406",
+              dateLabel: "자체 조사 조회일",
+              dateValue: PIANO_SEARCH_DEMAND.lookupDate,
+            },
           ]}
-          referenceLabel="2025년 조사·2026-01-01 행정자료"
+          referenceLabel="2025년 국가조사·2026-01-01 행정자료·2026-07-23 자체 검색수요 조사"
           datasetPublishedAt="2026-07-23"
           modifiedAt="2026-07-23"
           version="1.0.0"
-          verification="원자료 12개 SHA-256, CSV 행 수, 통계 합계, 공개 필드와 링크 상태 검사"
+          verification="공식 원자료 12개와 자체 조사 원본의 SHA-256, CSV 행 수, 통계 합계, 공개 필드와 링크 상태 검사"
           licenseName="데이터셋별 원자료 이용조건과 재사용 기준"
           licenseHref="/research/methodology#reuse-policy"
-          reuseNote="국가통계와 행정자료의 이용조건을 각각 확인하고, 가공본을 인용할 때는 데이터셋명·버전·정식 URL을 함께 표시합니다."
+          reuseNote="국가통계·행정자료·광고 도구의 조건을 각각 확인하고, 가공본을 인용할 때는 데이터셋명·버전·정식 URL과 자체 조사 한계를 함께 표시합니다."
         />
-      </main>
+      </div>
     </SubPageShell>
   );
 }

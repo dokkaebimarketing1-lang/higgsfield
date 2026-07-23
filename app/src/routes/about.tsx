@@ -19,7 +19,6 @@ const personLd = {
   image: `${SITE_URL}/assets/portrait.jpg`,
   mainEntityOfPage: `${SITE_URL}/about`,
   affiliation: { "@type": "CollegeOrUniversity", name: "이화여자대학교" },
-  award: "국내 피아노 콩쿠르 입상 및 수상 다수",
   knowsAbout: ["피아노", "피아노 교육", "음대 입시", "콩쿠르 지도", "클래식 음악"],
   worksFor: { "@id": `${SITE_URL}/#business` },
 };
@@ -220,6 +219,33 @@ function AboutPage() {
             heading="강사 소개와 데이터 근거를 분리해 공개합니다"
             description="강사 경력과 수업 안내에 사용한 배경 자료를 독립적으로 검토할 수 있도록 연구 허브와 방법론을 연결합니다. 이 자료는 강사 경력, 개인 레슨의 품질, 학습 성과를 증명하는 근거가 아닙니다."
           />
+        </section>
+
+        <section
+          className="mt-12 border border-line bg-ebony-2 p-7 md:p-9"
+          aria-labelledby="profile-evidence-title"
+        >
+          <p className="text-xs tracking-[0.16em] text-brass uppercase">Profile evidence</p>
+          <h2 id="profile-evidence-title" className="mt-3 font-serif-kr text-2xl font-semibold">
+            경력·저자 정보 공개 원칙
+          </h2>
+          <p className="mt-4 max-w-[76ch] leading-relaxed text-mute">
+            이 페이지의 학력·수업 범위·경력 요약은 운영자가 제공한 프로필입니다. 구체적인 대회명,
+            연도, 입상 등급처럼 외부에서 독립 확인해야 하는 세부 정보는 확인 자료와 함께 공개할 때만
+            구조화 데이터에 추가합니다. 연구 통계와 검색량 자료는 강사 경력이나 수업 성과를 입증하는
+            자료로 사용하지 않습니다.
+          </p>
+          <p className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+            <a href="/editorial-policy" className="text-brass underline underline-offset-4">
+              출처·AI·수정 편집 정책
+            </a>
+            <a href="/research/changelog" className="text-brass underline underline-offset-4">
+              연구 데이터 수정 이력
+            </a>
+            <a href="/#contact" className="text-brass underline underline-offset-4">
+              경력 확인·오류 정정 요청
+            </a>
+          </p>
         </section>
 
         <section className="mt-24" aria-labelledby="about-faq-heading">

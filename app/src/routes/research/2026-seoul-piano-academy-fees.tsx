@@ -130,7 +130,7 @@ function DistrictValue({ row }: { row: ResearchSummaryRow | undefined }) {
 function SeoulPianoFeesPage() {
   return (
     <SubPageShell>
-      <main className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
+      <div className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
         <ResearchBreadcrumb
           items={[
             { label: "피아노 통계", href: "/research" },
@@ -453,7 +453,7 @@ function SeoulPianoFeesPage() {
           title="서울 피아노 학원비 자주 묻는 질문"
           items={seoulFaq}
         />
-      </main>
+      </div>
     </SubPageShell>
   );
 }

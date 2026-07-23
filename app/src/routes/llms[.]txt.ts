@@ -6,7 +6,7 @@ import {
   PUBLIC_POST_WITH_CATEGORY_SQL,
 } from "../lib/blog-publication-policy";
 import { CATEGORY_SEO, SITE, SITE_URL } from "../lib/content";
-import { SERVICE_PAGES } from "../lib/seo-pages";
+import { PUBLIC_PAGES, SERVICE_PAGES } from "../lib/seo-pages";
 
 function markdownText(value: string): string {
   return value
@@ -22,6 +22,11 @@ export const Route = createFileRoute("/llms.txt")({
     handlers: {
       GET: async () => {
         const servicePages = Object.values(SERVICE_PAGES)
+          .map((page) => `- [${page.primaryKeyword}](${SITE_URL}${page.path}): ${page.description}`)
+          .join("\n");
+        const authorityPages = PUBLIC_PAGES.filter((page) =>
+          ["tools", "resources", "trust"].includes(page.cluster),
+        )
           .map((page) => `- [${page.primaryKeyword}](${SITE_URL}${page.path}): ${page.description}`)
           .join("\n");
         const { DB } = bindings();
@@ -108,7 +113,13 @@ export const Route = createFileRoute("/llms.txt")({
 - [피아노 통계 자료실](${SITE_URL}/research): 공식 원자료, 직접 식별정보와 원자료 행 위치를 제거한 가공 CSV, 방법론과 한계
 - [2025 음악 사교육비 통계](${SITE_URL}/research/2025-music-private-education-statistics): 교육부·국가데이터처 공식 통계 정리
 - [2026 서울 피아노 학원비](${SITE_URL}/research/2026-seoul-piano-academy-fees): 서울특별시교육청 등록 교습비 파생분석
+- [2026 피아노 키워드 검색수요 조사](${SITE_URL}/research/piano-search-demand-report-2026): 구글·네이버 광고 도구 기반 4,545개 키워드 자체 조사
 - [피아노 데이터 방법론](${SITE_URL}/research/methodology): 필터, 통계 기준, 한계와 수정 이력
+- [피아노 데이터 수정 이력](${SITE_URL}/research/changelog): 데이터셋 버전, 무결성 정정과 검증 기록
+
+## 무료 도구와 학습 자료
+
+${authorityPages}
 
 ## 목적별 레슨
 

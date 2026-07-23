@@ -1,7 +1,7 @@
 import { SITE, SITE_URL } from "./content";
 import type { KeywordCluster, KeywordRole, SearchIntent } from "./keyword-taxonomy";
 
-export type PublicKeywordCluster = KeywordCluster | "research";
+export type PublicKeywordCluster = KeywordCluster | "research" | "tools" | "resources" | "trust";
 
 export type PublicPageDefinition = {
   path: string;
@@ -797,9 +797,9 @@ const STATIC_PUBLIC_PAGES = [
     role: "informational",
     intent: "informational",
     cluster: "research",
-    title: "피아노 통계 자료실 | 공식 데이터·가공 CSV",
+    title: "피아노 통계 자료실 | 원자료·가공 CSV",
     description:
-      "피아노 통계 자료실에서 교육부·국가데이터처와 서울특별시교육청 원자료, 직접 식별정보와 행 위치를 제거한 가공 CSV, 방법론과 한계를 함께 확인할 수 있습니다.",
+      "피아노 통계 자료실에서 교육부·국가데이터처·서울특별시교육청 원자료와 구글·네이버 검색수요 자체 조사, 가공 CSV, 방법론과 한계를 함께 확인할 수 있습니다.",
     lastModified: SEO_UPDATED_AT,
     image: absoluteAsset("/assets/plate-score.jpg"),
   },
@@ -839,6 +839,123 @@ const STATIC_PUBLIC_PAGES = [
     title: "피아노 데이터 방법론 | 필터·통계·수정 이력",
     description:
       "피아노 데이터 방법론에서 공식 원자료 수집, 피아노 행 필터, 직접 식별정보 제거, 중앙값·사분위수 계산, 한계와 수정 이력을 공개합니다.",
+    lastModified: SEO_UPDATED_AT,
+    image: absoluteAsset("/assets/plate-score.jpg"),
+  },
+  {
+    path: "/research/piano-search-demand-report-2026",
+    label: "2026 피아노 키워드 검색수요 조사",
+    primaryKeyword: "피아노 키워드 검색량",
+    role: "informational",
+    intent: "informational",
+    cluster: "research",
+    title: "피아노 키워드 검색량 2026 | 구글·네이버 4,545개 조사",
+    description:
+      "피아노 키워드 검색량 4,545개를 구글 키워드 플래너와 네이버 검색광고 자료로 분석했습니다. 전체 CSV, 세그먼트, 방법론과 검색량 해석 한계를 공개합니다.",
+    lastModified: SEO_UPDATED_AT,
+    image: absoluteAsset("/assets/plate-score.jpg"),
+  },
+  {
+    path: "/research/changelog",
+    label: "피아노 데이터 수정 이력",
+    primaryKeyword: "피아노 데이터 수정 이력",
+    role: "utility",
+    intent: "navigational",
+    cluster: "research",
+    title: "피아노 데이터 수정 이력 | 버전·검증 기록",
+    description:
+      "피아노 데이터 수정 이력에서 공개 데이터셋의 최초 발행, 버전, 메타데이터, 무결성 정정과 검증 범위를 날짜별로 확인할 수 있습니다.",
+    lastModified: SEO_UPDATED_AT,
+    image: absoluteAsset("/assets/plate-score.jpg"),
+  },
+  {
+    path: "/tools",
+    label: "피아노 학습 도구",
+    primaryKeyword: "피아노 학습 도구",
+    role: "informational",
+    intent: "informational",
+    cluster: "tools",
+    title: "피아노 학습 도구 | 코드표·레슨비 계산기",
+    description:
+      "피아노 학습 도구에서 132개 피아노 코드표와 전위, 진행을 확인하고 피아노 레슨비를 회당·분당·60분 기준으로 무료 계산할 수 있습니다.",
+    lastModified: SEO_UPDATED_AT,
+    image: absoluteAsset("/assets/plate-score.jpg"),
+  },
+  {
+    path: "/tools/piano-chord-chart",
+    label: "피아노 코드표",
+    primaryKeyword: "피아노 코드",
+    role: "informational",
+    intent: "informational",
+    cluster: "tools",
+    title: "피아노 코드 | 132개 코드표·구성음·전위",
+    description:
+      "피아노 코드 132개의 구성음, 음정 공식, 전위와 장·단조 진행을 건반으로 확인하세요. 선택 코드는 PNG, 전체 피아노 코드표는 CSV로 무료 저장합니다.",
+    lastModified: SEO_UPDATED_AT,
+    image: absoluteAsset("/assets/plate-score.jpg"),
+  },
+  {
+    path: "/tools/piano-lesson-cost-calculator",
+    label: "피아노 레슨비 계산기",
+    primaryKeyword: "피아노 레슨비 계산기",
+    role: "informational",
+    intent: "comparison",
+    cluster: "tools",
+    title: "피아노 레슨비 계산기 | 회당·분당·60분 비용",
+    description:
+      "피아노 레슨비 계산기에 월 금액, 횟수, 수업 시간과 추가 비용을 입력하면 월 총액, 회당·분당·60분 환산 비용을 같은 기준으로 비교할 수 있습니다.",
+    lastModified: SEO_UPDATED_AT,
+    image: absoluteAsset("/assets/plate-score.jpg"),
+  },
+  {
+    path: "/resources",
+    label: "피아노 학습 자료",
+    primaryKeyword: "피아노 학습 자료",
+    role: "informational",
+    intent: "informational",
+    cluster: "resources",
+    title: "피아노 학습 자료 | 수준별 로드맵·연습 플래너",
+    description:
+      "피아노 학습 자료에서 수준별 피아노 로드맵과 주간 연습 플래너를 확인하고 CSV와 인쇄·PDF 형식으로 무료 활용할 수 있습니다.",
+    lastModified: SEO_UPDATED_AT,
+    image: absoluteAsset("/assets/plate-score.jpg"),
+  },
+  {
+    path: "/resources/piano-level-roadmap",
+    label: "피아노 수준별 로드맵",
+    primaryKeyword: "피아노 수준별 로드맵",
+    role: "informational",
+    intent: "informational",
+    cluster: "resources",
+    title: "피아노 수준별 로드맵 | 입문·초급·중급 5단계",
+    description:
+      "피아노 수준별 로드맵으로 입문부터 상급 준비까지 5단계의 악보 읽기, 테크닉, 이론, 예시곡과 다음 단계 준비 체크리스트를 확인하세요.",
+    lastModified: SEO_UPDATED_AT,
+    image: absoluteAsset("/assets/plate-score.jpg"),
+  },
+  {
+    path: "/resources/piano-practice-planner",
+    label: "피아노 연습 플래너",
+    primaryKeyword: "피아노 연습 플래너",
+    role: "informational",
+    intent: "informational",
+    cluster: "resources",
+    title: "피아노 연습 플래너 | 주간 계획표·CSV·PDF",
+    description:
+      "피아노 연습 플래너에서 요일별 목표와 몸풀기, 테크닉, 곡, 초견 시간을 나누고 주간 합계를 계산해 CSV 또는 인쇄·PDF로 저장하세요.",
+    lastModified: SEO_UPDATED_AT,
+    image: absoluteAsset("/assets/plate-score.jpg"),
+  },
+  {
+    path: "/editorial-policy",
+    label: "피아노 콘텐츠 편집 정책",
+    primaryKeyword: "피아노 콘텐츠 편집 정책",
+    role: "utility",
+    intent: "navigational",
+    cluster: "trust",
+    title: "피아노 콘텐츠 편집 정책 | 출처·AI·정정 기준",
+    description:
+      "피아노 콘텐츠 편집 정책에서 작성·검토 책임, 공식 출처 우선순위, AI 활용 범위, 검색량 해석, 수정 이력과 오류 정정 절차를 확인할 수 있습니다.",
     lastModified: SEO_UPDATED_AT,
     image: absoluteAsset("/assets/plate-score.jpg"),
   },

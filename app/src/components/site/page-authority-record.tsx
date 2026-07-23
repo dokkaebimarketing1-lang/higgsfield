@@ -6,6 +6,11 @@ type PageAuthorityRecordProps = {
   lastModified: string;
   audience?: string;
   className?: string;
+  authorLabel?: string;
+  authorName?: string;
+  authorHref?: string;
+  dateLabel?: string;
+  reviewStatus?: string;
 };
 
 function formatReviewDate(value: string): string {
@@ -22,6 +27,11 @@ export function PageAuthorityRecord({
   lastModified,
   audience,
   className = "",
+  authorLabel = "작성·운영",
+  authorName = "이화 피아노 과외 사이트 운영팀",
+  authorHref = "/editorial-policy",
+  dateLabel = "최종 수정일",
+  reviewStatus = "외부·전문가 독립 검토 전",
 }: PageAuthorityRecordProps) {
   return (
     <section
@@ -31,7 +41,7 @@ export function PageAuthorityRecord({
     >
       <div className="grid gap-8 md:grid-cols-12">
         <div className="md:col-span-4">
-          <p className="text-xs font-medium tracking-[0.16em] text-brass">작성·검토 기록</p>
+          <p className="text-xs font-medium tracking-[0.16em] text-brass">{authorLabel} 기록</p>
           <h2
             id="page-authority-heading"
             className="mt-3 break-keep font-serif-kr text-2xl font-semibold leading-tight md:text-3xl"
@@ -40,22 +50,28 @@ export function PageAuthorityRecord({
           </h2>
           <dl className="mt-6 space-y-3 text-sm">
             <div>
-              <dt className="text-faint">작성·검토</dt>
+              <dt className="text-faint">{authorLabel}</dt>
               <dd className="mt-1">
                 <a
-                  href="/about#person"
+                  href={authorHref}
                   className="text-brass underline underline-offset-4 transition-colors hover:text-ivory"
                 >
-                  김서연 · 이화여자대학교 피아노과 재학
+                  {authorName}
                 </a>
               </dd>
             </div>
             <div>
-              <dt className="text-faint">최종 검토일</dt>
+              <dt className="text-faint">{dateLabel}</dt>
               <dd className="mt-1 text-ivory">
                 <time dateTime={lastModified}>{formatReviewDate(lastModified)}</time>
               </dd>
             </div>
+            {reviewStatus && (
+              <div>
+                <dt className="text-faint">검토 상태</dt>
+                <dd className="mt-1 text-ivory">{reviewStatus}</dd>
+              </div>
+            )}
           </dl>
         </div>
 

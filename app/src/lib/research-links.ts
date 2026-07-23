@@ -1,7 +1,13 @@
-export const RESEARCH_REFERENCE_IDS = ["hub", "national", "seoul", "methodology"] as const;
+export const RESEARCH_REFERENCE_IDS = [
+  "hub",
+  "national",
+  "seoul",
+  "searchDemand",
+  "methodology",
+] as const;
 
 export type ResearchReferenceId = (typeof RESEARCH_REFERENCE_IDS)[number];
-export type ResearchDatasetReferenceId = "national" | "seoul";
+export type ResearchDatasetReferenceId = "national" | "seoul" | "searchDemand";
 
 export type ResearchReference = {
   id: ResearchReferenceId;
@@ -43,6 +49,16 @@ export const RESEARCH_REFERENCES = {
     limitation:
       "등록 교습비의 파생 통계로 실제 결제액이나 시장 평균이 아니며 이 사이트의 개인 레슨비를 산정하거나 정당화하는 근거가 아닙니다.",
   },
+  searchDemand: {
+    id: "searchDemand",
+    href: "/research/piano-search-demand-report-2026",
+    label: "피아노 검색수요 자체 조사",
+    anchor: "구글·네이버 피아노 키워드 4,545개 검색량과 가공 CSV",
+    description:
+      "Google Ads Keyword Planner와 네이버 검색광고 키워드도구의 서로 다른 관측 기간을 분리해 키워드·세그먼트별 추정 검색수요를 공개합니다.",
+    limitation:
+      "광고 도구의 검색량 추정치이며 실제 사이트 트래픽이나 고유 이용자 수가 아닙니다. 키워드와 세그먼트가 겹치므로 합계를 다시 더하면 안 됩니다.",
+  },
   methodology: {
     id: "methodology",
     href: "/research/methodology",
@@ -58,6 +74,7 @@ export const RESEARCH_REFERENCES = {
 export const HOME_RESEARCH_REFERENCE_IDS = [
   "national",
   "seoul",
+  "searchDemand",
   "methodology",
 ] as const satisfies readonly ResearchReferenceId[];
 
@@ -74,9 +91,10 @@ export const SERVICE_RESEARCH_REFERENCE_IDS = {
 } as const satisfies Readonly<Record<string, readonly ResearchReferenceId[]>>;
 
 export const CATEGORY_RESEARCH_REFERENCE_IDS = {
-  "lesson-guide": ["seoul"],
+  "lesson-guide": ["seoul", "searchDemand"],
   local: ["seoul"],
-  parents: ["national"],
+  parents: ["national", "searchDemand"],
+  practice: ["searchDemand"],
 } as const satisfies Readonly<Record<string, readonly ResearchReferenceId[]>>;
 
 export const ARTICLE_RESEARCH_REFERENCE_IDS = {

@@ -3,12 +3,15 @@ import { readFileSync } from "node:fs";
 
 import {
   NATIONAL_MUSIC_EDUCATION,
+  PIANO_SEARCH_DEMAND,
   RESEARCH_SOURCE_MANIFEST,
   SEOUL_ADMINISTRATIVE_SOURCES,
   SEOUL_PIANO_FEES,
   RESEARCH_CATALOG_ID,
   buildNationalDatasetPageSchema,
   buildNationalMusicDatasetSchema,
+  buildPianoSearchDemandDatasetSchema,
+  buildPianoSearchDemandPageSchema,
   buildResearchDataCatalogSchema,
   buildSeoulDatasetPageSchema,
   buildSeoulPianoFeesDatasetSchema,
@@ -28,6 +31,19 @@ describe("research datasets", () => {
     expect(schoolLevelSum).toBe(total.musicPrivateEducationSpending100mKrw);
     expect(NATIONAL_MUSIC_EDUCATION.unit).toBe("억원");
     expect(NATIONAL_MUSIC_EDUCATION.source.sha256).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  test("reconciles the self-reported Google and Naver keyword estimates", () => {
+    expect(PIANO_SEARCH_DEMAND.uniqueKeywords).toBe(4_545);
+    expect(PIANO_SEARCH_DEMAND.naverMeasuredKeywords).toBe(4_522);
+    expect(PIANO_SEARCH_DEMAND.totalSearchVolumeSum).toBe(1_001_925);
+    expect(
+      PIANO_SEARCH_DEMAND.naverSearchVolumeSum + PIANO_SEARCH_DEMAND.googleMonthlyAverageSum,
+    ).toBe(PIANO_SEARCH_DEMAND.totalSearchVolumeSum);
+    expect(PIANO_SEARCH_DEMAND.sourceWorkbook.sha256).toMatch(/^[a-f0-9]{64}$/);
+    expect(PIANO_SEARCH_DEMAND.limitations).toContain(
+      "검색량은 광고 플랫폼의 추정치이며 실제 검색 트래픽, 노출, 클릭 또는 사용자 수가 아닙니다.",
+    );
   });
 
   test("keeps a complete, immutable official-source manifest", () => {
@@ -96,6 +112,7 @@ describe("research datasets", () => {
     const national = buildNationalMusicDatasetSchema();
     const seoul = buildSeoulPianoFeesDatasetSchema();
     const catalog = buildResearchDataCatalogSchema();
+    const searchDemand = buildPianoSearchDemandDatasetSchema();
 
     for (const schema of [national, seoul]) {
       expect(schema["@type"]).toBe("Dataset");
@@ -144,6 +161,29 @@ describe("research datasets", () => {
     expect(seoul.isBasedOn.license).toBe("https://www.data.go.kr/data/3044370/fileData.do");
     expect(seoul.citation).toHaveLength(1);
 
+    expect(searchDemand["@type"]).toBe("Dataset");
+    expect(searchDemand.name).toBe(PIANO_SEARCH_DEMAND.name);
+    expect(searchDemand.description.length).toBeGreaterThanOrEqual(50);
+    expect(searchDemand.version).toBe("1.0.0");
+    expect(searchDemand.distribution).toHaveLength(2);
+    expect(searchDemand.distribution.map((item) => item.contentUrl)).toEqual([
+      "https://ewha-piano.higgsfield.app/data/research/piano-keyword-search-demand-2026.csv",
+      "https://ewha-piano.higgsfield.app/data/research/piano-keyword-segment-summary-2026.csv",
+    ]);
+    expect(searchDemand.publishingPrinciples).toBe(
+      "https://ewha-piano.higgsfield.app/editorial-policy",
+    );
+    expect(searchDemand.usageInfo).toBe(
+      "https://ewha-piano.higgsfield.app/research/methodology#reuse-policy",
+    );
+    expect(searchDemand).not.toHaveProperty("license");
+    expect(searchDemand.isBasedOn).toHaveLength(2);
+    expect(searchDemand.creditText).toContain(searchDemand.url);
+    for (const distribution of searchDemand.distribution) {
+      expect(distribution.sha256).toMatch(/^[a-f0-9]{64}$/);
+      expect(distribution.contentSize).toMatch(/^[\d,]+ B$/);
+    }
+
     expect(catalog["@type"]).toBe("DataCatalog");
     expect(catalog["@id"]).toBe(RESEARCH_CATALOG_ID);
     expect(catalog.dataset).toEqual([
@@ -154,9 +194,16 @@ describe("research datasets", () => {
       {
         "@id": "https://ewha-piano.higgsfield.app/research/2026-seoul-piano-academy-fees#dataset",
       },
+      {
+        "@id": "https://ewha-piano.higgsfield.app/research/piano-search-demand-report-2026#dataset",
+      },
     ]);
 
-    for (const pageSchema of [buildNationalDatasetPageSchema(), buildSeoulDatasetPageSchema()]) {
+    for (const pageSchema of [
+      buildNationalDatasetPageSchema(),
+      buildSeoulDatasetPageSchema(),
+      buildPianoSearchDemandPageSchema(),
+    ]) {
       expect(pageSchema["@type"]).toBe("WebPage");
       expect(pageSchema.author).toEqual({
         "@id": "https://ewha-piano.higgsfield.app/#business",
@@ -181,6 +228,10 @@ describe("research datasets", () => {
       new URL("../src/routes/research/methodology.tsx", import.meta.url),
       "utf8",
     );
+    const searchDemandRoute = readFileSync(
+      new URL("../src/routes/research/piano-search-demand-report-2026.tsx", import.meta.url),
+      "utf8",
+    );
     const researchHubRoute = readFileSync(
       new URL("../src/routes/research/index.tsx", import.meta.url),
       "utf8",
@@ -201,6 +252,10 @@ describe("research datasets", () => {
     }
     expect(nationalRoute).toContain("NATIONAL_DATASET_CITATION");
     expect(seoulRoute).toContain("SEOUL_DATASET_CITATION");
+    expect(searchDemandRoute).toContain("SEARCH_DEMAND_DATASET_CITATION");
+    expect(searchDemandRoute).toContain("<caption");
+    expect(searchDemandRoute).toContain('scope="col"');
+    expect(searchDemandRoute).toContain('scope="row"');
     expect(researchHubRoute).toContain("NATIONAL_PDF_SOURCE.sourcePage");
     expect(researchHubRoute).toContain("https://www.data.go.kr/data/3044370/fileData.do");
     expect(researchHubRoute).toContain('dateLabel: "원자료 공표일"');

@@ -16,12 +16,21 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
+import { Route as EditorialPolicyRouteImport } from './routes/editorial-policy'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ToolsIndexRouteImport } from './routes/tools/index'
+import { Route as ResourcesIndexRouteImport } from './routes/resources/index'
 import { Route as ResearchIndexRouteImport } from './routes/research/index'
 import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as ToolsPianoLessonCostCalculatorRouteImport } from './routes/tools/piano-lesson-cost-calculator'
+import { Route as ToolsPianoChordChartRouteImport } from './routes/tools/piano-chord-chart'
+import { Route as ResourcesPianoPracticePlannerRouteImport } from './routes/resources/piano-practice-planner'
+import { Route as ResourcesPianoLevelRoadmapRouteImport } from './routes/resources/piano-level-roadmap'
+import { Route as ResearchPianoSearchDemandReport2026RouteImport } from './routes/research/piano-search-demand-report-2026'
 import { Route as ResearchMethodologyRouteImport } from './routes/research/methodology'
+import { Route as ResearchChangelogRouteImport } from './routes/research/changelog'
 import { Route as Research2026SeoulPianoAcademyFeesRouteImport } from './routes/research/2026-seoul-piano-academy-fees'
 import { Route as Research2025MusicPrivateEducationStatisticsRouteImport } from './routes/research/2025-music-private-education-statistics'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
@@ -68,6 +77,11 @@ const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
   path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditorialPolicyRoute = EditorialPolicyRouteImport.update({
+  id: '/editorial-policy',
+  path: '/editorial-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -83,6 +97,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsIndexRoute = ToolsIndexRouteImport.update({
+  id: '/tools/',
+  path: '/tools/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
+  id: '/resources/',
+  path: '/resources/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResearchIndexRoute = ResearchIndexRouteImport.update({
   id: '/research/',
   path: '/research/',
@@ -93,9 +117,43 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsPianoLessonCostCalculatorRoute =
+  ToolsPianoLessonCostCalculatorRouteImport.update({
+    id: '/tools/piano-lesson-cost-calculator',
+    path: '/tools/piano-lesson-cost-calculator',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ToolsPianoChordChartRoute = ToolsPianoChordChartRouteImport.update({
+  id: '/tools/piano-chord-chart',
+  path: '/tools/piano-chord-chart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesPianoPracticePlannerRoute =
+  ResourcesPianoPracticePlannerRouteImport.update({
+    id: '/resources/piano-practice-planner',
+    path: '/resources/piano-practice-planner',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ResourcesPianoLevelRoadmapRoute =
+  ResourcesPianoLevelRoadmapRouteImport.update({
+    id: '/resources/piano-level-roadmap',
+    path: '/resources/piano-level-roadmap',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ResearchPianoSearchDemandReport2026Route =
+  ResearchPianoSearchDemandReport2026RouteImport.update({
+    id: '/research/piano-search-demand-report-2026',
+    path: '/research/piano-search-demand-report-2026',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ResearchMethodologyRoute = ResearchMethodologyRouteImport.update({
   id: '/research/methodology',
   path: '/research/methodology',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResearchChangelogRoute = ResearchChangelogRouteImport.update({
+  id: '/research/changelog',
+  path: '/research/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Research2026SeoulPianoAcademyFeesRoute =
@@ -155,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/editorial-policy': typeof EditorialPolicyRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -170,9 +229,17 @@ export interface FileRoutesByFullPath {
   '/media/$': typeof MediaSplatRoute
   '/research/2025-music-private-education-statistics': typeof Research2025MusicPrivateEducationStatisticsRoute
   '/research/2026-seoul-piano-academy-fees': typeof Research2026SeoulPianoAcademyFeesRoute
+  '/research/changelog': typeof ResearchChangelogRoute
   '/research/methodology': typeof ResearchMethodologyRoute
+  '/research/piano-search-demand-report-2026': typeof ResearchPianoSearchDemandReport2026Route
+  '/resources/piano-level-roadmap': typeof ResourcesPianoLevelRoadmapRoute
+  '/resources/piano-practice-planner': typeof ResourcesPianoPracticePlannerRoute
+  '/tools/piano-chord-chart': typeof ToolsPianoChordChartRoute
+  '/tools/piano-lesson-cost-calculator': typeof ToolsPianoLessonCostCalculatorRoute
   '/blog/': typeof BlogIndexRoute
   '/research/': typeof ResearchIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
+  '/tools/': typeof ToolsIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
 }
@@ -180,6 +247,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/editorial-policy': typeof EditorialPolicyRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -195,9 +263,17 @@ export interface FileRoutesByTo {
   '/media/$': typeof MediaSplatRoute
   '/research/2025-music-private-education-statistics': typeof Research2025MusicPrivateEducationStatisticsRoute
   '/research/2026-seoul-piano-academy-fees': typeof Research2026SeoulPianoAcademyFeesRoute
+  '/research/changelog': typeof ResearchChangelogRoute
   '/research/methodology': typeof ResearchMethodologyRoute
+  '/research/piano-search-demand-report-2026': typeof ResearchPianoSearchDemandReport2026Route
+  '/resources/piano-level-roadmap': typeof ResourcesPianoLevelRoadmapRoute
+  '/resources/piano-practice-planner': typeof ResourcesPianoPracticePlannerRoute
+  '/tools/piano-chord-chart': typeof ToolsPianoChordChartRoute
+  '/tools/piano-lesson-cost-calculator': typeof ToolsPianoLessonCostCalculatorRoute
   '/blog': typeof BlogIndexRoute
   '/research': typeof ResearchIndexRoute
+  '/resources': typeof ResourcesIndexRoute
+  '/tools': typeof ToolsIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/blog/$category': typeof BlogCategoryIndexRoute
 }
@@ -206,6 +282,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/editorial-policy': typeof EditorialPolicyRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -221,9 +298,17 @@ export interface FileRoutesById {
   '/media/$': typeof MediaSplatRoute
   '/research/2025-music-private-education-statistics': typeof Research2025MusicPrivateEducationStatisticsRoute
   '/research/2026-seoul-piano-academy-fees': typeof Research2026SeoulPianoAcademyFeesRoute
+  '/research/changelog': typeof ResearchChangelogRoute
   '/research/methodology': typeof ResearchMethodologyRoute
+  '/research/piano-search-demand-report-2026': typeof ResearchPianoSearchDemandReport2026Route
+  '/resources/piano-level-roadmap': typeof ResourcesPianoLevelRoadmapRoute
+  '/resources/piano-practice-planner': typeof ResourcesPianoPracticePlannerRoute
+  '/tools/piano-chord-chart': typeof ToolsPianoChordChartRoute
+  '/tools/piano-lesson-cost-calculator': typeof ToolsPianoLessonCostCalculatorRoute
   '/blog/': typeof BlogIndexRoute
   '/research/': typeof ResearchIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
+  '/tools/': typeof ToolsIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
 }
@@ -233,6 +318,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/editorial-policy'
     | '/llms.txt'
     | '/pricing'
     | '/privacy'
@@ -248,9 +334,17 @@ export interface FileRouteTypes {
     | '/media/$'
     | '/research/2025-music-private-education-statistics'
     | '/research/2026-seoul-piano-academy-fees'
+    | '/research/changelog'
     | '/research/methodology'
+    | '/research/piano-search-demand-report-2026'
+    | '/resources/piano-level-roadmap'
+    | '/resources/piano-practice-planner'
+    | '/tools/piano-chord-chart'
+    | '/tools/piano-lesson-cost-calculator'
     | '/blog/'
     | '/research/'
+    | '/resources/'
+    | '/tools/'
     | '/blog/$category/$slug'
     | '/blog/$category/'
   fileRoutesByTo: FileRoutesByTo
@@ -258,6 +352,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/editorial-policy'
     | '/llms.txt'
     | '/pricing'
     | '/privacy'
@@ -273,9 +368,17 @@ export interface FileRouteTypes {
     | '/media/$'
     | '/research/2025-music-private-education-statistics'
     | '/research/2026-seoul-piano-academy-fees'
+    | '/research/changelog'
     | '/research/methodology'
+    | '/research/piano-search-demand-report-2026'
+    | '/resources/piano-level-roadmap'
+    | '/resources/piano-practice-planner'
+    | '/tools/piano-chord-chart'
+    | '/tools/piano-lesson-cost-calculator'
     | '/blog'
     | '/research'
+    | '/resources'
+    | '/tools'
     | '/blog/$category/$slug'
     | '/blog/$category'
   id:
@@ -283,6 +386,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/editorial-policy'
     | '/llms.txt'
     | '/pricing'
     | '/privacy'
@@ -298,9 +402,17 @@ export interface FileRouteTypes {
     | '/media/$'
     | '/research/2025-music-private-education-statistics'
     | '/research/2026-seoul-piano-academy-fees'
+    | '/research/changelog'
     | '/research/methodology'
+    | '/research/piano-search-demand-report-2026'
+    | '/resources/piano-level-roadmap'
+    | '/resources/piano-practice-planner'
+    | '/tools/piano-chord-chart'
+    | '/tools/piano-lesson-cost-calculator'
     | '/blog/'
     | '/research/'
+    | '/resources/'
+    | '/tools/'
     | '/blog/$category/$slug'
     | '/blog/$category/'
   fileRoutesById: FileRoutesById
@@ -309,6 +421,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
+  EditorialPolicyRoute: typeof EditorialPolicyRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -324,9 +437,17 @@ export interface RootRouteChildren {
   MediaSplatRoute: typeof MediaSplatRoute
   Research2025MusicPrivateEducationStatisticsRoute: typeof Research2025MusicPrivateEducationStatisticsRoute
   Research2026SeoulPianoAcademyFeesRoute: typeof Research2026SeoulPianoAcademyFeesRoute
+  ResearchChangelogRoute: typeof ResearchChangelogRoute
   ResearchMethodologyRoute: typeof ResearchMethodologyRoute
+  ResearchPianoSearchDemandReport2026Route: typeof ResearchPianoSearchDemandReport2026Route
+  ResourcesPianoLevelRoadmapRoute: typeof ResourcesPianoLevelRoadmapRoute
+  ResourcesPianoPracticePlannerRoute: typeof ResourcesPianoPracticePlannerRoute
+  ToolsPianoChordChartRoute: typeof ToolsPianoChordChartRoute
+  ToolsPianoLessonCostCalculatorRoute: typeof ToolsPianoLessonCostCalculatorRoute
   BlogIndexRoute: typeof BlogIndexRoute
   ResearchIndexRoute: typeof ResearchIndexRoute
+  ResourcesIndexRoute: typeof ResourcesIndexRoute
+  ToolsIndexRoute: typeof ToolsIndexRoute
   BlogCategorySlugRoute: typeof BlogCategorySlugRoute
   BlogCategoryIndexRoute: typeof BlogCategoryIndexRoute
 }
@@ -382,6 +503,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/editorial-policy': {
+      id: '/editorial-policy'
+      path: '/editorial-policy'
+      fullPath: '/editorial-policy'
+      preLoaderRoute: typeof EditorialPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -403,6 +531,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/': {
+      id: '/tools/'
+      path: '/tools'
+      fullPath: '/tools/'
+      preLoaderRoute: typeof ToolsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/': {
+      id: '/resources/'
+      path: '/resources'
+      fullPath: '/resources/'
+      preLoaderRoute: typeof ResourcesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/research/': {
       id: '/research/'
       path: '/research'
@@ -417,11 +559,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/piano-lesson-cost-calculator': {
+      id: '/tools/piano-lesson-cost-calculator'
+      path: '/tools/piano-lesson-cost-calculator'
+      fullPath: '/tools/piano-lesson-cost-calculator'
+      preLoaderRoute: typeof ToolsPianoLessonCostCalculatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/piano-chord-chart': {
+      id: '/tools/piano-chord-chart'
+      path: '/tools/piano-chord-chart'
+      fullPath: '/tools/piano-chord-chart'
+      preLoaderRoute: typeof ToolsPianoChordChartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/piano-practice-planner': {
+      id: '/resources/piano-practice-planner'
+      path: '/resources/piano-practice-planner'
+      fullPath: '/resources/piano-practice-planner'
+      preLoaderRoute: typeof ResourcesPianoPracticePlannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/piano-level-roadmap': {
+      id: '/resources/piano-level-roadmap'
+      path: '/resources/piano-level-roadmap'
+      fullPath: '/resources/piano-level-roadmap'
+      preLoaderRoute: typeof ResourcesPianoLevelRoadmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/research/piano-search-demand-report-2026': {
+      id: '/research/piano-search-demand-report-2026'
+      path: '/research/piano-search-demand-report-2026'
+      fullPath: '/research/piano-search-demand-report-2026'
+      preLoaderRoute: typeof ResearchPianoSearchDemandReport2026RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/research/methodology': {
       id: '/research/methodology'
       path: '/research/methodology'
       fullPath: '/research/methodology'
       preLoaderRoute: typeof ResearchMethodologyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/research/changelog': {
+      id: '/research/changelog'
+      path: '/research/changelog'
+      fullPath: '/research/changelog'
+      preLoaderRoute: typeof ResearchChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/research/2026-seoul-piano-academy-fees': {
@@ -501,6 +685,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
+  EditorialPolicyRoute: EditorialPolicyRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
@@ -518,9 +703,18 @@ const rootRouteChildren: RootRouteChildren = {
     Research2025MusicPrivateEducationStatisticsRoute,
   Research2026SeoulPianoAcademyFeesRoute:
     Research2026SeoulPianoAcademyFeesRoute,
+  ResearchChangelogRoute: ResearchChangelogRoute,
   ResearchMethodologyRoute: ResearchMethodologyRoute,
+  ResearchPianoSearchDemandReport2026Route:
+    ResearchPianoSearchDemandReport2026Route,
+  ResourcesPianoLevelRoadmapRoute: ResourcesPianoLevelRoadmapRoute,
+  ResourcesPianoPracticePlannerRoute: ResourcesPianoPracticePlannerRoute,
+  ToolsPianoChordChartRoute: ToolsPianoChordChartRoute,
+  ToolsPianoLessonCostCalculatorRoute: ToolsPianoLessonCostCalculatorRoute,
   BlogIndexRoute: BlogIndexRoute,
   ResearchIndexRoute: ResearchIndexRoute,
+  ResourcesIndexRoute: ResourcesIndexRoute,
+  ToolsIndexRoute: ToolsIndexRoute,
   BlogCategorySlugRoute: BlogCategorySlugRoute,
   BlogCategoryIndexRoute: BlogCategoryIndexRoute,
 }
