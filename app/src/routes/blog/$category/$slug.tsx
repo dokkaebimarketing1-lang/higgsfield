@@ -10,7 +10,7 @@ import { extractFaq } from "../../../lib/faq";
 import { renderMarkdown } from "../../../lib/markdown";
 import { getArticleResearchReferenceIds, RESEARCH_REFERENCES } from "../../../lib/research-links";
 import { extractExternalLinks, toCanonicalUrl, toIsoDate } from "../../../lib/seo";
-import { getServicePageForPost } from "../../../lib/seo-pages";
+import { getServicePagesForPost } from "../../../lib/seo-pages";
 import { safeJsonLd } from "../../../lib/structured-data";
 
 const FALLBACK_OG =
@@ -69,6 +69,7 @@ export const Route = createFileRoute("/blog/$category/$slug")({
       datePublished && rawModified && rawModified < datePublished
         ? datePublished
         : (rawModified ?? datePublished);
+    const servicePages = getServicePagesForPost(post.keyword_cluster, post.slug);
     return {
       meta: [
         { title },
@@ -111,7 +112,12 @@ export const Route = createFileRoute("/blog/$category/$slug")({
                 ...(dateModified ? { dateModified } : {}),
                 author: { "@id": `${SITE_URL}/about#person` },
                 publisher: { "@id": `${SITE_URL}/#business` },
-                isPartOf: { "@id": `${SITE_URL}/#website` },
+                isPartOf: {
+                  "@id": `${SITE_URL}/blog/${post.category_slug}#collection`,
+                },
+                about: servicePages.map((page) => ({
+                  "@id": `${SITE_URL}${page.path}#service`,
+                })),
                 ...(post.category_name ? { articleSection: post.category_name } : {}),
                 ...(citations.length > 0 ? { citation: citations } : {}),
                 ...(post.tags
@@ -191,7 +197,7 @@ function PostPage() {
   }
 
   const html = renderMarkdown(post.body);
-  const servicePage = getServicePageForPost(post.keyword_cluster, post.slug);
+  const servicePages = getServicePagesForPost(post.keyword_cluster, post.slug);
   const researchReferenceIds = getArticleResearchReferenceIds(post.slug);
 
   return (
@@ -254,24 +260,29 @@ function PostPage() {
           />
         )}
 
-        {servicePage && (
+        {servicePages.length > 0 && (
           <section
             className="mt-14 border border-line bg-ebony-2 p-7 md:p-9"
             aria-labelledby="related-lesson-title"
           >
             <h2 id="related-lesson-title" className="font-serif-kr text-2xl font-semibold">
-              {servicePage.primaryKeyword} 안내
+              이 글과 연결된 레슨 안내
             </h2>
             <p className="mt-3 max-w-[58ch] leading-relaxed text-mute">
-              이 글의 내용을 실제 수업 목표에 맞춰 적용하고 싶다면 수업 방식, 대상과 진행 과정을
-              먼저 확인해 보세요.
+              이 글의 내용을 실제 수업 목표에 맞춰 적용하려면 연결된 안내에서 수업 방식, 대상과 비용
+              확인 경로를 먼저 살펴보세요.
             </p>
-            <a
-              href={servicePage.path}
-              className="mt-5 inline-block text-brass underline underline-offset-8 transition-colors hover:text-ivory"
-            >
-              {servicePage.primaryKeyword} 자세히 보기
-            </a>
+            <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3">
+              {servicePages.map((page) => (
+                <a
+                  key={page.path}
+                  href={page.path}
+                  className="text-brass underline underline-offset-8 transition-colors hover:text-ivory"
+                >
+                  {page.primaryKeyword} 확인하기
+                </a>
+              ))}
+            </div>
           </section>
         )}
 

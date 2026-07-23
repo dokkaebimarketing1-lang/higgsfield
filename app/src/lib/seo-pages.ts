@@ -34,11 +34,18 @@ export type RelatedInformation = {
   description: string;
 };
 
+export type PageAuthorityRecord = {
+  answer: string;
+  scope: string;
+  boundary: string;
+};
+
 export type LessonLandingDefinition = PublicPageDefinition & {
   role: "expansion";
   supportingKeywords: readonly string[];
   imageAlt: string;
   lede: string;
+  authority: PageAuthorityRecord;
   sections: readonly LessonSection[];
   faq: readonly LessonFaq[];
   relatedServices: readonly RelatedInformation[];
@@ -78,6 +85,26 @@ function defineServicePage(
     "@context": "https://schema.org",
     "@graph": [
       {
+        "@type": "WebPage",
+        "@id": `${canonical}#webpage`,
+        url: canonical,
+        name: page.title,
+        description: page.description,
+        inLanguage: "ko",
+        dateModified: page.lastModified,
+        author: { "@id": `${SITE_URL}/about#person` },
+        publisher: { "@id": `${SITE_URL}/#business` },
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        breadcrumb: { "@id": `${canonical}#breadcrumb` },
+        mainEntity: { "@id": `${canonical}#service` },
+        primaryImageOfPage: {
+          "@type": "ImageObject",
+          url: page.image,
+          caption: page.imageAlt,
+        },
+        relatedLink: page.related.map((item) => `${SITE_URL}${item.href}`),
+      },
+      {
         "@type": "Service",
         "@id": `${canonical}#service`,
         name: page.primaryKeyword,
@@ -85,7 +112,12 @@ function defineServicePage(
         description: page.lede,
         image: page.image,
         serviceType: page.primaryKeyword,
+        keywords: [page.primaryKeyword, ...page.supportingKeywords],
         areaServed: ["서울특별시", "서울특별시 서대문구", "서울특별시 마포구"],
+        mainEntityOfPage: { "@id": `${canonical}#webpage` },
+        subjectOf: page.related.map((item) => ({
+          "@id": `${SITE_URL}${item.href}#article`,
+        })),
         provider: {
           "@type": ["LocalBusiness", "ProfessionalService"],
           "@id": `${SITE_URL}/#business`,
@@ -114,6 +146,7 @@ function defineServicePage(
       {
         "@type": "FAQPage",
         "@id": `${canonical}#faq`,
+        isPartOf: { "@id": `${canonical}#webpage` },
         mainEntity: page.faq.map((item) => ({
           "@type": "Question",
           name: item.q,
@@ -146,6 +179,13 @@ export const SERVICE_PAGES = {
     image: absoluteAsset("/assets/hero-detail.jpg"),
     imageAlt: "피아노 개인 레슨에서 건반을 연주하는 손",
     lede: "피아노 개인 레슨은 현재 수준과 목표, 생활 리듬에 맞춰 수업 순서와 연습 계획을 조정하는 1:1 피아노 레슨입니다.",
+    authority: {
+      answer:
+        "현재 수준을 먼저 듣고 45분 또는 60분 수업, 주간 연습량과 교재 순서를 한 사람의 목표에 맞춰 정합니다.",
+      scope: "1:1 수업의 진단, 진행 순서, 대상별 조정 방식과 첫 수업 준비를 설명합니다.",
+      boundary:
+        "과정별 정확한 금액은 피아노 레슨비 페이지가 담당하며, 특정 기간 안의 실력 향상이나 결과를 보장하지 않습니다.",
+    },
     sections: [
       {
         heading: "피아노 개인 레슨은 무엇이 다른가요?",
@@ -235,6 +275,13 @@ export const SERVICE_PAGES = {
     image: absoluteAsset("/assets/program-adult.jpg"),
     imageAlt: "성인 피아노 레슨을 위해 그랜드 피아노 앞에 앉은 연주자",
     lede: "성인 피아노 레슨은 왕초보와 다시 시작하는 성인 취미 피아노 학습자가 원하는 곡과 가능한 연습 시간에 맞추는 1:1 수업입니다.",
+    authority: {
+      answer:
+        "왕초보, 다시 시작하는 성인, 한 곡 완성 목표를 구분해 악보 읽기와 연습 순서를 설계합니다.",
+      scope: "성인의 시작점 진단, 바쁜 일정에 맞춘 연습, 곡 선택과 수업 시간 결정을 설명합니다.",
+      boundary:
+        "어린이의 시작 시기와 입시 전형 준비는 각각 전용 페이지에서 다루며, 곡 완성 시점은 난이도와 연습 시간에 따라 달라집니다.",
+    },
     sections: [
       {
         heading: "성인 피아노 레슨은 어디서 시작하나요?",
@@ -324,6 +371,13 @@ export const SERVICE_PAGES = {
     image: absoluteAsset("/assets/program-child.jpg"),
     imageAlt: "어린이 피아노 레슨에서 작은 손으로 건반을 연주하는 모습",
     lede: "어린이 피아노 레슨은 유아 피아노의 첫 건반부터 초등학생 피아노의 악보 읽기와 연습 습관까지 집중 시간에 맞춰 연결하는 1:1 수업입니다.",
+    authority: {
+      answer:
+        "유아와 초등학생의 집중 시간, 읽기 수준과 가정 연습 환경을 확인해 짧고 반복 가능한 과제로 나눕니다.",
+      scope: "첫 건반, 자세와 악보 읽기, 아이별 수업 속도, 부모의 연습 지원 방법을 설명합니다.",
+      boundary:
+        "모든 아이에게 적용되는 단일 시작 나이나 진도를 제시하지 않으며, 발달 또는 학습 성과를 보장하지 않습니다.",
+    },
     sections: [
       {
         heading: "유아·초등학생 어린이 피아노는 무엇부터 배우나요?",
@@ -413,6 +467,13 @@ export const SERVICE_PAGES = {
     image: absoluteAsset("/assets/cat-local.jpg"),
     imageAlt: "서울 피아노 방문 레슨을 위한 집 안의 피아노와 악보",
     lede: "피아노 방문 레슨은 서울 서대문구와 마포구에서 학생이 평소 연습하는 집의 악기로 진행하는 1:1 수업입니다.",
+    authority: {
+      answer:
+        "서울 서대문구와 마포구는 위치와 시간을 확인해 방문 일정을 협의하고, 그 외 지역은 온라인 수업 가능성을 안내합니다.",
+      scope: "방문 가능 지역, 가정 악기와 공간 준비, 일정 협의와 온라인 대안을 설명합니다.",
+      boundary:
+        "서울 전 지역 방문을 약속하지 않으며, 실제 가능 여부는 동 단위 위치와 일정 확인 뒤 확정합니다.",
+    },
     sections: [
       {
         heading: "피아노 방문 레슨의 장점은 무엇인가요?",
@@ -502,6 +563,13 @@ export const SERVICE_PAGES = {
     image: absoluteAsset("/assets/program-exam.jpg"),
     imageAlt: "피아노 입시 레슨을 위해 악보를 보며 그랜드 피아노를 연주하는 모습",
     lede: "피아노 입시 레슨은 현재 실기 수준, 목표 학교, 남은 기간과 준비 곡에 맞춰 우선순위를 세우는 1:1 수업입니다.",
+    authority: {
+      answer:
+        "현재 연주와 기본기, 목표 학교, 남은 기간을 함께 확인해 곡별 보완 순서와 실전 점검 계획을 세웁니다.",
+      scope: "첫 진단, 입시곡 완성 순서, 주간 연습, 모의 연주와 콩쿠르 준비 기준을 설명합니다.",
+      boundary:
+        "합격이나 수상을 보장하지 않으며, 전형 요강과 지정곡은 지원 시점의 학교·주최 기관 공식 안내를 다시 확인해야 합니다.",
+    },
     sections: [
       {
         heading: "피아노 입시 레슨은 첫 상담에서 무엇을 확인하나요?",
@@ -596,6 +664,13 @@ export const SERVICE_PAGES = {
     image: absoluteAsset("/assets/plate-score.jpg"),
     imageAlt: "피아노 레슨비 안내 옆에 놓인 피아노 악보와 건반",
     lede: "피아노 레슨비는 월 4회 기준 160,000원부터 320,000원까지이며, 수업 시간과 목표에 따라 세 과정으로 안내합니다.",
+    authority: {
+      answer:
+        "월 4회 기준 45분 160,000원, 60분 240,000원, 입시·콩쿠르 60분 320,000원의 세 과정을 공개합니다.",
+      scope: "과정별 수업 시간, 월 비용, 포함 항목, 첫 상담과 일정 변경 기준을 설명합니다.",
+      boundary:
+        "교재 구입비와 대관·콩쿠르 참가비 등 외부 비용은 별도일 수 있으며, 최종 과정은 목표와 수업 범위를 확인한 뒤 정합니다.",
+    },
     sections: [
       {
         heading: "피아노 개인 레슨 비용에는 무엇이 포함되나요?",
@@ -841,11 +916,31 @@ const POST_SERVICE_OVERRIDES: Record<string, LessonLandingDefinition> = {
   "stage-fright": SERVICE_PAGES.admission,
 };
 
+const POST_SUPPORTING_SERVICE_OVERRIDES: Record<string, readonly LessonLandingDefinition[]> = {
+  "choosing-piano-tutor": [SERVICE_PAGES.pricing],
+  "academy-vs-tutoring": [SERVICE_PAGES.pricing],
+  "tutoring-time-guide": [SERVICE_PAGES.pricing],
+  "adult-piano-tutoring": [SERVICE_PAGES.pricing],
+  "elementary-piano-tutoring": [SERVICE_PAGES.pricing],
+};
+
 export function getServicePageForPost(
   cluster: KeywordCluster,
   slug: string,
 ): LessonLandingDefinition {
   return POST_SERVICE_OVERRIDES[slug] ?? SERVICE_PAGE_BY_CLUSTER[cluster];
+}
+
+export function getServicePagesForPost(
+  cluster: KeywordCluster,
+  slug: string,
+): readonly LessonLandingDefinition[] {
+  const pages = [
+    getServicePageForPost(cluster, slug),
+    ...(POST_SUPPORTING_SERVICE_OVERRIDES[slug] ?? []),
+  ];
+
+  return [...new Map(pages.map((page) => [page.path, page])).values()];
 }
 
 export const CATEGORY_SERVICE_PATHS = {
@@ -859,7 +954,7 @@ export const CATEGORY_SERVICE_PATHS = {
   exam: [SERVICE_PAGES.admission.path],
   repertoire: [SERVICE_PAGES.adult.path, SERVICE_PAGES.admission.path],
   parents: [SERVICE_PAGES.children.path, SERVICE_PAGES.homeVisit.path],
-  local: [SERVICE_PAGES.homeVisit.path],
+  local: [SERVICE_PAGES.homeVisit.path, SERVICE_PAGES.private.path],
 } as const;
 
 export function buildPublicPageHead(page: PublicPageDefinition) {

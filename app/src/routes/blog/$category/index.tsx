@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { SubPageShell } from "../../../components/site/chrome";
+import { PageAuthorityRecord } from "../../../components/site/page-authority-record";
 import { ResearchReferencePanel } from "../../../components/site/research-reference-panel";
 import {
   getCategoryBySlug,
@@ -9,13 +10,18 @@ import {
   type PostRow,
 } from "../../../lib/api/posts.functions";
 import { CATEGORY_SEO, SITE, SITE_URL } from "../../../lib/content";
+import { getLatestContentDate } from "../../../lib/content-dates";
 import { getCategoryResearchReferenceIds } from "../../../lib/research-links";
 import {
   CATEGORY_SERVICE_PATHS,
+  PUBLIC_PAGE_BY_PATH,
   SERVICE_PAGE_BY_PATH,
   type LessonLandingDefinition,
 } from "../../../lib/seo-pages";
 import { buildCollectionPageSchema, safeJsonLd } from "../../../lib/structured-data";
+
+const CATEGORY_SERVICE_PATHS_BY_SLUG = CATEGORY_SERVICE_PATHS as Record<string, readonly string[]>;
+const BLOG_UPDATED_AT = PUBLIC_PAGE_BY_PATH.get("/blog")!.lastModified;
 
 export const Route = createFileRoute("/blog/$category/")({
   loader: async ({ params }) => {
@@ -40,6 +46,8 @@ export const Route = createFileRoute("/blog/$category/")({
     const url = `${SITE_URL}/blog/${category?.slug ?? ""}`;
     const image = `${SITE_URL}/assets/cat-${category?.slug ?? "lesson-guide"}.jpg`;
     const title = seo ? `${seo.pageTitle} | ${SITE.brand}` : `${name} | ${SITE.brand}`;
+    const lastModified = getLatestContentDate(posts, BLOG_UPDATED_AT);
+    const servicePaths = category ? (CATEGORY_SERVICE_PATHS_BY_SLUG[category.slug] ?? []) : [];
     return {
       meta: [
         { title },
@@ -79,6 +87,10 @@ export const Route = createFileRoute("/blog/$category/")({
                   path: `/blog/${category?.slug ?? ""}/${post.slug}`,
                   image: post.cover_image,
                 })),
+                dateModified: lastModified,
+                authorId: `${SITE_URL}/about#person`,
+                publisherId: `${SITE_URL}/#business`,
+                aboutIds: servicePaths.map((path) => `${SITE_URL}${path}#service`),
               }),
               {
                 "@type": "BreadcrumbList",
@@ -123,11 +135,11 @@ function CategoryPage() {
 
   const seo = CATEGORY_SEO[category.slug];
   const heading = seo?.primaryKeyword ?? category.name;
-  const categoryServicePaths = CATEGORY_SERVICE_PATHS as Record<string, readonly string[]>;
-  const servicePages = (categoryServicePaths[category.slug] ?? [])
+  const servicePages = (CATEGORY_SERVICE_PATHS_BY_SLUG[category.slug] ?? [])
     .map((path) => SERVICE_PAGE_BY_PATH.get(path))
     .filter((page): page is LessonLandingDefinition => Boolean(page));
   const researchReferenceIds = getCategoryResearchReferenceIds(category.slug);
+  const lastModified = getLatestContentDate(posts, BLOG_UPDATED_AT);
 
   return (
     <SubPageShell>
@@ -160,6 +172,18 @@ function CategoryPage() {
             </p>
           </div>
         </div>
+
+        {seo && (
+          <PageAuthorityRecord
+            className="mt-10"
+            title={`${heading} 허브 편집 기준`}
+            answer={`${heading}에 관한 공개 글 ${posts.length}편을 한곳에서 비교하고, 각 글의 실행 기준과 연결된 레슨 안내를 확인할 수 있습니다.`}
+            audience={seo.audience}
+            scope={seo.editorialRule}
+            boundary={seo.exclusionRule}
+            lastModified={lastModified}
+          />
+        )}
 
         <div className="mt-14">
           {servicePages.length > 0 && (

@@ -1,6 +1,12 @@
-import { BLOG_CATEGORY_SLUGS, SITE, SITE_URL } from "../src/lib/content";
+import { BLOG_CATEGORY_SLUGS, CATEGORY_SEO, SITE, SITE_URL } from "../src/lib/content";
+import { KEYWORD_CLUSTERS, type KeywordCluster } from "../src/lib/keyword-taxonomy";
 import { RESEARCH_DOWNLOADS } from "../src/lib/research-data";
-import { PUBLIC_PAGES } from "../src/lib/seo-pages";
+import {
+  CATEGORY_SERVICE_PATHS,
+  PUBLIC_PAGES,
+  SERVICE_PAGES,
+  getServicePagesForPost,
+} from "../src/lib/seo-pages";
 
 type QueryResult<T> = {
   row_count: number;
@@ -20,14 +26,32 @@ type DraftRow = {
   path: string;
 };
 
+type PublicPostRow = {
+  path: string;
+  title: string;
+  slug: string;
+  keyword_cluster: string;
+};
+
+type SchemaRelationExpectation = {
+  nodeId: string;
+  schemaType: string;
+  property: string;
+  expectedTargets: readonly string[];
+};
+
 type HtmlPageExpectation = {
   path: string;
   h1: string;
   schemaTypes: readonly string[];
-  markers?: readonly ("data-research-authorship" | "data-research-citation")[];
+  markers?: readonly (
+    "data-page-authority" | "data-research-authorship" | "data-research-citation"
+  )[];
   methodologyLink?: boolean;
   officialSourceHosts?: readonly string[];
   requiredText?: readonly string[];
+  requiredInternalPaths?: readonly string[];
+  schemaRelations?: readonly SchemaRelationExpectation[];
 };
 
 const websiteId = process.env.HIGGSFIELD_WEBSITE_ID?.trim();
@@ -44,6 +68,58 @@ const requiredResearchPaths = [
   "/research/methodology",
 ] as const;
 
+const serviceHtmlPages: readonly HtmlPageExpectation[] = Object.values(SERVICE_PAGES).map(
+  (page) => ({
+    path: page.path,
+    h1: page.primaryKeyword,
+    schemaTypes: ["WebPage", "Service", "FAQPage", "BreadcrumbList"],
+    markers: ["data-page-authority"],
+    requiredText: [page.authority.answer, page.authority.scope, page.authority.boundary],
+    requiredInternalPaths: [
+      "/about",
+      ...page.relatedServices.map((item) => item.href),
+      ...page.related.map((item) => item.href),
+    ],
+    schemaRelations: [
+      {
+        nodeId: `${siteUrl}${page.path}#webpage`,
+        schemaType: "WebPage",
+        property: "relatedLink",
+        expectedTargets: page.related.map((item) => `${siteUrl}${item.href}`),
+      },
+      {
+        nodeId: `${siteUrl}${page.path}#service`,
+        schemaType: "Service",
+        property: "subjectOf",
+        expectedTargets: page.related.map((item) => `${siteUrl}${item.href}#article`),
+      },
+    ],
+  }),
+);
+
+const categoryServicePaths = CATEGORY_SERVICE_PATHS as Record<string, readonly string[]>;
+const categoryHtmlPages: readonly HtmlPageExpectation[] = BLOG_CATEGORY_SLUGS.map((slug) => {
+  const seo = CATEGORY_SEO[slug];
+  return {
+    path: `/blog/${slug}`,
+    h1: seo.primaryKeyword,
+    schemaTypes: ["CollectionPage", "ItemList", "BreadcrumbList"],
+    markers: ["data-page-authority"],
+    requiredText: [seo.audience, seo.editorialRule, seo.exclusionRule],
+    requiredInternalPaths: ["/about", ...(categoryServicePaths[slug] ?? [])],
+    schemaRelations: [
+      {
+        nodeId: `${siteUrl}/blog/${slug}#collection`,
+        schemaType: "CollectionPage",
+        property: "about",
+        expectedTargets: (categoryServicePaths[slug] ?? []).map(
+          (path) => `${siteUrl}${path}#service`,
+        ),
+      },
+    ],
+  };
+});
+
 const coreHtmlPages: readonly HtmlPageExpectation[] = [
   {
     path: "/",
@@ -55,6 +131,16 @@ const coreHtmlPages: readonly HtmlPageExpectation[] = [
     h1: "피아노 선생님 김서연",
     schemaTypes: ["Person", "FAQPage", "BreadcrumbList"],
   },
+  {
+    path: "/blog",
+    h1: "피아노 레슨 정보와 연습 칼럼",
+    schemaTypes: ["CollectionPage", "ItemList", "BreadcrumbList"],
+    markers: ["data-page-authority"],
+    requiredInternalPaths: ["/about"],
+    requiredText: ["피아노 정보 허브 편집 기준"],
+  },
+  ...serviceHtmlPages,
+  ...categoryHtmlPages,
   {
     path: "/research",
     h1: "피아노 통계 자료실",
@@ -192,6 +278,55 @@ function jsonLdTypes(html: string, path: string): Set<string> {
   return types;
 }
 
+function collectJsonLdNodes(value: unknown, nodes: Record<string, unknown>[]): void {
+  if (Array.isArray(value)) {
+    for (const item of value) collectJsonLdNodes(item, nodes);
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+
+  const record = value as Record<string, unknown>;
+  if (record["@type"]) nodes.push(record);
+  for (const child of Object.values(record)) collectJsonLdNodes(child, nodes);
+}
+
+function jsonLdNodes(html: string, path: string): Record<string, unknown>[] {
+  const nodes: Record<string, unknown>[] = [];
+  const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)].filter(
+    (match) => (readHtmlAttribute(`<script${match[1]}>`, "type") ?? "") === "application/ld+json",
+  );
+
+  for (const script of scripts) {
+    const source = script[2].trim();
+    if (!source) continue;
+    try {
+      collectJsonLdNodes(JSON.parse(source), nodes);
+    } catch (error) {
+      throw new Error(
+        `${path} JSON-LD 관계를 파싱하지 못했습니다: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+  return nodes;
+}
+
+function schemaTypesForNode(node: Record<string, unknown>): string[] {
+  const value = node["@type"];
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string");
+  return [];
+}
+
+function schemaRelationTargets(value: unknown): string[] {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap(schemaRelationTargets);
+  if (value && typeof value === "object") {
+    const id = (value as Record<string, unknown>)["@id"];
+    return typeof id === "string" ? [id] : [];
+  }
+  return [];
+}
+
 function anchorHrefs(html: string): string[] {
   return openingTags(html, "a")
     .map((tag) => readHtmlAttribute(tag, "href"))
@@ -244,6 +379,26 @@ function verifyHtmlPage(expectation: HtmlPageExpectation, response: Response, ht
       throw new Error(`${expectation.path} JSON-LD에 ${requiredType} 타입이 없습니다.`);
     }
   }
+  const nodes = jsonLdNodes(html, expectation.path);
+  for (const relation of expectation.schemaRelations ?? []) {
+    const node = nodes.find(
+      (candidate) =>
+        candidate["@id"] === relation.nodeId &&
+        schemaTypesForNode(candidate).includes(relation.schemaType),
+    );
+    if (!node) {
+      throw new Error(
+        `${expectation.path} JSON-LD에 ${relation.schemaType} ${relation.nodeId} 노드가 없습니다.`,
+      );
+    }
+    const actualTargets = schemaRelationTargets(node[relation.property]).sort();
+    const expectedTargets = [...relation.expectedTargets].sort();
+    if (JSON.stringify(actualTargets) !== JSON.stringify(expectedTargets)) {
+      throw new Error(
+        `${expectation.path} JSON-LD ${relation.schemaType}.${relation.property} 관계가 화면 링크 맵과 다릅니다. 기대값: ${expectedTargets.join(", ") || "없음"}, 실제: ${actualTargets.join(", ") || "없음"}`,
+      );
+    }
+  }
 
   for (const marker of expectation.markers ?? []) {
     if (!hasHtmlAttribute(html, marker)) {
@@ -275,6 +430,11 @@ function verifyHtmlPage(expectation: HtmlPageExpectation, response: Response, ht
     });
     if (!hasOfficialLink) {
       throw new Error(`${expectation.path}에 ${officialHost} 공식 출처 링크가 없습니다.`);
+    }
+  }
+  for (const requiredPath of expectation.requiredInternalPaths ?? []) {
+    if (!hrefs.some((href) => isHrefForPath(href, requiredPath))) {
+      throw new Error(`${expectation.path}에 ${requiredPath} 내부 링크가 없습니다.`);
     }
   }
 }
@@ -365,17 +525,58 @@ const draftResult = await queryDatabase<DraftRow>(`
 `);
 const draftPaths = draftResult.rows.map((row) => row.path);
 
+const publicPostResult = await queryDatabase<PublicPostRow>(`
+  SELECT
+    '/blog/' || c.slug || '/' || p.slug AS path,
+    p.title,
+    p.slug,
+    p.keyword_cluster
+  FROM posts p INNER JOIN categories c ON c.id = p.category_id
+  WHERE p.status = 'published' AND p.published_at IS NOT NULL
+  ORDER BY p.id
+`);
+if (
+  publicPostResult.row_count !== health.published_count ||
+  publicPostResult.rows.length !== health.published_count
+) {
+  throw new Error(
+    `공개 글 HTML 검증 대상이 ${publicPostResult.rows.length}건입니다. 운영 DB 기대값: ${health.published_count}`,
+  );
+}
+const publicPostHtmlPages: readonly HtmlPageExpectation[] = publicPostResult.rows.map((post) => {
+  if (!KEYWORD_CLUSTERS.includes(post.keyword_cluster as KeywordCluster)) {
+    throw new Error(`${post.path}의 키워드 클러스터가 유효하지 않습니다: ${post.keyword_cluster}`);
+  }
+  const servicePaths = getServicePagesForPost(
+    post.keyword_cluster as KeywordCluster,
+    post.slug,
+  ).map((page) => page.path);
+  return {
+    path: post.path,
+    h1: post.title,
+    schemaTypes: ["BlogPosting", "BreadcrumbList"],
+    requiredInternalPaths: ["/about", ...servicePaths],
+    schemaRelations: [
+      {
+        nodeId: `${siteUrl}${post.path}#article`,
+        schemaType: "BlogPosting",
+        property: "about",
+        expectedTargets: servicePaths.map((path) => `${siteUrl}${path}#service`),
+      },
+    ],
+  };
+});
+const verifiedHtmlPages = [...coreHtmlPages, ...publicPostHtmlPages];
+
 const cacheBuster = `verify=${encodeURIComponent(verificationId)}`;
-const [coreHtmlResponses, blog, sitemapResponse, robotsResponse, rssResponse, llmsResponse] =
+const [coreHtmlResponses, sitemapResponse, robotsResponse, rssResponse, llmsResponse] =
   await Promise.all([
-    Promise.all(coreHtmlPages.map((page) => fetchStatus(`${page.path}?${cacheBuster}`, 200))),
-    fetchStatus(`/blog?${cacheBuster}`, 200),
+    Promise.all(verifiedHtmlPages.map((page) => fetchStatus(`${page.path}?${cacheBuster}`, 200))),
     fetchStatus(`/sitemap.xml?${cacheBuster}`, 200),
     fetchStatus(`/robots.txt?${cacheBuster}`, 200),
     fetchStatus(`/rss.xml?${cacheBuster}`, 200),
     fetchStatus(`/llms.txt?${cacheBuster}`, 200),
   ]);
-void blog;
 
 const [coreHtmlBodies, sitemap, robots, rss, llms] = await Promise.all([
   Promise.all(coreHtmlResponses.map((response) => response.text())),
@@ -384,7 +585,7 @@ const [coreHtmlBodies, sitemap, robots, rss, llms] = await Promise.all([
   rssResponse.text(),
   llmsResponse.text(),
 ]);
-for (const [index, expectation] of coreHtmlPages.entries()) {
+for (const [index, expectation] of verifiedHtmlPages.entries()) {
   verifyHtmlPage(expectation, coreHtmlResponses[index], coreHtmlBodies[index]);
 }
 const [
@@ -541,8 +742,9 @@ for (const path of draftPaths) {
   }
 }
 
+const verifiedHtmlUrls = new Set(verifiedHtmlPages.map((page) => `${siteUrl}${page.path}`));
 await Promise.all([
-  ...sitemapUrls.map((url) => fetchStatus(url, 200)),
+  ...sitemapUrls.filter((url) => !verifiedHtmlUrls.has(url)).map((url) => fetchStatus(url, 200)),
   ...draftPaths.map((path) => fetchStatus(`${path}?${cacheBuster}`, 404)),
 ]);
 
@@ -557,9 +759,11 @@ console.log(
     checkedPublicUrls: sitemapUrls.length,
     blockedDraftUrls: draftPaths.length,
     endpoints: ["blog", "sitemap", "robots", "rss", "llms"],
-    verifiedCoreHtmlPages: coreHtmlPages.length,
+    verifiedCoreHtmlPages: verifiedHtmlPages.length,
+    verifiedPublishedArticlePages: publicPostHtmlPages.length,
     verifiedStaticCanonicalUrls: PUBLIC_PAGES.length,
     verifiedResearchLlmsUrls: requiredResearchPaths.length,
+    verifiedPageAuthorityPages: serviceHtmlPages.length + categoryHtmlPages.length + 1,
     researchDownloads: 8,
   }),
 );

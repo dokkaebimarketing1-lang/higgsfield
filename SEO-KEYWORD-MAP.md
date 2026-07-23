@@ -72,3 +72,22 @@
 - FAQ: 화면에 보이는 질문·답변과 FAQ 구조화 데이터가 일치
 - 내부링크: 정보 글에서 관련 수업 페이지, 수업 페이지에서 가격·선생님·관련 정보 글로 연결
 - 금지: 같은 문구 반복, 서비스와 다른 `학원` 자칭, 확인되지 않은 지역·성과·합격 보장, 제공하지 않는 악보 키워드 사용
+
+## 페이지 권위(PA) 집중 규칙
+
+PA는 Google이 공개한 단일 점수가 아니라 외부 SEO 도구가 링크 그래프 등을 바탕으로 추정하는 페이지 단위 지표다. 이 문서에서는 점수를 임의로 만들지 않고, Google이 확인할 수 있는 페이지별 주제 소유권과 크롤 가능한 내부 링크를 강화한다.
+
+1. `/lessons` 통합 페이지는 만들지 않는다. 핵심 키워드 `피아노 레슨`은 홈페이지가 계속 소유하고, 여섯 개 상업 랜딩은 서로 다른 확장 키워드만 담당한다.
+2. 모든 상업 랜딩은 화면에 작성·검토자, 최종 검토일, 직접 답변, 담당 범위와 한계를 공개한다.
+3. 상업 랜딩의 `WebPage`와 `Service`, 관련 정보 글의 `BlogPosting`을 JSON-LD `@id`로 연결한다. 구조화 데이터는 화면에 보이는 관계만 표현한다.
+4. 32개 공개 글은 모두 최소 한 개의 관련 상업 랜딩으로 연결한다. 비용 비교와 직접 관련된 `choosing-piano-tutor`, `academy-vs-tutoring`, `tutoring-time-guide`, `adult-piano-tutoring`, `elementary-piano-tutoring`은 `/pricing`도 함께 연결한다.
+5. `/blog`와 여섯 카테고리 허브는 작성자, 최신 검토일, 독자, 담당 범위와 제외 범위를 화면과 `CollectionPage`에 반영한다.
+6. 링크 문구는 `자세히 보기`만 단독으로 쓰지 않고 `피아노 레슨비 확인하기`처럼 대상 페이지의 내용을 설명한다.
+7. 외부 링크와 실제 검색 성과는 코드로 만들 수 없다. 배포 뒤 Search Console의 URL별 노출·클릭·색인 상태와 외부 링크를 기준으로 평가하며, Moz 등 제3자 PA는 보조 추세만 확인한다.
+
+공식 기준:
+
+- [Google 링크 권장사항](https://developers.google.com/search/docs/crawling-indexing/links-crawlable)
+- [Google 사용자 중심 콘텐츠 기준](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)
+- [Google 구조화 데이터 일반 지침](https://developers.google.com/search/docs/appearance/structured-data/sd-policies)
+- [Google의 제3자 SEO 도구 안내](https://developers.google.com/search/docs/fundamentals/third-party-seo)

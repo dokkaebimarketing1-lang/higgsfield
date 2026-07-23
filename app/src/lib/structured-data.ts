@@ -22,6 +22,10 @@ export function buildCollectionPageSchema(input: {
   image: string;
   items: readonly CollectionListItem[];
   itemListOrder?: "ascending" | "descending" | "unordered";
+  dateModified?: string;
+  authorId?: string;
+  publisherId?: string;
+  aboutIds?: readonly string[];
 }) {
   const pageUrl = toCanonicalUrl(input.url);
   const imageUrl = toCanonicalUrl(input.image);
@@ -36,6 +40,10 @@ export function buildCollectionPageSchema(input: {
     primaryImageOfPage: imageUrl,
     isPartOf: { "@id": `${toCanonicalUrl("/")}#website` },
     inLanguage: "ko",
+    ...(input.dateModified ? { dateModified: input.dateModified } : {}),
+    ...(input.authorId ? { author: { "@id": input.authorId } } : {}),
+    ...(input.publisherId ? { publisher: { "@id": input.publisherId } } : {}),
+    ...(input.aboutIds?.length ? { about: input.aboutIds.map((id) => ({ "@id": id })) } : {}),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: input.items.length,

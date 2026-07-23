@@ -135,7 +135,10 @@ function AboutPage() {
           </div>
           <div className="md:col-span-6 md:col-start-7">
             <p className="font-latin text-xl italic text-brass md:text-2xl">Adagio</p>
-            <h1 className="mt-3 font-serif-kr text-4xl font-bold tracking-tight md:text-5xl">
+            <h1
+              id="person"
+              className="mt-3 font-serif-kr text-4xl font-bold tracking-tight md:text-5xl"
+            >
               피아노 선생님 김서연
             </h1>
             <p className="mt-3 text-lg text-mute">이화여자대학교 피아노과 재학</p>

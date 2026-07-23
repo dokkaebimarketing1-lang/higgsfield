@@ -17,6 +17,7 @@ import {
   SERVICE_PAGE_BY_PATH,
   buildPublicPageHead,
   getServicePageForPost,
+  getServicePagesForPost,
 } from "../src/lib/seo-pages";
 import {
   buildSitemapXml,
@@ -219,6 +220,9 @@ describe("SEO helpers", () => {
         page.primaryKeyword,
         page.lede,
         page.imageAlt,
+        page.authority.answer,
+        page.authority.scope,
+        page.authority.boundary,
         ...page.sections.flatMap((section) => [
           section.heading,
           section.lead,
@@ -246,10 +250,29 @@ describe("SEO helpers", () => {
       expect(head.links).toContainEqual({ rel: "canonical", href: `${SITE_URL}${page.path}` });
 
       const schema = JSON.parse(page.structuredData) as {
-        "@graph": Array<{ "@type": string; mainEntity?: unknown[] }>;
+        "@graph": Array<Record<string, unknown>>;
       };
       const faq = schema["@graph"].find((item) => item["@type"] === "FAQPage");
+      const webPage = schema["@graph"].find((item) => item["@type"] === "WebPage");
+      const service = schema["@graph"].find((item) => item["@type"] === "Service");
+      const canonical = `${SITE_URL}${page.path}`;
+
       expect(faq?.mainEntity).toHaveLength(page.faq.length);
+      expect(webPage).toMatchObject({
+        "@id": `${canonical}#webpage`,
+        url: canonical,
+        dateModified: page.lastModified,
+        author: { "@id": `${SITE_URL}/about#person` },
+        publisher: { "@id": `${SITE_URL}/#business` },
+        mainEntity: { "@id": `${canonical}#service` },
+      });
+      expect(webPage?.relatedLink).toEqual(page.related.map((item) => `${SITE_URL}${item.href}`));
+      expect(service).toMatchObject({
+        "@id": `${canonical}#service`,
+        mainEntityOfPage: { "@id": `${canonical}#webpage` },
+      });
+      expect(service?.keywords).toEqual([page.primaryKeyword, ...page.supportingKeywords]);
+      expect(service?.subjectOf).toHaveLength(page.related.length);
     }
 
     const pricingSchema = JSON.parse(SERVICE_PAGES.pricing.structuredData) as {
@@ -269,6 +292,28 @@ describe("SEO helpers", () => {
     expect(getServicePageForPost("adult", "adult-piano-tutoring").path).toBe("/lessons/adult");
     expect(getServicePageForPost("lesson", "online-piano-lesson").path).toBe("/lessons/private");
     expect(getServicePageForPost("admission", "competition-prep").path).toBe("/lessons/admission");
+    expect(
+      getServicePagesForPost("adult", "adult-piano-tutoring").map((page) => page.path),
+    ).toEqual(["/lessons/adult", "/pricing"]);
+    expect(
+      getServicePagesForPost("lesson", "choosing-piano-tutor").map((page) => page.path),
+    ).toEqual(["/lessons/private", "/pricing"]);
+    expect(getServicePagesForPost("practice", "sight-reading").map((page) => page.path)).toEqual([
+      "/lessons/private",
+    ]);
+    expect(CATEGORY_SERVICE_PATHS).toEqual({
+      "lesson-guide": [
+        SERVICE_PAGES.private.path,
+        SERVICE_PAGES.pricing.path,
+        SERVICE_PAGES.adult.path,
+        SERVICE_PAGES.children.path,
+      ],
+      practice: [SERVICE_PAGES.private.path, SERVICE_PAGES.children.path],
+      exam: [SERVICE_PAGES.admission.path],
+      repertoire: [SERVICE_PAGES.adult.path, SERVICE_PAGES.admission.path],
+      parents: [SERVICE_PAGES.children.path, SERVICE_PAGES.homeVisit.path],
+      local: [SERVICE_PAGES.homeVisit.path, SERVICE_PAGES.private.path],
+    });
   });
 
   test("keeps homepage metadata synchronized with the main keyword registry", () => {

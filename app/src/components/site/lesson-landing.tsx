@@ -6,6 +6,7 @@ import { getServiceResearchReferenceIds } from "../../lib/research-links";
 import type { LessonLandingDefinition } from "../../lib/seo-pages";
 import { useSiteMotion } from "../../lib/use-motion";
 import { SubPageShell } from "./chrome";
+import { PageAuthorityRecord } from "./page-authority-record";
 import { ResearchReferencePanel } from "./research-reference-panel";
 
 export function LessonLanding({ page }: { page: LessonLandingDefinition }) {
@@ -69,6 +70,16 @@ export function LessonLanding({ page }: { page: LessonLandingDefinition }) {
             </div>
           </div>
         </section>
+
+        <div className="mx-auto max-w-6xl px-6 py-12 md:px-10 md:py-16">
+          <PageAuthorityRecord
+            title={`${page.primaryKeyword} 안내 기준`}
+            answer={page.authority.answer}
+            scope={page.authority.scope}
+            boundary={page.authority.boundary}
+            lastModified={page.lastModified}
+          />
+        </div>
 
         {page.sections.map((section, index) => (
           <section

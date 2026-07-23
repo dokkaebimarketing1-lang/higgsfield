@@ -61,8 +61,18 @@ describe("public feed and collection inventory", () => {
         },
         { name: "메트로놈 활용법", path: "/blog/practice/metronome" },
       ],
+      dateModified: "2026-07-23",
+      authorId: "https://ewha-piano.higgsfield.app/about#person",
+      publisherId: "https://ewha-piano.higgsfield.app/#business",
+      aboutIds: ["https://ewha-piano.higgsfield.app/lessons/private#service"],
     });
 
+    expect(schema).toMatchObject({
+      dateModified: "2026-07-23",
+      author: { "@id": "https://ewha-piano.higgsfield.app/about#person" },
+      publisher: { "@id": "https://ewha-piano.higgsfield.app/#business" },
+      about: [{ "@id": "https://ewha-piano.higgsfield.app/lessons/private#service" }],
+    });
     expect(schema.mainEntity.numberOfItems).toBe(2);
     expect(schema.mainEntity.itemListElement[0]).toMatchObject({
       "@type": "ListItem",

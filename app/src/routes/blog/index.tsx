@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { SubPageShell } from "../../components/site/chrome";
+import { PageAuthorityRecord } from "../../components/site/page-authority-record";
 import {
   listCategories,
   listPublishedPosts,
@@ -8,6 +9,7 @@ import {
   type PostRow,
 } from "../../lib/api/posts.functions";
 import { CATEGORY_SEO, SITE, SITE_URL } from "../../lib/content";
+import { getLatestContentDate } from "../../lib/content-dates";
 import { buildPublicPageHead, PUBLIC_PAGE_BY_PATH } from "../../lib/seo-pages";
 import { buildCollectionPageSchema, safeJsonLd } from "../../lib/structured-data";
 
@@ -26,6 +28,7 @@ export const Route = createFileRoute("/blog/")({
   },
   head: ({ loaderData }) => {
     const posts = (loaderData as { posts: PostRow[] } | undefined)?.posts ?? [];
+    const lastModified = getLatestContentDate(posts, blogPage.lastModified);
     return {
       ...buildPublicPageHead(blogPage),
       scripts: [
@@ -44,6 +47,9 @@ export const Route = createFileRoute("/blog/")({
                   path: `/blog/${post.category_slug}/${post.slug}`,
                   image: post.cover_image,
                 })),
+                dateModified: lastModified,
+                authorId: `${SITE_URL}/about#person`,
+                publisherId: `${SITE_URL}/#business`,
               }),
               {
                 "@type": "BreadcrumbList",
@@ -71,6 +77,7 @@ function BlogHub() {
     categories: CategoryRow[];
     posts: PostRow[];
   };
+  const lastModified = getLatestContentDate(posts, blogPage.lastModified);
 
   return (
     <SubPageShell>
@@ -83,6 +90,16 @@ function BlogHub() {
           검색 목적에 맞춰 나눠 전합니다. {SITE.brand}를 운영하는 이화여자대학교 피아노과 재학생이
           레슨 현장에서 얻은 경험을 정리했습니다.
         </p>
+
+        <PageAuthorityRecord
+          className="mt-10"
+          title="피아노 정보 허브 편집 기준"
+          answer="레슨 선택, 연습, 입시, 연주곡, 학부모, 서울 지역의 여섯 검색 의도에 맞춰 공개 글을 구분해 제공합니다."
+          audience="피아노 레슨을 비교하거나 직접 연습할 방법, 입시·곡·자녀 교육·지역 정보를 찾는 학습자와 보호자"
+          scope="각 카테고리는 하나의 넓은 질문을 맡고, 개별 글은 더 구체적인 검색 질문 하나에 답합니다."
+          boundary="과정별 실제 비용과 신청 조건은 피아노 레슨비 및 개별 수업 페이지에서만 관리하며, 연구 통계는 별도 데이터 자료실에서 출처와 한계를 공개합니다."
+          lastModified={lastModified}
+        />
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((c) => (
