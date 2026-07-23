@@ -132,6 +132,7 @@ function openingTags(html: string, tagName: string): string[] {
 function normalizedVisibleText(html: string): string {
   return decodeHtmlEntities(html.replace(/<[^>]*>/g, " "))
     .replace(/\s+/g, " ")
+    .replace(/\s+([:：,.;!?])/g, "$1")
     .trim();
 }
 
