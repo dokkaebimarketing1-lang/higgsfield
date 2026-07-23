@@ -745,7 +745,8 @@ async function queryDatabase<T>(sql: string): Promise<QueryResult<T>> {
 async function fetchStatus(pathOrUrl: string, expected: number): Promise<Response> {
   const url = pathOrUrl.startsWith("http") ? pathOrUrl : `${siteUrl}${pathOrUrl}`;
   let lastStatus = 0;
-  for (let attempt = 1; attempt <= 8; attempt += 1) {
+  const edgePropagationAttempts = 12;
+  for (let attempt = 1; attempt <= edgePropagationAttempts; attempt += 1) {
     try {
       const response = await fetch(url, {
         redirect: "manual",
