@@ -105,6 +105,10 @@ export const Route = createFileRoute("/llms.txt")({
 - [상담 신청](${SITE_URL}/#contact): 상담 신청 폼과 연락처
 - [개인정보 처리 안내](${SITE_URL}/privacy): 상담 정보의 수집 목적, 보관 기간, 이용자 권리
 - [피아노 이야기 (칼럼)](${SITE_URL}/blog): 피아노 과외 · 연습 · 입시 · 곡 추천 칼럼 모음
+- [피아노 통계 자료실](${SITE_URL}/research): 공식 원자료, 직접 식별정보와 원자료 행 위치를 제거한 가공 CSV, 방법론과 한계
+- [2025 음악 사교육비 통계](${SITE_URL}/research/2025-music-private-education-statistics): 교육부·국가데이터처 공식 통계 정리
+- [2026 서울 피아노 학원비](${SITE_URL}/research/2026-seoul-piano-academy-fees): 서울특별시교육청 등록 교습비 파생분석
+- [피아노 데이터 방법론](${SITE_URL}/research/methodology): 필터, 통계 기준, 한계와 수정 이력
 
 ## 목적별 레슨
 

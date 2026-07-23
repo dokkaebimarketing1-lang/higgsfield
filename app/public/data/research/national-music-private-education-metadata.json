@@ -1,0 +1,46 @@
+{
+  "datasetId": "korea-music-private-education-spending-2025",
+  "name": "2025 대한민국 음악 사교육비 공식 통계 정리",
+  "description": "교육부와 국가데이터처의 2025년 초중고 사교육비 조사 중 음악 과목의 사교육비 총액을 학교급별로 전사한 데이터다. 피아노 단독 통계나 레슨 가격 통계가 아니다.",
+  "referenceYear": 2025,
+  "publishedAt": "2026-03-12",
+  "retrievedAt": "2026-07-23",
+  "unit": "억원",
+  "table": "학교급(학년) 및 특성별 사교육비 총액",
+  "printedPages": "22-23",
+  "source": {
+    "sourceId": "moe-2025-private-education-survey",
+    "originalName": "[교육부 03-13(금) 조간보도자료] 2025년 초중고 사교육비 조사 결과.pdf",
+    "format": "PDF",
+    "bytes": 2773046,
+    "sha256": "0beaa6542d1998859222ab64084936ffe6a76df816d3a76a07a85511862c704d",
+    "retrievedAt": "2026-07-23",
+    "referenceDate": "2025",
+    "sourcePage": "https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=105597&lev=0&m=020402",
+    "downloadUrl": "https://www.moe.go.kr/boardCnts/fileDown.do?m=020402&s=moe&fileSeq=7562a697bdba006065fa92054b1d634e",
+    "kind": "official-statistics-pdf"
+  },
+  "rows": [
+    {
+      "schoolLevel": "전체",
+      "musicPrivateEducationSpending100mKrw": 18876,
+      "musicPrivateEducationSpendingKrw": 1887600000000
+    },
+    {
+      "schoolLevel": "초등학교",
+      "musicPrivateEducationSpending100mKrw": 13560,
+      "musicPrivateEducationSpendingKrw": 1356000000000
+    },
+    {
+      "schoolLevel": "중학교",
+      "musicPrivateEducationSpending100mKrw": 2415,
+      "musicPrivateEducationSpendingKrw": 241500000000
+    },
+    {
+      "schoolLevel": "고등학교",
+      "musicPrivateEducationSpending100mKrw": 2901,
+      "musicPrivateEducationSpendingKrw": 290100000000
+    }
+  ],
+  "limitation": "음악 전체 과목의 학생 단위 명목 지출 추정치이며 피아노만 분리하지 않는다. 표본조사이므로 상대표준오차와 반올림에 유의해야 한다."
+}

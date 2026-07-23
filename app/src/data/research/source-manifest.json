@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "1.0",
+  "retrievedAt": "2026-07-23",
+  "sources": [
+    {
+      "sourceId": "moe-2025-private-education-survey",
+      "originalName": "[교육부 03-13(금) 조간보도자료] 2025년 초중고 사교육비 조사 결과.pdf",
+      "format": "PDF",
+      "bytes": 2773046,
+      "sha256": "0beaa6542d1998859222ab64084936ffe6a76df816d3a76a07a85511862c704d",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2025",
+      "sourcePage": "https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=105597&lev=0&m=020402",
+      "downloadUrl": "https://www.moe.go.kr/boardCnts/fileDown.do?m=020402&s=moe&fileSeq=7562a697bdba006065fa92054b1d634e",
+      "kind": "official-statistics-pdf"
+    },
+    {
+      "sourceId": "seoul-academy-gangnam-1",
+      "originalName": "1. 2026. 1. 1.기준 서울 내 학원 현황(강남구1).xls",
+      "format": "XLS",
+      "bytes": 10232320,
+      "sha256": "ab0c150e677e2fbee2a829291cda2c9ea72ad74d3495f099f4580089184a1848",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130171732114&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233296&q_fileId=23d315d6-8c39-4ca4-bae0-85f669390b6e",
+      "kind": "official-administrative-xls"
+    },
+    {
+      "sourceId": "seoul-academy-gangnam-2",
+      "originalName": "2. 2026. 1. 1.기준 서울 내 학원 현황(강남구2).xls",
+      "format": "XLS",
+      "bytes": 5159936,
+      "sha256": "1d690fb14484a82c29586dcd2ac2c4784494e939da3ff50804428002639d1609",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130171732114&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233296&q_fileId=312efd28-9361-44e7-98a6-437f2879114a",
+      "kind": "official-administrative-xls"
+    },
+    {
+      "sourceId": "seoul-academy-seocho",
+      "originalName": "3. 2026. 1. 1.기준 서울 내 학원 현황(서초구).xls",
+      "format": "XLS",
+      "bytes": 8602624,
+      "sha256": "6c16052c7930fff5ab1f79806f65b668a3cc0850bf0b80a9ddddb2a81563d457",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130171732114&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233296&q_fileId=f2cd622d-ea3f-4a29-9c4b-92f511c30d80",
+      "kind": "official-administrative-xls"
+    },
+    {
+      "sourceId": "seoul-academy-gangdong-songpa",
+      "originalName": "4. 2026. 1. 1.기준 서울 내 학원 현황(강동송파).xls",
+      "format": "XLS",
+      "bytes": 7207424,
+      "sha256": "35cfc147f6b9b28800283a06b2422efbf629004c1ee5b3c99923690cc5b5d359",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130171732114&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233296&q_fileId=9a11e0df-7aba-4006-9a6c-59482d64aab1",
+      "kind": "official-administrative-xls"
+    },
+    {
+      "sourceId": "seoul-academy-seongdong-gwangjin-dongbu",
+      "originalName": "5. 2026. 1. 1.기준 서울 내 학원 현황(성동광진, 동부).xls",
+      "format": "XLS",
+      "bytes": 5273600,
+      "sha256": "968bf891cfd774dd938ac6dbf8eb84eec915a1210c1011d000b5e309e5ad80ae",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130171732114&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233296&q_fileId=384645f1-8d90-4593-8732-87f292c4d542",
+      "kind": "official-administrative-xls"
+    },
+    {
+      "sourceId": "seoul-academy-seobu-jungbu",
+      "originalName": "6. 2026. 1. 1.기준 서울 내 학원 현황(서부, 중부).xls",
+      "format": "XLS",
+      "bytes": 8547840,
+      "sha256": "00360c419221ffb2a0f258a26882497251e55e3ab2588270d580965bdb25cc56",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130173322632&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233297&q_fileId=c7ad6b5f-6f7b-42f0-b278-c41d19ead5ef",
+      "kind": "official-administrative-xls"
+    },
+    {
+      "sourceId": "seoul-academy-nambu-dongjak-gwanak",
+      "originalName": "7. 2026. 1. 1.기준 서울 내 학원 현황(남부, 동작관악).xls",
+      "format": "XLS",
+      "bytes": 9860608,
+      "sha256": "60d1e1bf297f796cbe5eb3097b6058a47a6ef9e42ce1ef8fd3ad191ae753ce2d",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130173322632&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233297&q_fileId=d809d386-fa11-4186-b5fa-54211aedadc1",
+      "kind": "official-administrative-xls"
+    },
+    {
+      "sourceId": "seoul-academy-seongbuk-gangbuk-bukbu",
+      "originalName": "8. 2026. 1. 1.기준 서울 내 학원 현황(성북강북, 북부).xls",
+      "format": "XLS",
+      "bytes": 7122944,
+      "sha256": "8b50e8d3e52103b11aa4e0f97b3fb237d7eb86b8fec43bf85386c8fbddddd2b2",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130173322632&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233297&q_fileId=8410960d-7c2c-4589-88f9-3a5d47d91489",
+      "kind": "official-administrative-xls"
+    },
+    {
+      "sourceId": "seoul-academy-gangseo-yangcheon",
+      "originalName": "9. 2026. 1. 1.기준 서울 내 학원 현황(강서양천).xls",
+      "format": "XLS",
+      "bytes": 8899072,
+      "sha256": "946af20e40e9f8dd830a65a30dec1561a88462459e49cdfe45c4b7bbf2aace94",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130173322632&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233297&q_fileId=bcb175fb-4bf8-4cdc-93d3-97942d4759d6",
+      "kind": "official-administrative-xls"
+    },
+    {
+      "sourceId": "seoul-teaching-center-north",
+      "originalName": "1. 2026. 1. 1.기준 서울 내 교습소 현황(강북권).xls",
+      "format": "XLS",
+      "bytes": 5697024,
+      "sha256": "10744ba8f587f8d0f5af5e2c8d2522429e4ed2906561fad0fb233356798506b9",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130173553025&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233298&q_fileId=2c959409-02aa-40d9-a572-4c95b810ce62",
+      "kind": "official-administrative-xls"
+    },
+    {
+      "sourceId": "seoul-teaching-center-south",
+      "originalName": "2. 2026. 1. 1.기준 서울 내 교습소 현황(강남권).xls",
+      "format": "XLS",
+      "bytes": 7761408,
+      "sha256": "c300cce939467d025eb6c7bb2fcad5290e45166d81b143cc4f52dd6da36fa23f",
+      "retrievedAt": "2026-07-23",
+      "referenceDate": "2026-01-01",
+      "sourcePage": "https://buseo.sen.go.kr/buseo/bu14/user/bbs/BD_selectBbs.do?q_bbsDocNo=20260130173553025&q_bbsSn=1328",
+      "downloadUrl": "https://buseo.sen.go.kr/component/file/ND_fileDownload.do?q_fileSn=2233298&q_fileId=81c5b1f8-1166-455b-8934-9ba587f52dd6",
+      "kind": "official-administrative-xls"
+    }
+  ],
+  "redistributionPolicy": "원자료 파일은 개인정보를 포함할 수 있어 이 사이트가 재배포하지 않고 공식 기관의 직접 다운로드 URL을 제공한다. 가공 CSV는 성명·전화번호·시설명·정확한 주소와 원자료 파일·시트·행 위치 및 시설 ID를 제거한다."
+}

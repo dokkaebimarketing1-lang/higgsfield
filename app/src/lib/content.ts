@@ -209,6 +209,7 @@ export const SITE = {
     { label: "레슨 프로그램", href: "/#programs" },
     { label: "요금 안내", href: "/pricing" },
     { label: "피아노 이야기", href: "/blog" },
+    { label: "피아노 데이터", href: "/research" },
   ],
   hero: {
     eyebrow: "이화여자대학교 피아노과",

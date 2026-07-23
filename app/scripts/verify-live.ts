@@ -1,4 +1,5 @@
 import { BLOG_CATEGORY_SLUGS, SITE_URL } from "../src/lib/content";
+import { RESEARCH_DOWNLOADS } from "../src/lib/research-data";
 import { PUBLIC_PAGES } from "../src/lib/seo-pages";
 
 type QueryResult<T> = {
@@ -130,6 +131,85 @@ const [sitemap, robots, rss, llms] = await Promise.all([
   rssResponse.text(),
   llmsResponse.text(),
 ]);
+const [
+  nationalCsvResponse,
+  seoulRecordsResponse,
+  seoulSummaryResponse,
+  sourceManifestResponse,
+  nationalMetadataResponse,
+  seoulMetadataResponse,
+] = await Promise.all([
+  fetchStatus(RESEARCH_DOWNLOADS.nationalCsv, 200),
+  fetchStatus(RESEARCH_DOWNLOADS.seoulRecordsCsv, 200),
+  fetchStatus(RESEARCH_DOWNLOADS.seoulSummaryCsv, 200),
+  fetchStatus(RESEARCH_DOWNLOADS.sourceManifest, 200),
+  fetchStatus(RESEARCH_DOWNLOADS.nationalMetadata, 200),
+  fetchStatus(RESEARCH_DOWNLOADS.seoulMetadata, 200),
+]);
+const [
+  nationalCsv,
+  seoulRecordsCsv,
+  seoulSummaryCsv,
+  sourceManifestText,
+  nationalMetadataText,
+  seoulMetadataText,
+] = await Promise.all([
+  nationalCsvResponse.text(),
+  seoulRecordsResponse.text(),
+  seoulSummaryResponse.text(),
+  sourceManifestResponse.text(),
+  nationalMetadataResponse.text(),
+  seoulMetadataResponse.text(),
+]);
+if (!nationalCsv.replace(/^\uFEFF/, "").startsWith("reference_year,school_level,category")) {
+  throw new Error("음악 사교육비 CSV 헤더가 예상과 다릅니다.");
+}
+if (!seoulRecordsCsv.replace(/^\uFEFF/, "").startsWith("facility_type,district,realm")) {
+  throw new Error("서울 피아노 교습상품 CSV 헤더가 예상과 다릅니다.");
+}
+if (
+  /전화|주소|성명|학원명|교습소명|source_file_id|source_sheet|source_row|facility_id/.test(
+    seoulRecordsCsv.split(/\r?\n/, 1)[0],
+  )
+) {
+  throw new Error(
+    "서울 피아노 교습상품 CSV 헤더에 직접 식별 또는 원자료 위치 필드가 포함되었습니다.",
+  );
+}
+if (!seoulSummaryCsv.replace(/^\uFEFF/, "").startsWith("group_level,area,facility_type")) {
+  throw new Error("서울 피아노 요약 CSV 헤더가 예상과 다릅니다.");
+}
+const sourceManifest = JSON.parse(sourceManifestText) as {
+  sources?: { sourceId?: string; sha256?: string }[];
+};
+const nationalMetadata = JSON.parse(nationalMetadataText) as {
+  datasetId?: string;
+  source?: { sha256?: string };
+};
+const seoulMetadata = JSON.parse(seoulMetadataText) as {
+  datasetId?: string;
+  publishedRecords?: number;
+  sourceManifestPath?: string;
+};
+if (sourceManifest.sources?.length !== 12) {
+  throw new Error("원자료 매니페스트의 파일 수가 12개가 아닙니다.");
+}
+if (!sourceManifest.sources.every((source) => /^[a-f0-9]{64}$/.test(source.sha256 ?? ""))) {
+  throw new Error("원자료 매니페스트에 유효하지 않은 SHA-256이 있습니다.");
+}
+if (
+  nationalMetadata.datasetId !== "korea-music-private-education-spending-2025" ||
+  !/^[a-f0-9]{64}$/.test(nationalMetadata.source?.sha256 ?? "")
+) {
+  throw new Error("음악 사교육비 메타데이터가 예상과 다릅니다.");
+}
+if (
+  seoulMetadata.datasetId !== "seoul-piano-registered-fees-2026-01-01" ||
+  !seoulMetadata.publishedRecords ||
+  seoulMetadata.sourceManifestPath !== RESEARCH_DOWNLOADS.sourceManifest
+) {
+  throw new Error("서울 피아노 교습비 메타데이터가 예상과 다릅니다.");
+}
 const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 const uniqueSitemapUrls = new Set(sitemapUrls);
 const expectedSitemapUrls =
@@ -171,5 +251,6 @@ console.log(
     checkedPublicUrls: sitemapUrls.length,
     blockedDraftUrls: draftPaths.length,
     endpoints: ["home", "blog", "sitemap", "robots", "rss", "llms"],
+    researchDownloads: 6,
   }),
 );

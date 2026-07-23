@@ -19,7 +19,11 @@ import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ResearchIndexRouteImport } from './routes/research/index'
 import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as ResearchMethodologyRouteImport } from './routes/research/methodology'
+import { Route as Research2026SeoulPianoAcademyFeesRouteImport } from './routes/research/2026-seoul-piano-academy-fees'
+import { Route as Research2025MusicPrivateEducationStatisticsRouteImport } from './routes/research/2025-music-private-education-statistics'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
 import { Route as LessonsPrivateRouteImport } from './routes/lessons/private'
 import { Route as LessonsHomeVisitRouteImport } from './routes/lessons/home-visit'
@@ -79,11 +83,33 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResearchIndexRoute = ResearchIndexRouteImport.update({
+  id: '/research/',
+  path: '/research/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResearchMethodologyRoute = ResearchMethodologyRouteImport.update({
+  id: '/research/methodology',
+  path: '/research/methodology',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Research2026SeoulPianoAcademyFeesRoute =
+  Research2026SeoulPianoAcademyFeesRouteImport.update({
+    id: '/research/2026-seoul-piano-academy-fees',
+    path: '/research/2026-seoul-piano-academy-fees',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Research2025MusicPrivateEducationStatisticsRoute =
+  Research2025MusicPrivateEducationStatisticsRouteImport.update({
+    id: '/research/2025-music-private-education-statistics',
+    path: '/research/2025-music-private-education-statistics',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const MediaSplatRoute = MediaSplatRouteImport.update({
   id: '/media/$',
   path: '/media/$',
@@ -142,7 +168,11 @@ export interface FileRoutesByFullPath {
   '/lessons/home-visit': typeof LessonsHomeVisitRoute
   '/lessons/private': typeof LessonsPrivateRoute
   '/media/$': typeof MediaSplatRoute
+  '/research/2025-music-private-education-statistics': typeof Research2025MusicPrivateEducationStatisticsRoute
+  '/research/2026-seoul-piano-academy-fees': typeof Research2026SeoulPianoAcademyFeesRoute
+  '/research/methodology': typeof ResearchMethodologyRoute
   '/blog/': typeof BlogIndexRoute
+  '/research/': typeof ResearchIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
 }
@@ -163,7 +193,11 @@ export interface FileRoutesByTo {
   '/lessons/home-visit': typeof LessonsHomeVisitRoute
   '/lessons/private': typeof LessonsPrivateRoute
   '/media/$': typeof MediaSplatRoute
+  '/research/2025-music-private-education-statistics': typeof Research2025MusicPrivateEducationStatisticsRoute
+  '/research/2026-seoul-piano-academy-fees': typeof Research2026SeoulPianoAcademyFeesRoute
+  '/research/methodology': typeof ResearchMethodologyRoute
   '/blog': typeof BlogIndexRoute
+  '/research': typeof ResearchIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/blog/$category': typeof BlogCategoryIndexRoute
 }
@@ -185,7 +219,11 @@ export interface FileRoutesById {
   '/lessons/home-visit': typeof LessonsHomeVisitRoute
   '/lessons/private': typeof LessonsPrivateRoute
   '/media/$': typeof MediaSplatRoute
+  '/research/2025-music-private-education-statistics': typeof Research2025MusicPrivateEducationStatisticsRoute
+  '/research/2026-seoul-piano-academy-fees': typeof Research2026SeoulPianoAcademyFeesRoute
+  '/research/methodology': typeof ResearchMethodologyRoute
   '/blog/': typeof BlogIndexRoute
+  '/research/': typeof ResearchIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
 }
@@ -208,7 +246,11 @@ export interface FileRouteTypes {
     | '/lessons/home-visit'
     | '/lessons/private'
     | '/media/$'
+    | '/research/2025-music-private-education-statistics'
+    | '/research/2026-seoul-piano-academy-fees'
+    | '/research/methodology'
     | '/blog/'
+    | '/research/'
     | '/blog/$category/$slug'
     | '/blog/$category/'
   fileRoutesByTo: FileRoutesByTo
@@ -229,7 +271,11 @@ export interface FileRouteTypes {
     | '/lessons/home-visit'
     | '/lessons/private'
     | '/media/$'
+    | '/research/2025-music-private-education-statistics'
+    | '/research/2026-seoul-piano-academy-fees'
+    | '/research/methodology'
     | '/blog'
+    | '/research'
     | '/blog/$category/$slug'
     | '/blog/$category'
   id:
@@ -250,7 +296,11 @@ export interface FileRouteTypes {
     | '/lessons/home-visit'
     | '/lessons/private'
     | '/media/$'
+    | '/research/2025-music-private-education-statistics'
+    | '/research/2026-seoul-piano-academy-fees'
+    | '/research/methodology'
     | '/blog/'
+    | '/research/'
     | '/blog/$category/$slug'
     | '/blog/$category/'
   fileRoutesById: FileRoutesById
@@ -272,7 +322,11 @@ export interface RootRouteChildren {
   LessonsHomeVisitRoute: typeof LessonsHomeVisitRoute
   LessonsPrivateRoute: typeof LessonsPrivateRoute
   MediaSplatRoute: typeof MediaSplatRoute
+  Research2025MusicPrivateEducationStatisticsRoute: typeof Research2025MusicPrivateEducationStatisticsRoute
+  Research2026SeoulPianoAcademyFeesRoute: typeof Research2026SeoulPianoAcademyFeesRoute
+  ResearchMethodologyRoute: typeof ResearchMethodologyRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  ResearchIndexRoute: typeof ResearchIndexRoute
   BlogCategorySlugRoute: typeof BlogCategorySlugRoute
   BlogCategoryIndexRoute: typeof BlogCategoryIndexRoute
 }
@@ -349,11 +403,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/research/': {
+      id: '/research/'
+      path: '/research'
+      fullPath: '/research/'
+      preLoaderRoute: typeof ResearchIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/': {
       id: '/blog/'
       path: '/blog'
       fullPath: '/blog/'
       preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/research/methodology': {
+      id: '/research/methodology'
+      path: '/research/methodology'
+      fullPath: '/research/methodology'
+      preLoaderRoute: typeof ResearchMethodologyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/research/2026-seoul-piano-academy-fees': {
+      id: '/research/2026-seoul-piano-academy-fees'
+      path: '/research/2026-seoul-piano-academy-fees'
+      fullPath: '/research/2026-seoul-piano-academy-fees'
+      preLoaderRoute: typeof Research2026SeoulPianoAcademyFeesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/research/2025-music-private-education-statistics': {
+      id: '/research/2025-music-private-education-statistics'
+      path: '/research/2025-music-private-education-statistics'
+      fullPath: '/research/2025-music-private-education-statistics'
+      preLoaderRoute: typeof Research2025MusicPrivateEducationStatisticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/media/$': {
@@ -432,7 +514,13 @@ const rootRouteChildren: RootRouteChildren = {
   LessonsHomeVisitRoute: LessonsHomeVisitRoute,
   LessonsPrivateRoute: LessonsPrivateRoute,
   MediaSplatRoute: MediaSplatRoute,
+  Research2025MusicPrivateEducationStatisticsRoute:
+    Research2025MusicPrivateEducationStatisticsRoute,
+  Research2026SeoulPianoAcademyFeesRoute:
+    Research2026SeoulPianoAcademyFeesRoute,
+  ResearchMethodologyRoute: ResearchMethodologyRoute,
   BlogIndexRoute: BlogIndexRoute,
+  ResearchIndexRoute: ResearchIndexRoute,
   BlogCategorySlugRoute: BlogCategorySlugRoute,
   BlogCategoryIndexRoute: BlogCategoryIndexRoute,
 }

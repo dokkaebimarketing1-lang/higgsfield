@@ -187,11 +187,19 @@ describe("SEO helpers", () => {
     const paths = PUBLIC_PAGES.map((page) => page.path);
     const keywords = PUBLIC_PAGES.map((page) => normalizeKeyword(page.primaryKeyword));
 
-    expect(PUBLIC_PAGES).toHaveLength(11);
+    expect(PUBLIC_PAGES).toHaveLength(15);
     expect(Object.values(SERVICE_PAGES)).toHaveLength(6);
     expect(new Set(paths).size).toBe(paths.length);
     expect(new Set(keywords).size).toBe(keywords.length);
     expect(paths).not.toContain("/lessons");
+    expect(paths).toEqual(
+      expect.arrayContaining([
+        "/research",
+        "/research/2025-music-private-education-statistics",
+        "/research/2026-seoul-piano-academy-fees",
+        "/research/methodology",
+      ]),
+    );
 
     for (const page of PUBLIC_PAGES) {
       expect(page.title).toContain(page.primaryKeyword);

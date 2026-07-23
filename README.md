@@ -5,6 +5,7 @@
 - 라이브: https://ewha-piano.higgsfield.app
 - 앱 소스: `app/`
 - 로컬 개발: [LOCAL-DEV.md](LOCAL-DEV.md)
+- 연구 데이터 운영: [RESEARCH-DATA.md](RESEARCH-DATA.md)
 
 ## 기술 구성
 
@@ -23,11 +24,12 @@
 
 ```text
 app/
-  src/routes/          홈, 소개, 블로그, 관리자, sitemap, RSS, llms.txt
+  src/routes/          홈, 소개, 블로그, 연구 데이터, 관리자, sitemap, RSS, llms.txt
   src/lib/content.ts   사이트 공통 카피와 운영 정보
   src/lib/api/         상담 및 블로그/CMS 서버 함수
   src/components/site/ 내비게이션, 푸터, 히어로, 모노그램
   public/assets/       브랜드 이미지
+  public/data/research/ 직접 식별정보와 원자료 행 위치를 제거한 CSV 및 데이터셋 메타데이터
   public/frames/hero/  히어로 스크럽 프레임
   migrations/          D1 스키마와 콘텐츠 시드
   app.manifest.json    Higgsfield가 프로비저닝할 D1/R2 선언
@@ -52,8 +54,9 @@ bun run typecheck
 bun run build
 ```
 
-별도의 변환 스크립트나 백업 파일 생성은 필요하지 않습니다. 자세한 로컬 데이터 바인딩
-제약과 Design Inspector 빌드는 [LOCAL-DEV.md](LOCAL-DEV.md)를 참고하세요.
+일반 개발·빌드에는 별도의 변환 작업이 필요하지 않습니다. 공식 연구 데이터 스냅샷을
+갱신할 때만 [RESEARCH-DATA.md](RESEARCH-DATA.md)의 변환 절차를 실행합니다. 로컬 데이터
+바인딩 제약과 Design Inspector 빌드는 [LOCAL-DEV.md](LOCAL-DEV.md)를 참고하세요.
 
 ## SEO / GEO
 
@@ -61,7 +64,7 @@ bun run build
 - 글의 `tags` 첫 항목을 대표 목표 키워드로 사용하며 title, H1, 요약, SEO 설명에 자연스럽게 일치
 - 카테고리 허브 목표 키워드는 `app/src/lib/content.ts`의 `CATEGORY_SEO`에서 개별 글과 겹치지 않게 관리
 - 페이지별 title, description, canonical, Open Graph
-- LocalBusiness, WebSite, FAQPage, Person, BlogPosting, BreadcrumbList JSON-LD
+- LocalBusiness, WebSite, FAQPage, Person, BlogPosting, BreadcrumbList, Dataset JSON-LD
 - 동적 `sitemap.xml`, RSS, HTML 사이트맵, `/llms.txt`
 
 ## 배포
